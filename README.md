@@ -30,7 +30,6 @@ To run this project in Android Studio, you need:
 ```
 
 2. Open Android Studio, select File > Open, and navigate to the project folder.
--------
 
 3. Configure the Environment
     1. Install JDK:
