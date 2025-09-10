@@ -30,6 +30,7 @@ To run this project in Android Studio, you need:
 ```
 
 2. Open Android Studio, select File > Open, and navigate to the project folder.
+-------
 
 3. Configure the Environment
     1. Install JDK:
@@ -74,9 +75,9 @@ To ensure a consistent and collaborative development process, contributors shoul
 ```
 
 ## Contributing
-- *** ------------------------**
-- *** ------------------------**
+- 
+- 
 - **Tran Van Thuan - 22521448**
 
 ## Acknowledgements
-Thanks to the course instructor Trần Hồng Nghi and peers for their support.
+Thanks to the course instructor **Tran Hong Nghi** and peers for their support.
