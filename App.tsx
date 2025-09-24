@@ -1,5 +1,5 @@
 import { useState }from 'react';
-import { Button, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, FlatList, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 // JSX
 export default function App() {
@@ -20,7 +20,27 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Text style={{ fontSize: 30 }}>Hello World</Text>
-      <ScrollView>
+
+      <FlatList
+        data={students}
+        keyExtractor={ item => item.id + "" }
+        renderItem={({ item }) => {
+          return (
+            <View key={item.id} style={{
+              padding: 30,
+              backgroundColor: "violet",
+              marginBottom: 30,
+              marginHorizontal: 20
+            }}>
+              <Text>{item.id}</Text>
+              <Text>{item.name}</Text>
+              <Text>{item.age}</Text>
+            </View>
+          )
+        }}
+      />
+
+      {/* <ScrollView>
         {students.map(item => {
           return (
             <View key={item.id} style={{
@@ -32,7 +52,7 @@ export default function App() {
             </View>
           )
         })}
-      </ScrollView>
+      </ScrollView> */}
     </View>
   );
 }
