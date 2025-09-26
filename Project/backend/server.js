@@ -1,9 +1,14 @@
 import express from "express";
 import dotenv from "dotenv"
+import { initDB } from "./config/database.js";
+import router from "./routes/transactionsRoute.js";
 
 dotenv.config();
 
 const app = express();
+
+// Middleware
+app.use(express.json());
 
 const PORT = process.env.PORT;
 
@@ -11,6 +16,10 @@ app.get("/", (req, res) => {
     res.send("It's working")
 })
 
-app.listen(PORT, () => {
+app.use("/api/transactions", router)
+
+initDB().then(() => {
+    app.listen(PORT, () => {
     console.log("Server is up and running on PORT:", PORT);
-})
+    });
+});
