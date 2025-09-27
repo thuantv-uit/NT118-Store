@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { useEffect } from "react";
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { styles } from "../../assets/styles/home.styles";
-// import { BalanceCard } from '../../components/BalanceCard';
+import { BalanceCard } from '../../components/BalanceCard';
 import PageLoader from '../../components/PageLoader';
 import { useTransactions } from "../../hooks/useTransactions";
 
@@ -52,7 +52,7 @@ export default function Page() {
           </View>
         </View>
 
-        {/* <BalanceCard summary={summary} /> */}
+        <BalanceCard summary={summary} />
 
         {/* <View style={styles.transactionsHeaderContainer}>
           <Text style={styles.sectionTitle}>Recent Transactions</Text>
