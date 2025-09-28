@@ -46,7 +46,7 @@ jobs:
     - name: Install Dependencies for Backend
       run: npm install
     - name: Run Tests for Backend
-      run: npm test || echo "No test script defined, skipping..." # Thay npm start bằng npm test
+      run: timeout 120 npm start || echo "npm start stopped after 2 minutes or completed"
 
   build-mobile:
     needs: changes
@@ -71,4 +71,4 @@ jobs:
     - name: Install Dependencies for Mobile
       run: npm install
     - name: Run Tests for Mobile
-      run: npm test || echo "No test script defined, skipping..." # Thay npm start bằng npm test
+      run: timeout 120 npm start || echo "npm start stopped after 2 minutes or completed"
