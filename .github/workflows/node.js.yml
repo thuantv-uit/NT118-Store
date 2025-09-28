@@ -125,19 +125,19 @@ jobs:
           # Kiểm tra nếu process đã dừng (crash)
           if ! ps -p $SERVER_PID > /dev/null; then
             echo "Server process stopped unexpectedly"
-            # Kiểm tra log để tìm lỗi nodemon crash
-            if grep -q "\[nodemon\] app crashed" server.log; then
-              echo "Error detected: [nodemon] app crashed - waiting for file changes before starting..."
+            # Kiểm tra log để tìm lỗi chứa từ "error"
+            if grep -i "error" server.log; then
+              echo "Error detected in server log"
               cat server.log
               exit 1
             fi
-            echo "Server crashed without nodemon error. Full log:"
+            echo "Server crashed without expected error. Full log:"
             cat server.log
             exit 1
           fi
-          # Kiểm tra log để tìm lỗi nodemon crash
-          if grep -q "\[nodemon\] app crashed" server.log; then
-            echo "Error detected: [nodemon] app crashed - waiting for file changes before starting..."
+          # Kiểm tra log để tìm lỗi chứa từ "error"
+          if grep -i "error" server.log; then
+            echo "Error detected in server log"
             cat server.log
             kill $SERVER_PID
             exit 1
