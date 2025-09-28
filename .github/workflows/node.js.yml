@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend # Chỉ định thư mục làm việc là backend
+        working-directory: ./Project/backend # Chỉ định thư mục làm việc là backend
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./mobile # Chỉ định thư mục làm việc là mobile
+        working-directory: ./Project/mobile # Chỉ định thư mục làm việc là mobile
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
