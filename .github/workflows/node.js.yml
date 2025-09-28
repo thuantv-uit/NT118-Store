@@ -53,12 +53,12 @@ jobs:
       run: npm install
     - name: Run Backend Server for 2 Minutes
       run: |
-        # Chạy npm start trong nền và ghi log vào file
-        npm start > server.log 2>&1 &
+        # Chạy npm start trong nền, ghi log vào file và in ra console
+        npm start 2>&1 | tee server.log &
         # Lưu PID của process npm start
         SERVER_PID=$!
         # Chờ tối đa 120 giây
-        for ((i=0; i<120; i++)); do
+        for ((i=0; i<30; i++)); do
           # Kiểm tra nếu process đã dừng (crash)
           if ! ps -p $SERVER_PID > /dev/null; then
             echo "Server process stopped unexpectedly"
@@ -68,6 +68,8 @@ jobs:
               cat server.log
               exit 1
             fi
+            echo "Server crashed without nodemon error. Full log:"
+            cat server.log
             exit 1
           fi
           # Kiểm tra log để tìm lỗi nodemon crash
@@ -82,6 +84,7 @@ jobs:
         # Nếu không có lỗi, dừng server sau 120 giây
         kill $SERVER_PID
         echo "Server ran successfully for 2 minutes"
+        cat server.log # In log để debug
 
   build-mobile:
     needs: changes
@@ -113,12 +116,12 @@ jobs:
       run: npm install
     - name: Run Mobile Server for 2 Minutes
       run: |
-        # Chạy npm start trong nền và ghi log vào file
-        npm start > server.log 2>&1 &
+        # Chạy npm start trong nền, ghi log vào file và in ra console
+        npm start 2>&1 | tee server.log &
         # Lưu PID của process npm start
         SERVER_PID=$!
         # Chờ tối đa 120 giây
-        for ((i=0; i<120; i++)); do
+        for ((i=0; i<30; i++)); do
           # Kiểm tra nếu process đã dừng (crash)
           if ! ps -p $SERVER_PID > /dev/null; then
             echo "Server process stopped unexpectedly"
@@ -128,6 +131,8 @@ jobs:
               cat server.log
               exit 1
             fi
+            echo "Server crashed without nodemon error. Full log:"
+            cat server.log
             exit 1
           fi
           # Kiểm tra log để tìm lỗi nodemon crash
@@ -142,3 +147,4 @@ jobs:
         # Nếu không có lỗi, dừng server sau 120 giây
         kill $SERVER_PID
         echo "Server ran successfully for 2 minutes"
+        cat server.log # In log để debug
