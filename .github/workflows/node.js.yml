@@ -52,7 +52,36 @@ jobs:
     - name: Install Dependencies for Backend
       run: npm install
     - name: Run Backend Server for 2 Minutes
-      run: timeout 120 npm start
+      run: |
+        # Chạy npm start trong nền và ghi log vào file
+        npm start > server.log 2>&1 &
+        # Lưu PID của process npm start
+        SERVER_PID=$!
+        # Chờ tối đa 120 giây
+        for ((i=0; i<120; i++)); do
+          # Kiểm tra nếu process đã dừng (crash)
+          if ! ps -p $SERVER_PID > /dev/null; then
+            echo "Server process stopped unexpectedly"
+            # Kiểm tra log để tìm lỗi nodemon crash
+            if grep -q "\[nodemon\] app crashed" server.log; then
+              echo "Error detected: [nodemon] app crashed - waiting for file changes before starting..."
+              cat server.log
+              exit 1
+            fi
+            exit 1
+          fi
+          # Kiểm tra log để tìm lỗi nodemon crash
+          if grep -q "\[nodemon\] app crashed" server.log; then
+            echo "Error detected: [nodemon] app crashed - waiting for file changes before starting..."
+            cat server.log
+            kill $SERVER_PID
+            exit 1
+          fi
+          sleep 1
+        done
+        # Nếu không có lỗi, dừng server sau 120 giây
+        kill $SERVER_PID
+        echo "Server ran successfully for 2 minutes"
 
   build-mobile:
     needs: changes
@@ -83,4 +112,33 @@ jobs:
     - name: Install Dependencies for Mobile
       run: npm install
     - name: Run Mobile Server for 2 Minutes
-      run: timeout 120 npm start
+      run: |
+        # Chạy npm start trong nền và ghi log vào file
+        npm start > server.log 2>&1 &
+        # Lưu PID của process npm start
+        SERVER_PID=$!
+        # Chờ tối đa 120 giây
+        for ((i=0; i<120; i++)); do
+          # Kiểm tra nếu process đã dừng (crash)
+          if ! ps -p $SERVER_PID > /dev/null; then
+            echo "Server process stopped unexpectedly"
+            # Kiểm tra log để tìm lỗi nodemon crash
+            if grep -q "\[nodemon\] app crashed" server.log; then
+              echo "Error detected: [nodemon] app crashed - waiting for file changes before starting..."
+              cat server.log
+              exit 1
+            fi
+            exit 1
+          fi
+          # Kiểm tra log để tìm lỗi nodemon crash
+          if grep -q "\[nodemon\] app crashed" server.log; then
+            echo "Error detected: [nodemon] app crashed - waiting for file changes before starting..."
+            cat server.log
+            kill $SERVER_PID
+            exit 1
+          fi
+          sleep 1
+        done
+        # Nếu không có lỗi, dừng server sau 120 giây
+        kill $SERVER_PID
+        echo "Server ran successfully for 2 minutes"
