@@ -74,8 +74,7 @@ To ensure a consistent and collaborative development process, contributors shoul
 ```
 
 ## Contributing
-- 
-- 
+- **Tran Thu Ngan - 22520937**
 - **Tran Van Thuan - 22521448**
 
 ## Acknowledgements
