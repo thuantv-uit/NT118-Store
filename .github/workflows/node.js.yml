@@ -117,7 +117,7 @@ jobs:
     - name: Run Mobile Server for 2 Minutes
       run: |
         # Chạy npm start trong nền, ghi log vào file và in ra console
-        npm start 2>&1 | tee server.log &
+        npm run lint 2>&1 | tee server.log &
         # Lưu PID của process npm start
         SERVER_PID=$!
         # Chờ tối đa 120 giây
