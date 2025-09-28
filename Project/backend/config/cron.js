@@ -13,7 +13,7 @@ const job = new cron.CronJob("*/14 * * * *", function () {
 
 // console.log("api:", process.env.API_URL)
 
-expo default job;
+export default job;
 // Test CI
 // Test CI
 
