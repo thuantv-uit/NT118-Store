@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
-      mobile: ${{ steps.filter.outputs.mobile }}
+      frontend: ${{ steps.filter.outputs.frontend }}
     steps:
     - uses: actions/checkout@v4
     - name: Check Repository Structure
@@ -21,7 +21,7 @@ jobs:
       with:
         filters: |
           backend: 'Project/backend/**'
-          mobile: 'Project/mobile/**'
+          frontend: 'Project/mobile/**'
 
   build-backend:
     needs: changes
@@ -33,6 +33,12 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
+    env:
+      PORT: ${{ secrets.BACKEND_PORT }}
+      DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
+      UPSTASH_REDIS_REST_URL: ${{ secrets.BACKEND_UPSTASH_REDIS_REST_URL }}
+      UPSTASH_REDIS_REST_TOKEN: ${{ secrets.BACKEND_UPSTASH_REDIS_REST_TOKEN }}
+      API_URL: ${{ secrets.BACKEND_API_URL }}
     steps:
     - uses: actions/checkout@v4
     - name: Verify Backend Directory
@@ -54,9 +60,9 @@ jobs:
     - name: Run Backend Server for 2 Minutes
       run: timeout 120 npm start
 
-  build-mobile:
+  build-frontend:
     needs: changes
-    if: ${{ needs.changes.outputs.mobile == 'true' }}
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -64,9 +70,11 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
+    env:
+      EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.FRONTEND_EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY }}
     steps:
     - uses: actions/checkout@v4
-    - name: Verify Mobile Directory
+    - name: Verify Frontend Directory
       run: ls -la # Debug: In danh sách file trong Project/mobile
     - name: Check for package-lock.json
       run: |
@@ -74,13 +82,13 @@ jobs:
           echo "Error: package-lock.json not found in Project/mobile"
           exit 1
         fi
-    - name: Use Node.js ${{ matrix.node-version }} for Mobile
+    - name: Use Node.js ${{ matrix.node-version }} for Frontend
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         cache-dependency-path: Project/mobile/package-lock.json
-    - name: Install Dependencies for Mobile
+    - name: Install Dependencies for Frontend
       run: npm install
-    - name: Run Mobile Server for 2 Minutes
+    - name: Run Frontend Server for 2 Minutes
       run: timeout 120 npm start
