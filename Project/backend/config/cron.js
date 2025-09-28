@@ -13,7 +13,7 @@ const job = new cron.CronJob("*/14 * * * *", function () {
 
 // console.log("api:", process.env.API_URL)
 
-exp default job;
+export default job;
 
 // CRON JOB EXPLANATION:
 // Cron jobs are scheduled tasks that run periodically at fixed intervals
