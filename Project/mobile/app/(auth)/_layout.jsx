@@ -8,7 +8,7 @@ export default function AuthRoutesLayout() {
     return <Redirect href={'/'} />
   }
 
-  return <Stack screenOptions={{headerShown: false}} />
+  return <Stack screenOptions={{headerShown: false}} /
   // Test workflow
   // Thuan ne
 }
