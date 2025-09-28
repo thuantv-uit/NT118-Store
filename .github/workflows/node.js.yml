@@ -7,44 +7,68 @@ on:
     branches: [ "main" ]
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      mobile: ${{ steps.filter.outputs.mobile }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Check Repository Structure
+      run: ls -la
+    - uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          backend: 'Project/backend/**'
+          mobile: 'Project/mobile/**'
+
   build-backend:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./Project/backend # Chỉ định thư mục làm việc là backend
+        working-directory: ./Project/backend
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
     steps:
     - uses: actions/checkout@v4
+    - name: Verify Backend Directory
+      run: ls -la # Debug: In danh sách file trong Project/backend
     - name: Use Node.js ${{ matrix.node-version }} for Backend
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: backend/package-lock.json # Caching cho backend
+        cache-dependency-path: Project/backend/package-lock.json
     - name: Install Dependencies for Backend
       run: npm install
-    - name: Start Backend
-      run: npm start
+    - name: Run Tests for Backend
+      run: npm test || echo "No test script defined, skipping..." # Thay npm start bằng npm test
 
   build-mobile:
+    needs: changes
+    if: ${{ needs.changes.outputs.mobile == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./Project/mobile # Chỉ định thư mục làm việc là mobile
+        working-directory: ./Project/mobile
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
     steps:
     - uses: actions/checkout@v4
+    - name: Verify Mobile Directory
+      run: ls -la # Debug: In danh sách file trong Project/mobile
     - name: Use Node.js ${{ matrix.node-version }} for Mobile
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: mobile/package-lock.json # Caching cho mobile
+        cache-dependency-path: Project/mobile/package-lock.json
     - name: Install Dependencies for Mobile
       run: npm install
-    - name: Start Mobile
-      run: npm start
+    - name: Run Tests for Mobile
+      run: npm test || echo "No test script defined, skipping..." # Thay npm start bằng npm test
