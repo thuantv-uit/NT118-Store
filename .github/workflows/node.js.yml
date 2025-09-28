@@ -1,6 +1,3 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
 name: Node.js CI
 
 on:
@@ -10,21 +7,44 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-
+  build-backend:
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: ./backend # Chỉ định thư mục làm việc là backend
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
     steps:
     - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js ${{ matrix.node-version }} for Backend
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm install
-    - run: npm start
+        cache-dependency-path: backend/package-lock.json # Caching cho backend
+    - name: Install Dependencies for Backend
+      run: npm install
+    - name: Start Backend
+      run: npm start
+
+  build-mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./mobile # Chỉ định thư mục làm việc là mobile
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }} for Mobile
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: mobile/package-lock.json # Caching cho mobile
+    - name: Install Dependencies for Mobile
+      run: npm install
+    - name: Start Mobile
+      run: npm start
