@@ -25,13 +25,14 @@ export async function initDB() {
       password VARCHAR(255) NOT NULL,
       address VARCHAR(255) NOT NULL,
       phone_number VARCHAR(255) NOT NULL,
+      role VARCHAR(50) NOT NULL DEFAULT 'buyer' CHECK (role IN ('seller', 'buyer', 'shiper')),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
     console.log("Database customer initialized successfully");
 
     await sql`CREATE TABLE IF NOT EXISTS shipment(
       id VARCHAR(255) PRIMARY KEY,
-      first_name TIMESTAMP NOT NULL,
+      shipment_date TIMESTAMP NOT NULL,
       address VARCHAR(255) NOT NULL,
       city VARCHAR(255) NOT NULL,
       state VARCHAR(255) NOT NULL,

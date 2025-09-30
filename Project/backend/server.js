@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv"
 import { initDB } from "./config/database.js";
 import router from "./routes/transactionsRoute.js";
+import customerRoutes from "./routes/customersRoute.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 
 dotenv.config();
@@ -19,6 +20,7 @@ app.get("/", (req, res) => {
 })
 
 app.use("/api/transactions", router)
+app.use("/api/customers", customerRoutes)
 
 initDB().then(() => {
     app.listen(PORT, () => {
