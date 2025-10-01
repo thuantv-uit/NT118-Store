@@ -5,6 +5,7 @@ import router from "./routes/transactionsRoute.js";
 import customerRoutes from "./routes/customersRoute.js";
 import shipmentRoutes from "./routes/shipmentsRoute.js"
 import paymentRoutes from "./routes/paymentsRoute.js"
+import orderRoutes from "./routes/ordersRoute.js"
 import rateLimiter from "./middleware/rateLimiter.js";
 
 dotenv.config();
@@ -25,6 +26,7 @@ app.use("/api/transactions", router)
 app.use("/api/customers", customerRoutes)
 app.use("/api/shipment", shipmentRoutes)
 app.use("/api/payment", paymentRoutes)
+app.use("/api/order", orderRoutes)
 
 initDB().then(() => {
     app.listen(PORT, () => {
