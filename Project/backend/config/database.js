@@ -104,7 +104,7 @@ export async function initDB() {
       id VARCHAR(255) PRIMARY KEY,
       quantity INT NOT NULL,
       price DECIMAL(10,2) NOT NULL,
-      shipment_id VARCHAR(255) NULL REFERENCES shipment(id),
+      product_id VARCHAR(255) NULL REFERENCES product(id),
       order_id VARCHAR(255) NULL REFERENCES "order"(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
