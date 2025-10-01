@@ -10,6 +10,7 @@ import categoryRoutes from "./routes/categoriesRoutes.js"
 import productRoutes from "./routes/productsRoutes.js"
 import cartRoutes from "./routes/cartsRoutes.js"
 import orderItemsRoutes from "./routes/orderItemsRoutes.js"
+import wishListRoutes from "./routes/wishListRoutes.js"
 import rateLimiter from "./middleware/rateLimiter.js";
 
 dotenv.config();
@@ -35,6 +36,7 @@ app.use("/api/category", categoryRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/order_item", orderItemsRoutes);
+app.use("/api/wish_list", wishListRoutes);
 
 initDB().then(() => {
     app.listen(PORT, () => {
