@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/clerk-expo";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { API_URL } from "../../constants/api";
@@ -8,6 +8,7 @@ import { COLORS } from "../../constants/colors";
 const CreateShipment = () => {
   const router = useRouter();
   const { user } = useUser();
+  const { paymentId, amount, cartIds } = useLocalSearchParams(); // Lấy paymentId, amount và cartIds từ params
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
@@ -57,9 +58,16 @@ const CreateShipment = () => {
       const shipment = await response.json();
       Alert.alert("Thành công", `Đơn vận chuyển đã được tạo với ID: ${shipment.id}`);
       
-      // Sau khi thành công, có thể clear form hoặc navigate về màn hình khác
-      // Ví dụ: router.push('/OrderSuccess');
-      router.back(); // Quay về trang trước
+      // Sau khi thành công, navigate đến CreateOrder với đầy đủ info bao gồm cartIds
+      router.push({
+        pathname: '/CreateOrder',
+        params: { 
+          paymentId: paymentId.toString(), 
+          amount: amount.toString(), 
+          shipmentId: shipment.id.toString(),
+          cartIds: cartIds.toString()
+        }
+      });
     } catch (err) {
       setError(err.message);
       Alert.alert("Lỗi", err.message);
@@ -89,6 +97,8 @@ const CreateShipment = () => {
 
       {/* Nội dung form */}
       <View style={styles.content}>
+        <Text style={styles.amountText}>Số tiền: ${amount}</Text>
+
         <Text style={styles.sectionTitle}>Thông tin địa chỉ giao hàng:</Text>
 
         <TextInput
@@ -170,6 +180,13 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 16,
+  },
+  amountText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: COLORS.primary,
+    marginBottom: 16,
+    textAlign: "center",
   },
   sectionTitle: {
     fontSize: 18,

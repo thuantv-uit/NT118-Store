@@ -92,9 +92,13 @@ const CartScreen = () => {
       return;
     }
     const total = selectedItemsList.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const selectedCartIds = Array.from(selectedItems).join(','); // Truyền IDs các selected items
     router.push({
       pathname: "/CreatePayment",
-      params: { amount: total.toFixed(2) }
+      params: { 
+        amount: total.toFixed(2),
+        cartIds: selectedCartIds
+      }
     });
   };
 

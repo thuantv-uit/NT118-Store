@@ -8,7 +8,7 @@ import { COLORS } from "../../constants/colors";
 const CreatePayment = () => {
   const router = useRouter();
   const { user } = useUser();
-  const { amount } = useLocalSearchParams(); // Lấy amount từ params
+  const { amount, cartIds } = useLocalSearchParams(); // Lấy amount và cartIds từ params
   const [selectedMethod, setSelectedMethod] = useState(null); // 'cash' hoặc 'bank_transfer'
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -51,8 +51,15 @@ const CreatePayment = () => {
       const payment = await response.json();
       Alert.alert("Thành công", `Thanh toán ${payment.amount} đã được tạo!`);
       
-      // Sau khi thành công, navigate đến CreateShipment
-      router.push('/CreateShipment');
+      // Sau khi thành công, navigate đến CreateShipment với payment info và cartIds
+      router.push({
+        pathname: '/CreateShipment',
+        params: { 
+          paymentId: payment.id.toString(), 
+          amount: payment.amount,
+          cartIds: cartIds.toString()
+        }
+      });
     } catch (err) {
       setError(err.message);
       Alert.alert("Lỗi", err.message);
