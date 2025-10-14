@@ -33,53 +33,56 @@ export async function getCustomerById(req, res) {
   }
 }
 
-    // Create profile for user
+// Create profile for user
 export async function createCustomer(req, res) {
-try {
+  try {
     const { first_name, last_name, email, password, address, phone_number, role, id } = req.body;
 
     if (!first_name || !last_name || !email || !id || !address || !password || !phone_number || !role) {
-    return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
     const transaction = await sql`
-    INSERT INTO customer(id, first_name, last_name, email, password, address, phone_number, role)
-    VALUES (${id},${first_name},${last_name},${email},${password},${address},${phone_number},${role})
-    RETURNING *
+      INSERT INTO customer(id, first_name, last_name, email, password, address, phone_number, role)
+      VALUES (${id},${first_name},${last_name},${email},${password},${address},${phone_number},${role})
+      RETURNING *
     `;
 
     // To use debug
     // console.log(customer);
     res.status(201).json(transaction[0]);
-} catch (error) {
+  } catch (error) {
     console.log("Error creating the transaction", error);
     res.status(500).json({ message: "Internal server error" });
-    }
+  }
 }
 
-// Update profile for user
-export async function updateCustomerFirstName(req, res) {
+// Update profile for user (chỉ cập nhật các trường được cung cấp, dùng COALESCE để giữ nguyên nếu undefined)
+export async function updateCustomer(req, res) {
   try {
     const { id } = req.params; // lấy id từ URL
-    const { first_name, last_name, address, phone_number, role } = req.body; // lấy first_name từ body
+    const { first_name, last_name, address, phone_number, role } = req.body; // lấy các trường từ body (có thể undefined)
 
     // Kiểm tra input
     if (!id) {
       return res.status(400).json({ message: "User ID is required" });
     }
-    if (!first_name) {
-      return res.status(400).json({ message: "First name is required" });
+
+    // Kiểm tra xem có ít nhất một trường cần cập nhật không
+    const hasUpdates = first_name !== undefined || last_name !== undefined || address !== undefined || phone_number !== undefined || role !== undefined;
+    if (!hasUpdates) {
+      return res.status(400).json({ message: "At least one field must be provided for update" });
     }
 
-    // Thực hiện update
+    // Thực hiện update với COALESCE để chỉ cập nhật nếu giá trị được cung cấp (không undefined)
     const updatedCustomer = await sql`
       UPDATE customer
       SET 
-        first_name = ${first_name},
-        last_name = ${last_name},
-        address = ${address},
-        phone_number = ${phone_number},
-        role = ${role}
+        first_name = COALESCE(${first_name}, first_name),
+        last_name = COALESCE(${last_name}, last_name),
+        address = COALESCE(${address}, address),
+        phone_number = COALESCE(${phone_number}, phone_number),
+        role = COALESCE(${role}, role)
       WHERE id = ${id}
       RETURNING *;
     `;

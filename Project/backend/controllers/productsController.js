@@ -33,27 +33,72 @@ export async function getProductById(req, res) {
   }
 }
 
-export async function createProduct(req, res) {
-try {
-    const { id, SKU, description, price, category_id, stock } = req.body;
+// Get all Products
+export async function getAllProducts(req, res) {
+  try {
+    // Thực hiện truy vấn lấy tất cả products, join với category để lấy tên
+    const products = await sql`
+      SELECT p.*, c.name as category_name
+      FROM product p
+      JOIN category c ON p.category_id = c.id
+      ORDER BY p.id DESC  -- Sắp xếp theo ID mới nhất trước (tùy chọn)
+    `;
 
-    if (!SKU || !id || !description || !stock ) {
-    return res.status(400).json({ message: "All fields are required" });
+    // Trả về mảng products
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error getting all products:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function createProduct(req, res) {
+  try {
+    const { SKU, name, description, price, category_id, stock } = req.body;
+
+    // Validation
+    if (!SKU || !name || !description || !price || !category_id || !stock) {
+      return res.status(400).json({ message: "All fields (SKU, name, description, price, category_id, stock) are required" });
+    }
+    if (typeof price !== 'number' || price <= 0) {
+      return res.status(400).json({ message: "Price must be a positive number" });
+    }
+    if (typeof stock !== 'number' || stock < 0) {
+      return res.status(400).json({ message: "Stock must be a non-negative integer" });
+    }
+    if (typeof category_id !== 'number' || category_id <= 0) {
+      return res.status(400).json({ message: "category_id must be a positive integer" });
+    }
+
+    // Check category_id exist
+    const existingCategory = await sql`SELECT id FROM category WHERE id = ${category_id}`;
+    if (existingCategory.length === 0) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    // Check SKU unique
+    const existingProduct = await sql`SELECT SKU FROM product WHERE SKU = ${SKU}`;
+    if (existingProduct.length > 0) {
+      return res.status(409).json({ message: "SKU already exists" });
     }
 
     const product = await sql`
-    INSERT INTO product(id, SKU, price, description, category_id, stock)
-    VALUES (${id},${SKU},${price},${description},${category_id},${stock})
-    RETURNING *
+      INSERT INTO product(SKU, name, price, description, category_id, stock)
+      VALUES (${SKU}, ${name}, ${price}, ${description}, ${category_id}, ${stock})
+      RETURNING *
     `;
 
     // To use debug
     // console.log(product);
     res.status(201).json(product[0]);
-} catch (error) {
-    console.log("Error creating the product", error);
-    res.status(500).json({ message: "Internal server error" });
+  } catch (error) {
+    console.error("Error creating the product:", error.message || error);
+    // Handle specific errors if need (example: unique violation)
+    if (error.code === '23505') {  // Postgres unique violation
+      return res.status(409).json({ message: "SKU already exists" });
     }
+    res.status(500).json({ message: "Internal server error" });
+  }
 }
 
 // Update for prodduct
