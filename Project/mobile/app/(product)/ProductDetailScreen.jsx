@@ -2,12 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { API_URL } from "../../constants/api";
 import { COLORS } from "../../constants/colors";
@@ -29,9 +29,10 @@ const ProductDetailScreen = () => {
     const fetchProduct = async () => {
       try {
         setIsLoading(true);
+        setError(null);
         const response = await fetch(`${API_URL}/product/${id}`);
         if (!response.ok) {
-          throw new Error("Failed to fetch product details");
+          throw new Error(`Failed to fetch product details: ${response.status}`);
         }
         const data = await response.json();
         setProduct(data);
@@ -45,6 +46,23 @@ const ProductDetailScreen = () => {
 
     fetchProduct();
   }, [id]);
+
+  // Dữ liệu giả để test (uncomment nếu API lỗi)
+  /*
+  useEffect(() => {
+    setIsLoading(false);
+    setProduct({
+      id: id,
+      name: "Sample Product",
+      SKU: "SKU123",
+      description: "This is a sample product description for testing.",
+      price: 99.99,
+      stock: 10,
+      category_name: "Điện thoại",
+      image: "https://via.placeholder.com/300x300?text=Sample",
+    });
+  }, [id]);
+  */
 
   if (isLoading) {
     return (
@@ -75,16 +93,16 @@ const ProductDetailScreen = () => {
       {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          <Ionicons name="arrow-back" size={24} color={COLORS.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Product Details</Text>
-        <View style={styles.headerSpacer} /> {/* Empty space for balance */}
+        <View style={styles.headerSpacer} />
       </View>
 
       {/* IMAGE */}
       <View style={styles.imageContainer}>
         <Image
-          source={{ uri: "https://via.placeholder.com/300x300?text=Product+Image" }} // Placeholder image
+          source={{ uri: product.image || "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcS3bhS7yfnTe2MrIcwTRsEVQvzExL9JQG29TmDZ6PMPDA4vw1fyvn01FGrw2Zu3MAtDhiNNq3Kbp847qy1AHIgINKsk8dpAF1D55SdgVoGtq93VhMdkbNei7Rz-QYk3CFHbIl9fXg&usqp=CAc" }}
           style={styles.productImage}
           resizeMode="cover"
         />
@@ -92,17 +110,17 @@ const ProductDetailScreen = () => {
 
       {/* CONTENT */}
       <View style={styles.content}>
-        <Text style={styles.productName}>{product.name}</Text>
-        <Text style={styles.productSKU}>SKU: {product.SKU}</Text>
+        <Text style={styles.productName}>{product.name || "Unnamed Product"}</Text>
+        <Text style={styles.productSKU}>SKU: {product.SKU || "N/A"}</Text>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.productDescription}>{product.description}</Text>
+          <Text style={styles.productDescription}>{product.description || "No description available"}</Text>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Price</Text>
-          <Text style={styles.productPrice}>${product.price.toFixed(2)}</Text>
+          <Text style={styles.productPrice}>$ {(product.price || 0)}</Text>
         </View>
 
         <View style={styles.section}>
@@ -112,18 +130,28 @@ const ProductDetailScreen = () => {
           </Text>
         </View>
 
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <Text style={styles.sectionTitle}>Category</Text>
           <View style={styles.categoryTag}>
             <Text style={styles.categoryText}>{product.category_name || "Unknown"}</Text>
           </View>
-        </View>
+        </View> */}
+
+        {/* Button thêm vào giỏ hàng */}
+        <TouchableOpacity
+          style={styles.addToCartButton}
+          onPress={() => {
+            console.log("Added to cart:", product.id);
+            alert("Added to cart!");
+          }}
+        >
+          <Text style={styles.addToCartButtonText}>Add to Cart</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
 };
 
-// Styles tương tự ProductsScreen, mở rộng cho detail
 const styles = {
   container: {
     flex: 1,
@@ -167,7 +195,6 @@ const styles = {
   content: {
     padding: 16,
     backgroundColor: COLORS.white,
-    flex: 1,
   },
   productName: {
     fontSize: 24,
@@ -214,6 +241,18 @@ const styles = {
     fontSize: 14,
     color: COLORS.white,
     fontWeight: "500",
+  },
+  addToCartButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 16,
+  },
+  addToCartButtonText: {
+    fontSize: 16,
+    color: COLORS.white,
+    fontWeight: "bold",
   },
   loadingContainer: {
     flex: 1,

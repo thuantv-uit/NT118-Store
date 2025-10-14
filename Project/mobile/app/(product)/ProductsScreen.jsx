@@ -1,9 +1,11 @@
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   Image,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { API_URL } from "../../constants/api";
@@ -20,6 +22,7 @@ const CATEGORIES = [
 const ProductsScreen = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -47,6 +50,14 @@ const ProductsScreen = () => {
     fetchProducts();
   }, []);
 
+  const handleViewCart = () => {
+    router.push("/CartScreen"); // Navigate tới Cart screen
+  };
+
+  const handleViewDetail = (productId) => {
+    router.push({ pathname: "/ProductDetailScreen", params: { id: productId } }); // Navigate tới ProductDetail với ID sản phẩm
+  };
+
   const renderProductItem = ({ item }) => (
     <View style={styles.productCard}>
       {/* Placeholder image */}
@@ -68,6 +79,10 @@ const ProductsScreen = () => {
         <View style={styles.categoryTag}>
           <Text style={styles.categoryText}>{item.categoryName}</Text>
         </View>
+        {/* Button Xem chi tiết */}
+        <TouchableOpacity style={styles.detailButton} onPress={() => handleViewDetail(item.id)}>
+          <Text style={styles.detailButtonText}>Xem chi tiết</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -86,6 +101,10 @@ const ProductsScreen = () => {
       {/* HEADER */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>All Products</Text>
+        {/* Button Giỏ hàng */}
+        <TouchableOpacity style={styles.cartButton} onPress={handleViewCart}>
+          <Text style={styles.cartButtonText}>🛒 Giỏ hàng</Text>
+        </TouchableOpacity>
       </View>
 
       <FlatList
@@ -99,7 +118,7 @@ const ProductsScreen = () => {
   );
 };
 
-// Styles cơ bản (gọn gàng)
+// Styles cơ bản (gọn gàng) - Thêm styles cho buttons mới
 const styles = {
   container: {
     flex: 1,
@@ -109,12 +128,25 @@ const styles = {
     paddingHorizontal: 16,
     paddingVertical: 12,
     backgroundColor: COLORS.primary,
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: "bold",
     color: COLORS.white,
+  },
+  cartButton: {
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  cartButtonText: {
+    fontSize: 14,
+    color: COLORS.white,
+    fontWeight: "500",
   },
   listContainer: {
     padding: 16,
@@ -179,9 +211,22 @@ const styles = {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
+    marginBottom: 8,
   },
   categoryText: {
     fontSize: 12,
+    color: COLORS.white,
+    fontWeight: "500",
+  },
+  detailButton: {
+    alignSelf: "flex-start",
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  detailButtonText: {
+    fontSize: 14,
     color: COLORS.white,
     fontWeight: "500",
   },
