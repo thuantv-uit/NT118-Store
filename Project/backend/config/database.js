@@ -66,19 +66,20 @@ export async function initDB() {
     console.log("Database order initialized successfully");
 
     await sql`CREATE TABLE IF NOT EXISTS "category"(
-      id VARCHAR(255) PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
     console.log("Database category initialized successfully");
 
     await sql`CREATE TABLE IF NOT EXISTS "product"(
-      id VARCHAR(255) PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       SKU VARCHAR(255) NOT NULL,
+      name VARCHAR(255) NOT NULL,
       description VARCHAR(255) NOT NULL,
       price DECIMAL(10,2) NOT NULL,
       stock INT NOT NULL,
-      category_id VARCHAR(255) NULL REFERENCES category(id),
+      category_id INT NULL REFERENCES category(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
     console.log("Database product initialized successfully");
@@ -87,7 +88,7 @@ export async function initDB() {
       id VARCHAR(255) PRIMARY KEY,
       quantity INT NOT NULL,
       customer_id VARCHAR(255) NULL REFERENCES customer(id),
-      product_id VARCHAR(255) NULL REFERENCES product(id),
+      product_id INT NULL REFERENCES product(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
     console.log("Database cart initialized successfully");
@@ -95,7 +96,7 @@ export async function initDB() {
     await sql`CREATE TABLE IF NOT EXISTS "wish_list"(
       id VARCHAR(255) PRIMARY KEY,
       customer_id VARCHAR(255) NULL REFERENCES customer(id),
-      product_id VARCHAR(255) NULL REFERENCES product(id),
+      product_id INT NULL REFERENCES product(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
     console.log("Database wishlist initialized successfully");
@@ -104,7 +105,7 @@ export async function initDB() {
       id VARCHAR(255) PRIMARY KEY,
       quantity INT NOT NULL,
       price DECIMAL(10,2) NOT NULL,
-      product_id VARCHAR(255) NULL REFERENCES product(id),
+      product_id INT NULL REFERENCES product(id),
       order_id VARCHAR(255) NULL REFERENCES "order"(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;

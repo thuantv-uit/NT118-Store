@@ -34,26 +34,26 @@ export async function getCategoryById(req, res) {
 }
 
 export async function createCategory(req, res) {
-try {
-    const { id, name } = req.body;
+  try {
+    const { name } = req.body;
 
-    if (!name || !id ) {
-    return res.status(400).json({ message: "All fields are required" });
+    if (!name) {
+      return res.status(400).json({ message: "Name is required" });
     }
 
-    const categorys = await sql`
-    INSERT INTO category(id, name )
-    VALUES (${id},${name})
-    RETURNING *
+    const category = await sql`
+      INSERT INTO category(name)
+      VALUES (${name})
+      RETURNING *
     `;
 
     // To use debug
-    // console.log(categorys);
-    res.status(201).json(categorys[0]);
-} catch (error) {
-    console.log("Error creating the catrgory", error);
+    // console.log(category);
+    res.status(201).json(category[0]);
+  } catch (error) {
+    console.log("Error creating the category", error);
     res.status(500).json({ message: "Internal server error" });
-    }
+  }
 }
 
 // Update for category
