@@ -88,6 +88,11 @@ const ProductDetailScreen = () => {
     );
   }
 
+  const handleAddToCart = () => {
+    // Navigate đến CreateCart với product.id làm params
+    router.push({ pathname: "/CreateCart", params: { productId: product.id } });
+  };
+
   return (
     <ScrollView style={styles.container}>
       {/* HEADER */}
@@ -102,7 +107,7 @@ const ProductDetailScreen = () => {
       {/* IMAGE */}
       <View style={styles.imageContainer}>
         <Image
-          source={{ uri: product.image || "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcS3bhS7yfnTe2MrIcwTRsEVQvzExL9JQG29TmDZ6PMPDA4vw1fyvn01FGrw2Zu3MAtDhiNNq3Kbp847qy1AHIgINKsk8dpAF1D55SdgVoGtq93VhMdkbNei7Rz-QYk3CFHbIl9fXg&usqp=CAc" }}
+          source={{ uri: product.image || "https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/t/e/text_ng_n_35__8_39.png" }}
           style={styles.productImage}
           resizeMode="cover"
         />
@@ -130,20 +135,17 @@ const ProductDetailScreen = () => {
           </Text>
         </View>
 
-        {/* <View style={styles.section}>
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Category</Text>
           <View style={styles.categoryTag}>
             <Text style={styles.categoryText}>{product.category_name || "Unknown"}</Text>
           </View>
-        </View> */}
+        </View>
 
-        {/* Button thêm vào giỏ hàng */}
+        {/* Button thêm vào giỏ hàng - cập nhật logic navigate */}
         <TouchableOpacity
           style={styles.addToCartButton}
-          onPress={() => {
-            console.log("Added to cart:", product.id);
-            alert("Added to cart!");
-          }}
+          onPress={handleAddToCart}
         >
           <Text style={styles.addToCartButtonText}>Add to Cart</Text>
         </TouchableOpacity>

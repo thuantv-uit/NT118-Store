@@ -35,15 +35,15 @@ export async function getPaymentById(req, res) {
 
 export async function createPayment(req, res) {
 try {
-    const { id, payment_date, payment_method, amount, customer_id } = req.body;
+    const { payment_date, payment_method, amount, customer_id } = req.body;
 
-    if (!payment_date || !amount || !id || !payment_method) {
+    if (!payment_date || !amount || !payment_method) {
     return res.status(400).json({ message: "All fields are required" });
     }
 
     const transaction = await sql`
-    INSERT INTO payment(id, payment_date, amount, payment_method, customer_id)
-    VALUES (${id},${payment_date},${amount},${payment_method},${customer_id})
+    INSERT INTO payment(payment_date, amount, payment_method, customer_id)
+    VALUES (${payment_date},${amount},${payment_method},${customer_id})
     RETURNING *
     `;
 

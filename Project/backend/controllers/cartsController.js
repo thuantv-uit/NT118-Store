@@ -33,17 +33,50 @@ export async function getCartById(req, res) {
   }
 }
 
+// Get all Cart by UserId
+export async function getCartsByCustomerId(req, res) {
+  try {
+    const params = req.params;
+    // console.log("params:", params);
+    const customerId = params.id; // Lấy customerId từ params
+    // log to debug
+    // console.log('customerId:', customerId)
+    // console.log('params:', params)
+    // check customerId
+    if (!customerId) {
+      return res.status(400).json({ message: "customer ID is required" });
+    }
+
+    // Handle query to get all cart of the customer
+    const carts = await sql`
+      SELECT * FROM cart WHERE customer_id = ${customerId}
+    `;
+
+    // check carts
+    if (carts.length === 0) {
+      return res.status(404).json({ message: "No carts found for this customer" });
+    }
+
+    // return entire array carts
+    res.status(200).json(carts);
+  } catch (error) {
+    console.error("Error getting carts by customer:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// Create cart
 export async function createCart(req, res) {
 try {
-    const { id, quantity, customer_id, product_id } = req.body;
+    const { quantity, customer_id, product_id } = req.body;
 
-    if (!quantity || !id ) {
+    if (!quantity) {
     return res.status(400).json({ message: "All fields are required" });
     }
 
     const cart = await sql`
-    INSERT INTO cart(id, quantity, customer_id, product_id)
-    VALUES (${id},${quantity},${customer_id},${product_id})
+    INSERT INTO cart(quantity, customer_id, product_id)
+    VALUES (${quantity},${customer_id},${product_id})
     RETURNING *
     `;
 
