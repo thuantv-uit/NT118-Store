@@ -31,7 +31,7 @@ export async function initDB() {
     console.log("Database customer initialized successfully");
 
     await sql`CREATE TABLE IF NOT EXISTS shipment(
-      id VARCHAR(255) PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       shipment_date TIMESTAMP NOT NULL,
       address VARCHAR(255) NOT NULL,
       city VARCHAR(255) NOT NULL,
@@ -45,7 +45,7 @@ export async function initDB() {
 
 
     await sql`CREATE TABLE IF NOT EXISTS payment(
-      id VARCHAR(255) PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       payment_date TIMESTAMP NOT NULL,
       payment_method VARCHAR(255) NOT NULL,
       amount DECIMAL(10,2) NOT NULL,
@@ -54,16 +54,16 @@ export async function initDB() {
     )`;
     console.log("Database payment initialized successfully");
 
-    await sql`CREATE TABLE IF NOT EXISTS "order"(
-      id VARCHAR(255) PRIMARY KEY,
-      order_date TIMESTAMP NOT NULL,
-      total_price DECIMAL(10,2) NOT NULL,
-      customer_id VARCHAR(255) NULL REFERENCES customer(id),
-      payment_id VARCHAR(255) NULL REFERENCES payment(id),
-      shipment_id VARCHAR(255) NULL REFERENCES shipment(id),
-      created_at DATE NOT NULL DEFAULT CURRENT_DATE
-    )`;
-    console.log("Database order initialized successfully");
+    // await sql`CREATE TABLE IF NOT EXISTS "order"(
+    //   id SERIAL PRIMARY KEY,
+    //   order_date TIMESTAMP NOT NULL,
+    //   total_price DECIMAL(10,2) NOT NULL,
+    //   customer_id VARCHAR(255) NULL REFERENCES customer(id),
+    //   payment_id INT NULL REFERENCES payment(id),
+    //   shipment_id INT NULL REFERENCES shipment(id),
+    //   created_at DATE NOT NULL DEFAULT CURRENT_DATE
+    // )`;
+    // console.log("Database order initialized successfully");
 
     await sql`CREATE TABLE IF NOT EXISTS "category"(
       id SERIAL PRIMARY KEY,
@@ -85,7 +85,7 @@ export async function initDB() {
     console.log("Database product initialized successfully");
 
     await sql`CREATE TABLE IF NOT EXISTS "cart"(
-      id VARCHAR(255) PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       quantity INT NOT NULL,
       customer_id VARCHAR(255) NULL REFERENCES customer(id),
       product_id INT NULL REFERENCES product(id),
@@ -101,12 +101,23 @@ export async function initDB() {
     )`;
     console.log("Database wishlist initialized successfully");
 
+    await sql`CREATE TABLE IF NOT EXISTS "order"(
+      id SERIAL PRIMARY KEY,
+      order_date TIMESTAMP NOT NULL,
+      customer_id VARCHAR(255) NULL REFERENCES customer(id),
+      cart_id INT NULL REFERENCES cart(id),
+      payment_id INT NULL REFERENCES payment(id),
+      shipment_id INT NULL REFERENCES shipment(id),
+      created_at DATE NOT NULL DEFAULT CURRENT_DATE
+    )`;
+    console.log("Database order initialized successfully");
+
     await sql`CREATE TABLE IF NOT EXISTS "order_item"(
-      id VARCHAR(255) PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       quantity INT NOT NULL,
       price DECIMAL(10,2) NOT NULL,
       product_id INT NULL REFERENCES product(id),
-      order_id VARCHAR(255) NULL REFERENCES "order"(id),
+      order_id INT NULL REFERENCES "order"(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
     console.log("Database order_item initialized successfully");

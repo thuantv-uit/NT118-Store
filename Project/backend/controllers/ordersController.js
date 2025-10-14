@@ -35,15 +35,15 @@ export async function getOrderById(req, res) {
 
 export async function createOrder(req, res) {
 try {
-    const { id, order_date, total_price, payment_id, customer_id, shipment_id } = req.body;
+    const { order_date, payment_id, customer_id, shipment_id, cart_id } = req.body;
 
-    if (!order_date || !id || !total_price) {
+    if (!order_date) {
     return res.status(400).json({ message: "All fields are required" });
     }
 
     const transaction = await sql`
-    INSERT INTO "order"(id, order_date, payment_id, total_price, customer_id, shipment_id)
-    VALUES (${id},${order_date},${payment_id},${total_price},${customer_id},${shipment_id})
+    INSERT INTO "order"(order_date, payment_id, customer_id, shipment_id, cart_id)
+    VALUES (${order_date},${payment_id},${customer_id},${shipment_id},${cart_id})
     RETURNING *
     `;
 

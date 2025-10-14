@@ -3,13 +3,15 @@ import {
     createCart,
     getCartById,
     updateCart,
-    deleteCart
+    deleteCart,
+    getCartsByCustomerId
 } from "../controllers/cartsController.js";
 
 const router = express.Router();
 router.post("/", createCart);
-router.get("/:id", getCartById);
+router.get("/detail/:id", getCartById);
 router.put("/:id", updateCart);
 router.delete("/:id", deleteCart);
+router.get("/:id", getCartsByCustomerId);
 
 export default router;
