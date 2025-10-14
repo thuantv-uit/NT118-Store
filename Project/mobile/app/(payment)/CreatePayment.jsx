@@ -51,9 +51,8 @@ const CreatePayment = () => {
       const payment = await response.json();
       Alert.alert("Thành công", `Thanh toán ${payment.amount} đã được tạo!`);
       
-      // Sau khi thành công, có thể clear cart hoặc navigate về màn hình khác
-      // Ví dụ: router.push('/PaymentSuccess');
-      router.back(); // Quay về Cart hoặc trang chính
+      // Sau khi thành công, navigate đến CreateShipment
+      router.push('/CreateShipment');
     } catch (err) {
       setError(err.message);
       Alert.alert("Lỗi", err.message);

@@ -35,15 +35,15 @@ export async function getShipmentById(req, res) {
 
 export async function createShipment(req, res) {
 try {
-    const { id, shipment_date, address, city, state, country, zipcode, customer_id } = req.body;
+    const { shipment_date, address, city, state, country, zipcode, customer_id } = req.body;
 
-    if (!shipment_date || !city || !state || !id || !address || !country || !zipcode) {
+    if (!shipment_date || !city || !state || !address || !country || !zipcode) {
     return res.status(400).json({ message: "All fields are required" });
     }
 
     const transaction = await sql`
-    INSERT INTO shipment(id, shipment_date, city, state, country, address, zipcode, customer_id)
-    VALUES (${id},${shipment_date},${city},${state},${country},${address},${zipcode},${customer_id})
+    INSERT INTO shipment(shipment_date, city, state, country, address, zipcode, customer_id)
+    VALUES (${shipment_date},${city},${state},${country},${address},${zipcode},${customer_id})
     RETURNING *
     `;
 
