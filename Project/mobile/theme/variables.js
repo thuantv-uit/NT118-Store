@@ -1,0 +1,1 @@
+// Các biến chung khác (opacity, transition, v.v.)
