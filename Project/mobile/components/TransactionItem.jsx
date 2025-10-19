@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
 import { styles } from "../assets/styles/home.styles";
 import { COLORS } from "../constants/colors";
-import { formatDate } from "../lib/utils";
+import { formatDate } from "../utlis/utils";
 
 // Map categories to their respective icons
 const CATEGORY_ICONS = {
