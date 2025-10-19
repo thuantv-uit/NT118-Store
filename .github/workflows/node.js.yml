@@ -1,0 +1,128 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      mobile: ${{ steps.filter.outputs.mobile }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Check Repository Structure
+      run: ls -la # Debug: In danh sách file ở root
+    - uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          backend: 'Project/backend/**'
+          mobile: 'Project/mobile/**'
+
+  build-backend:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Project/backend
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Verify Backend Directory
+      run: ls -la # Debug: In danh sách file trong Project/backend
+    - name: Check for package-lock.json
+      run: |
+        if [ ! -f package-lock.json ]; then
+          echo "Error: package-lock.json not found in Project/backend"
+          exit 1
+        fi
+    - name: Use Node.js ${{ matrix.node-version }} for Backend
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: Project/backend/package-lock.json
+    - name: Install Dependencies for Backend
+      run: npm install
+    - name: Run Backend Server for 2 Minutes
+      run: |
+        # Chạy npm start trong nền, ghi log vào file và in ra console
+        npm start 2>&1 | tee server.log &
+        # Lưu PID của process npm start
+        SERVER_PID=$!
+        # Chờ tối đa 120 giây
+        for ((i=0; i<30; i++)); do
+          # Kiểm tra nếu process đã dừng (crash)
+          if ! ps -p $SERVER_PID > /dev/null; then
+            echo "Server process stopped unexpectedly"
+            # Kiểm tra log để tìm lỗi nodemon crash
+            if grep -q "\[nodemon\] app crashed" server.log; then
+              echo "Error detected: [nodemon] app crashed - waiting for file changes before starting..."
+              cat server.log
+              exit 1
+            fi
+            echo "Server crashed without nodemon error. Full log:"
+            cat server.log
+            exit 1
+          fi
+          # Kiểm tra log để tìm lỗi nodemon crash
+          if grep -q "\[nodemon\] app crashed" server.log; then
+            echo "Error detected: [nodemon] app crashed - waiting for file changes before starting..."
+            cat server.log
+            kill $SERVER_PID
+            exit 1
+          fi
+          sleep 1
+        done
+        # Nếu không có lỗi, dừng server sau 120 giây
+        kill $SERVER_PID
+        echo "Server ran successfully for 2 minutes"
+        cat server.log # In log để debug
+
+  build-mobile:
+    needs: changes
+    if: ${{ needs.changes.outputs.mobile == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Project/mobile
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Verify Mobile Directory
+      run: ls -la # Debug: In danh sách file trong Project/mobile
+    - name: Check for package-lock.json
+      run: |
+        if [ ! -f package-lock.json ]; then
+          echo "Error: package-lock.json not found in Project/mobile"
+          exit 1
+        fi
+    - name: Use Node.js ${{ matrix.node-version }} for Mobile
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: Project/mobile/package-lock.json
+    - name: Install Dependencies for Mobile
+      run: npm install
+    - name: Run ESLint Check
+      run: |
+        # Chạy npm run lint và ghi log vào file và console
+        npm run lint 2>&1 | tee server.log
+        # Kiểm tra log để tìm lỗi chứa từ "error"
+        if grep -i "error" server.log; then
+          echo "Error detected in lint output"
+          cat server.log
+          exit 1
+        fi
+        echo "Lint check passed successfully"
+        cat server.log # In log để debug
