@@ -17,6 +17,7 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    ```
 3. Install
 npx expo install react-native-responsive-screen
+npm install react-native-svg react-native-svg-transformer
 
 
 

@@ -1,4 +1,6 @@
 import { wpA, hpA, topA, leftA, rightA, bottomA } from "../../utils/scale";
+import { Icon } from "../../components/ui/icon";
+
 import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import { SafeAreaView } from "react-native";
@@ -24,7 +26,7 @@ export default function TestScale() {
             <SafeAreaView style={styles.fill}>
                 <View style={styles.content}>
                     {/* Text */}
-                    <Text style={[typography.welcome_font, styles.title]}>
+                    <Text style={[typography.handwritten2, styles.title]}>
                         Welcome to Siny!
                     </Text>
                     {/* Logo */}
@@ -55,6 +57,7 @@ export default function TestScale() {
                 source={require("../../assets/images/decor/decor3.png")}
                 style={styles.decor3}
             />
+             <Icon name="home" size={28} color={colors.dark_mode_icon_square} />
 
         </LinearGradient>
     );

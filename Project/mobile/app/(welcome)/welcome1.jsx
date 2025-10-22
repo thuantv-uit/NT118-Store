@@ -27,7 +27,7 @@ export default function Welcome1() {
 
 
                     {/* Text */}
-                    <Text style={[typography.welcome_font, styles.title]}>
+                    <Text style={[typography.handwritten2, styles.title]}>
                         Welcome to Siny!
                     </Text>
                     </View>
