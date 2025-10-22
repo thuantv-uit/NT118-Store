@@ -5,6 +5,8 @@ import { ClerkProvider } from '@clerk/clerk-expo';
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
 import { useFonts } from "expo-font";
 import Welcome1 from "./(welcome)/welcome1";
+import Welcome2 from "./(welcome)/welcome2";
+import Test_scale from "./(welcome)/test_scale";
 
 import { Slot } from "expo-router";
 
@@ -33,7 +35,8 @@ export default function RootLayout() {
     <ClerkProvider tokenCache={tokenCache}>
       <SafeScreen>
         {/* <Slot /> */}
-         <Welcome1 />
+         <Test_scale />
+         {/* <Welcome1 /> */}
       </SafeScreen>
     </ClerkProvider>
   );

@@ -48,6 +48,7 @@ const styles = StyleSheet.create({
     fill: {
         flex: 1,
         justifyContent: "space-between",
+        opacity: 0.8,
     },
     content: {
         flex: 1,
@@ -63,18 +64,17 @@ const styles = StyleSheet.create({
     },
 
     logo: {
-        width: wp("100%"),       // 75% chiều ngang màn hình
+        width: wp("80%"),       // 75% chiều ngang màn hình
         height: hp("50%"),              // responsive theo chiều ngang
-        aspectRatio: 1.15,      // giữ tỉ lệ logo (tùy ảnh của bạn, chỉnh 1.0–1.3)
+        aspectRatio: 1,      // giữ tỉ lệ logo (tùy ảnh của bạn, chỉnh 1.0–1.3)
         resizeMode: "contain",
-        marginBottom: hp(0),       // TẠO KHOẢNG CÁCH logo → text
+        marginBottom: -hp("8%"),       // TẠO KHOẢNG CÁCH logo → text
     },
 
     // text dưới logo, căn giữa
     title: {
         textAlign: "center",
         // Nếu cần hạ thấp thêm:
-        marginTop: hp(8),
     },
 
     // icon trang trí góc phải dưới
