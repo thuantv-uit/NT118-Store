@@ -118,14 +118,14 @@ export const typography = {
   handwritten1: {
     fontFamily: "Borel-Regular",
     fontSize: 24,
-    lineHeight: Math.round(24 * 1.4),
+    lineHeight: Math.round(24 * 2.4),
     fontWeight: "400",
     textAlign: "center",
   },
   handwritten2: {
     fontFamily: "Borel-Regular",
     fontSize: 20,
-    lineHeight: Math.round(20 * 1.2),
+    lineHeight: Math.round(20 * 2.2),
     fontWeight: "400",
   },
 };
