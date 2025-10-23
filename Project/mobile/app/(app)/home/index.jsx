@@ -4,12 +4,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from "react-native";
-import { styles } from "../../assets/styles/home.styles";
-import { BalanceCard } from "../../components/BalanceCard";
-import NoTransactionsFound from "../../components/NoTransactionsFound";
-import PageLoader from "../../components/PageLoader";
-import { TransactionItem } from "../../components/TransactionItem";
-import { useTransactions } from "../../hooks/useTransactions";
+import { styles } from "../../../assets/styles/home.styles";
+import { BalanceCard } from "../../../components/BalanceCard";
+import NoTransactionsFound from "../../../components/NoTransactionsFound";
+import PageLoader from "../../../components/PageLoader";
+import { TransactionItem } from "../../../components/TransactionItem";
+import { useTransactions } from "../../../hooks/useTransactions";
 
 export default function Page() {
   const { user } = useUser();
@@ -47,7 +47,7 @@ export default function Page() {
           {/* LEFT */}
           <View style={styles.headerLeft}>
             <Image
-              source={require("../../assets/images/logo.png")}
+              source={require("../../../assets/images/logo.png")}
               style={styles.headerLogo}
               resizeMode="contain"
             />

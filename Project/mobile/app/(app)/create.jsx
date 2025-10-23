@@ -3,12 +3,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { styles } from "../../assets/styles/create.styles";
 import { API_URL } from "../../constants/api";
@@ -35,7 +35,6 @@ const CreateScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCreate = async () => {
-    // validations
     if (!title.trim()) return Alert.alert("Error", "Please enter a transaction title");
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
       Alert.alert("Error", "Please enter a valid amount");
@@ -46,7 +45,6 @@ const CreateScreen = () => {
 
     setIsLoading(true);
     try {
-      // Format the amount (negative for expenses, positive for income)
       const formattedAmount = isExpense
         ? -Math.abs(parseFloat(amount))
         : Math.abs(parseFloat(amount));
@@ -205,4 +203,5 @@ const CreateScreen = () => {
     </View>
   );
 };
+
 export default CreateScreen;
