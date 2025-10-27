@@ -38,4 +38,11 @@ export const shadows = {
         shadowRadius: 16,
         elevation: 10,
     },
+    drop: {
+        shadowColor: "#000",
+        shadowOffset: { width: 2, height: 4 },  // X = 0, Y = 4
+        shadowOpacity: 0.25,                    // 25%
+        shadowRadius: 20,                       // Blur = 20
+        elevation: 8,
+    },
 };

@@ -1,14 +1,18 @@
 // styles/auth.styles.js
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../constants/colors";
+import { bottomA, leftA, rightA, wpA, hpA} from "@/utils/scale";
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    
+    // backgroundColor: COLORS.background,
     padding: 20,
     justifyContent: "center",
+    
   },
+
   illustration: {
     width: "100%",
     height: 310,
@@ -21,6 +25,16 @@ export const styles = StyleSheet.create({
     marginVertical: 15,
     textAlign: "center",
   },
+  box: {
+    marginBottom: 20,
+    borderRadius: hpA(12),
+    shadowRadius: hpA(10),
+    right: rightA(7,399),
+    bottom: bottomA(177,570),
+    height: hpA(570),
+    width: wpA(399),
+  },  
+  
   input: {
     backgroundColor: COLORS.white,
     borderRadius: 12,

@@ -6,6 +6,9 @@ import { tokenCache } from '@clerk/clerk-expo/token-cache';
 import { useFonts } from "expo-font";
 import Welcome1 from "./(welcome)/welcome1";
 import Welcome2 from "./(welcome)/welcome2";
+import Signup from "./(auth)/sign-up";
+import SignIn from "./(auth)/sign-in";
+import Test2 from "./(welcome)/test";
 
 import { Slot } from "expo-router";
 
@@ -13,30 +16,36 @@ export default function RootLayout() {
 
   const [fontsLoaded] = useFonts({
     "Baloo2-Regular": require("../assets/fonts/Baloo/Baloo2-Regular.ttf"),
-  "Baloo2-SemiBold": require("../assets/fonts/Baloo/Baloo2-SemiBold.ttf"),
-  "Baloo2-Bold": require("../assets/fonts/Baloo/Baloo2-Bold.ttf"),
-  "Athiti-Light": require("../assets/fonts/Athiti/Athiti-Light.ttf"),
-  "Athiti-Regular": require("../assets/fonts/Athiti/Athiti-Regular.ttf"),
-  "Athiti-SemiBold": require("../assets/fonts/Athiti/Athiti-SemiBold.ttf"),
-  "Bellota-Light": require("../assets/fonts/Bellota/Bellota-Light.ttf"),
-  "Bellota-Regular": require("../assets/fonts/Bellota/Bellota-Regular.ttf"),
-  "Bellota-Bold": require("../assets/fonts/Bellota/Bellota-Bold.ttf"),
-  "BellotaText-Light": require("../assets/fonts/Bellota_Text/BellotaText-Light.ttf"),
-  "BellotaText-Regular": require("../assets/fonts/Bellota_Text/BellotaText-Regular.ttf"),
-  "Mali-SemiBold": require("../assets/fonts/Mali/Mali-SemiBold.ttf"),
-  "Borel-Regular": require("../assets/fonts/Borel/Borel-Regular.ttf"),
+    "Baloo2-SemiBold": require("../assets/fonts/Baloo/Baloo2-SemiBold.ttf"),
+    "Baloo2-Bold": require("../assets/fonts/Baloo/Baloo2-Bold.ttf"),
+    "Athiti-Light": require("../assets/fonts/Athiti/Athiti-Light.ttf"),
+    "Athiti-Regular": require("../assets/fonts/Athiti/Athiti-Regular.ttf"),
+    "Athiti-SemiBold": require("../assets/fonts/Athiti/Athiti-SemiBold.ttf"),
+    "Athiti-Medium": require("../assets/fonts/Athiti/Athiti-SemiBold.ttf"),
+    
+    "Bellota-Light": require("../assets/fonts/Bellota/Bellota-Light.ttf"),
+    "Bellota-Regular": require("../assets/fonts/Bellota/Bellota-Regular.ttf"),
+    "Bellota-Bold": require("../assets/fonts/Bellota/Bellota-Bold.ttf"),
+    "BellotaText-Light": require("../assets/fonts/Bellota_Text/BellotaText-Light.ttf"),
+    "BellotaText-Regular": require("../assets/fonts/Bellota_Text/BellotaText-Regular.ttf"),
+    "Mali-SemiBold": require("../assets/fonts/Mali/Mali-SemiBold.ttf"),
+    "Borel-Regular": require("../assets/fonts/Borel/Borel-Regular.ttf"),
   });
 
   console.log("fontsLoaded:", fontsLoaded);
 
 
-    if (!fontsLoaded) return null;
+  if (!fontsLoaded) return null;
 
   return (
     <ClerkProvider tokenCache={tokenCache}>
       <SafeScreen>
         {/* <Slot /> */}
-         <Welcome2 />
+        {/* <Welcome1 /> */}
+        {/* <Welcome2 /> */}
+        {/* <SignUp /> */}
+        {/* <DangNhap /> */}
+        <SignIn/>
       </SafeScreen>
     </ClerkProvider>
   );

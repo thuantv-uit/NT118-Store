@@ -1,0 +1,322 @@
+.screen-sign-in {
+    background: linear-gradient(
+        132deg,
+        rgba(241, 182, 148, 0.6) 0%,
+        rgba(231, 151, 150, 0.6) 96%
+    );
+    border: 8px solid;
+    border-color: transparent;
+    height: 892px;
+    min-width: 412px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.screen-sign-in .system-UI {
+    background-color: unset !important;
+    border: unset !important;
+    border-color: unset !important;
+    border-radius: unset !important;
+    height: 908px !important;
+    left: -8px !important;
+    overflow: unset !important;
+    position: absolute !important;
+}
+
+.screen-sign-in .bar-and-class-sizes-instance {
+    color: #171d1b !important;
+}
+
+.screen-sign-in .design-component-instance-node {
+    background-color: #171d1b !important;
+    left: calc(50.00% - 54px) !important;
+    position: relative !important;
+    top: calc(50.00% - 2px) !important;
+}
+
+.screen-sign-in .title {
+    align-items: center;
+    display: flex;
+    height: 7px;
+    left: 169px;
+    position: absolute;
+    top: calc(50.00% - 367px);
+    width: 122px;
+}
+
+.screen-sign-in .div {
+    color: var(--inside-color-icon-on);
+    font-family: var(--big-title-font-family);
+    font-size: var(--big-title-font-size);
+    font-style: var(--big-title-font-style);
+    font-weight: var(--big-title-font-weight);
+    height: 7px;
+    letter-spacing: var(--big-title-letter-spacing);
+    line-height: var(--big-title-line-height);
+    white-space: nowrap;
+    width: 120px;
+}
+
+.screen-sign-in .login {
+    background-color: #ffffffab;
+    border-radius: 41px;
+    box-shadow: 0px 17px 50px #00000040;
+    height: calc(100% - 322px);
+    left: 7px;
+    position: absolute;
+    top: 181px;
+    width: calc(100% - 13px);
+}
+
+.screen-sign-in .other {
+    height: calc(100% - 449px);
+    left: 63px;
+    position: absolute;
+    top: 413px;
+    width: calc(100% - 122px);
+}
+
+.screen-sign-in .text-wrapper-2 {
+    color: #000000;
+    font-family: var(--headline-3-font-family);
+    font-size: var(--headline-3-font-size);
+    font-style: var(--headline-3-font-style);
+    font-weight: var(--headline-3-font-weight);
+    height: calc(100% - 110px);
+    left: 76px;
+    letter-spacing: var(--headline-3-letter-spacing);
+    line-height: var(--headline-3-line-height);
+    position: absolute;
+    top: 0;
+    white-space: nowrap;
+    width: calc(100% - 131px);
+}
+
+.screen-sign-in .vector-2 {
+    aspect-ratio: 1;
+    height: calc(100% - 71px);
+    left: calc(50.00% + 14px);
+    position: absolute;
+    top: 27px;
+    width: 50px;
+}
+
+.screen-sign-in .clip-path-group {
+    height: 50px;
+    left: 77px;
+    position: absolute;
+    top: 27px;
+    width: 50px;
+}
+
+.screen-sign-in .b-n-ch-a-c-t-i-kho-n {
+    align-items: center;
+    color: transparent;
+    display: flex;
+    font-family: var(--sec-title-regu-font-family);
+    font-size: var(--sec-title-regu-font-size);
+    font-style: var(--sec-title-regu-font-style);
+    font-weight: var(--sec-title-regu-font-weight);
+    height: calc(100% - 100px);
+    justify-content: center;
+    left: 0;
+    letter-spacing: var(--sec-title-regu-letter-spacing);
+    line-height: var(--sec-title-regu-line-height);
+    position: absolute;
+    text-align: center;
+    top: 100px;
+    width: calc(100% - 4px);
+}
+
+.screen-sign-in .span {
+    color: #363130;
+    font-family: var(--sec-title-regu-font-family);
+    font-size: var(--sec-title-regu-font-size);
+    font-style: var(--sec-title-regu-font-style);
+    font-weight: var(--sec-title-regu-font-weight);
+    letter-spacing: var(--sec-title-regu-letter-spacing);
+    line-height: var(--sec-title-regu-line-height);
+}
+
+.screen-sign-in .text-wrapper-3 {
+    color: #363130;
+    font-family: var(--sec-title-regu-font-family);
+    font-size: var(--sec-title-regu-font-size);
+    font-style: var(--sec-title-regu-font-style);
+    font-weight: var(--sec-title-regu-font-weight);
+    letter-spacing: var(--sec-title-regu-letter-spacing);
+    line-height: var(--sec-title-regu-line-height);
+    text-decoration: underline;
+}
+
+.screen-sign-in .button-login {
+    height: calc(100% - 514px);
+    left: 100px;
+    position: absolute;
+    top: 241px;
+    width: calc(100% - 201px);
+}
+
+.screen-sign-in .rectangle {
+    height: 64px;
+    left: -4px;
+    position: absolute;
+    top: 0;
+    width: 206px;
+}
+
+.screen-sign-in .text-wrapper-4 {
+    color: var(--inside-color-icon-on);
+    font-family: var(--button-text-font-family);
+    font-size: var(--button-text-font-size);
+    font-style: var(--button-text-font-style);
+    font-weight: var(--button-text-font-weight);
+    left: 47px;
+    letter-spacing: var(--button-text-letter-spacing);
+    line-height: var(--button-text-line-height);
+    position: absolute;
+    top: 15px;
+}
+
+.screen-sign-in .password {
+    height: calc(100% - 504px);
+    left: 27px;
+    position: absolute;
+    top: 140px;
+    width: calc(100% - 51px);
+}
+
+.screen-sign-in .pass {
+    background-color: #ffffff;
+    border-radius: 17px;
+    box-shadow: 0px 4px 20px #00000040;
+    height: calc(100% - 21px);
+    left: 0;
+    position: absolute;
+    top: 20px;
+    width: calc(100% - 4px);
+}
+
+.screen-sign-in .text-wrapper-5 {
+    color: #000000;
+    font-family: var(--headline-3-font-family);
+    font-size: var(--headline-3-font-size);
+    font-style: var(--headline-3-font-style);
+    font-weight: var(--headline-3-font-weight);
+    height: calc(100% - 42px);
+    left: 15px;
+    letter-spacing: var(--headline-3-letter-spacing);
+    line-height: var(--headline-3-line-height);
+    position: absolute;
+    top: 0;
+    width: calc(100% - 289px);
+}
+
+.screen-sign-in .text-wrapper-6 {
+    color: #dcbeb6;
+    font-family: "Poppins-Regular", Helvetica;
+    font-size: 12px;
+    font-weight: 400;
+    height: calc(100% - 36px);
+    left: 15px;
+    letter-spacing: 8.40px;
+    line-height: 14px;
+    position: absolute;
+    top: 36px;
+    width: calc(100% - 150px);
+}
+
+.screen-sign-in .vector-3 {
+    height: calc(100% - 50px);
+    left: 283px;
+    object-fit: cover;
+    position: absolute;
+    top: 33px;
+    width: calc(100% - 324px);
+}
+
+.screen-sign-in .user {
+    height: calc(100% - 507px);
+    left: 27px;
+    position: absolute;
+    top: 56px;
+    width: calc(100% - 51px);
+}
+
+.screen-sign-in .user-2 {
+    background-color: #ffffff;
+    border-radius: 17px;
+    box-shadow: 0px 4px 20px #00000040;
+    height: calc(100% - 18px);
+    left: 0;
+    position: absolute;
+    top: 18px;
+    width: calc(100% - 4px);
+}
+
+.screen-sign-in .text-wrapper-7 {
+    color: #000000;
+    font-family: var(--headline-3-font-family);
+    font-size: var(--headline-3-font-size);
+    font-style: var(--headline-3-font-style);
+    font-weight: var(--headline-3-font-weight);
+    height: calc(100% - 39px);
+    left: 15px;
+    letter-spacing: var(--headline-3-letter-spacing);
+    line-height: var(--headline-3-line-height);
+    position: absolute;
+    top: 0;
+    width: calc(100% - 243px);
+}
+
+.screen-sign-in .text-wrapper-8 {
+    color: #000000;
+    font-family: var(--body-2-font-family);
+    font-size: var(--body-2-font-size);
+    font-style: var(--body-2-font-style);
+    font-weight: var(--body-2-font-weight);
+    height: calc(100% - 44px);
+    left: 17px;
+    letter-spacing: var(--body-2-letter-spacing);
+    line-height: var(--body-2-line-height);
+    position: absolute;
+    top: 31px;
+    width: calc(100% - 180px);
+}
+
+.screen-sign-in .text-wrapper-9 {
+    color: #4194f3;
+    font-family: "Athiti-Regular", Helvetica;
+    font-size: 16px;
+    font-weight: 400;
+    left: calc(50.00% - 60px);
+    letter-spacing: 0;
+    line-height: 19.2px;
+    position: absolute;
+    text-decoration: underline;
+    top: 483px;
+    width: 120px;
+}
+
+.screen-sign-in .decor {
+    height: 9.91%;
+    left: calc(50.00% - 169px);
+    position: absolute;
+    top: 3.01%;
+    width: 375px;
+}
+
+.screen-sign-in .vector-instance {
+    height: 17px !important;
+    left: 16px !important;
+    position: absolute !important;
+    top: 38px !important;
+    width: 20px !important;
+}
+
+.screen-sign-in .vector-4 {
+    height: 100.00% !important;
+    left: -3.29% !important;
+    top: -3.79% !important;
+}
