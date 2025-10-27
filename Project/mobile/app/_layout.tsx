@@ -8,7 +8,8 @@ import Welcome1 from "./(welcome)/welcome1";
 import Welcome2 from "./(welcome)/welcome2";
 import SignUp from "./(auth)/signUp";
 import SignIn from "./(auth)/signIn";
-import Test from "./(auth)/dang_ky";
+// import OTP from "./(auth)/otpScreen";
+import Test from "./(auth)/otpScreen";
 import Test2 from "./(welcome)/test";
 
 import { Slot } from "expo-router";
@@ -54,8 +55,8 @@ export default function RootLayout() {
         {/* <SignUp /> */}
         {/* <DangNhap /> */}
         {/* <SignIn/> */}
-        <SignUp/>
-        {/* <Test/> */}
+        {/* <SignUp/> */}
+        <Test/>
       </SafeScreen>
     </ClerkProvider>
   );

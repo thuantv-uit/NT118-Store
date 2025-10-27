@@ -20,7 +20,7 @@ export const colors = {
 
   white: "#ffffff",
   black: "#000000",
-  dark_mode_icon_square: '#CC7861',
+  dark_mode_icon_square: '#4B4544',
   dark_mode_inside_icon: '#7C4A43',
   light_mode_icon_square: '#FFF0E6',
   light_mode_inside_icon: '#DCAEA6',
