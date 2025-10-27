@@ -6,22 +6,24 @@ import { LinearGradient } from "expo-linear-gradient";
 import { decorMap } from "./decorMap";
 import { theme } from "@/theme";
 
-export default function Decor({ type = "cone1", style }) {
+export default function Decor({ type = "cone1", size,style }) {
   const decor = decorMap[type];
   if (!decor) return null;
+  // 👇 Nếu không truyền size, dùng default trong decorMap
+  const finalSize = size || decor.size || 100;
 
   return (
-    <View style={[styles.wrapper, { width: decor.size, height: decor.size }, style]}>
+    <View style={[styles.wrapper, { width: finalSize, height: finalSize }, style]}>
       {/* Base khối 3D */}
       <Image
         source={decor.base}
-        style={[styles.base, { width: decor.size, height: decor.size }]}
+        style={[styles.base, { width: finalSize, height: finalSize }]}
         contentFit="cover"
       />
 
       {/* Mask ánh sáng */}
       <MaskedView
-        style={[styles.maskGroup, { width: decor.size, height: decor.size }]}
+        style={[styles.maskGroup, { width: finalSize, height: finalSize }]}
         maskElement={
           <Image
             source={decor.mask}

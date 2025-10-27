@@ -13,6 +13,8 @@ import { wpA, hpA, topA, leftA, rightA, bottomA } from "../../utils/scale";
 import { Icon } from "../../components/ui/icon";
 import React from "react";
 
+//TRANG DANG NHAP
+//Import by Hmee
 
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import Decor from "../../components/decor/Decor";
@@ -22,7 +24,7 @@ import { typography } from "../../theme/typography";
 import { colors } from "@/theme/colors";
 const { width: screenWidth } = Dimensions.get("window");
 
-export default function SignIn() {
+export default function SignInScreen() {
     const { isLoaded, signIn, setActive } = useSignIn();
     const router = useRouter();
 
@@ -137,7 +139,7 @@ export default function SignIn() {
                         </View>
                         <View style={styles.footerContainer}>
                             <Text style={styles.footerText}>Chưa có tài khoản?</Text>
-                            <TouchableOpacity onPress={() => router.push("/(auth)/sign_up_test")}>
+                            <TouchableOpacity onPress={() => router.push("/(auth)/signUp")}>
                                 <Text style={styles.linkText}>Đăng ký</Text>
                             </TouchableOpacity>
                         </View>

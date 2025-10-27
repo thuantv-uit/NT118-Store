@@ -101,16 +101,22 @@ export const typography = {
   },
 
   // ===== CAPTIONS =====
-  caption1: {
+  caption2:{
     fontFamily: "BellotaText-Regular",
     fontSize: 13,
     lineHeight: Math.round(13 * 1.3),
     fontWeight: "400",
   },
-  caption2: {
+  caption3: {
     fontFamily: "BellotaText-Light",
-    fontSize: 12,
-    lineHeight: Math.round(12 * 1.3),
+    fontSize: 13,
+    lineHeight: Math.round(13 * 1.3),
+    // fontWeight: "300",
+  },
+  caption1: {
+    fontFamily: "BellotaText-Bold",
+    fontSize: 13,
+    lineHeight: Math.round(13 * 1.3),
     // fontWeight: "300",
   },
 
