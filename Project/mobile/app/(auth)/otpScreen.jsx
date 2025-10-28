@@ -16,6 +16,10 @@ import { useRouter } from "expo-router";
 import { theme } from "@/theme";
 import { wpA, hpA } from "@/utils/scale";
 import { colors } from "@/theme/colors";
+import { useSignIn } from "@clerk/clerk-expo";
+
+// const { isLoaded, signIn } = useSignIn();
+
 
 //TRANG OTP có thể thay intro băng mail người dùng thật
 export default function VerifyScreen() {
@@ -30,8 +34,14 @@ export default function VerifyScreen() {
     const hiddenInput = useRef(null);
     const [cursorIndex, setCursorIndex] = useState(0);
 
-     const [resending, setResending] = useState(false);
-  const [timer, setTimer] = useState(0);
+    const [resending, setResending] = useState(false);
+    const [timer, setTimer] = useState(0);
+
+    const { isLoaded, signIn, setActive } = useSignIn();
+
+
+    //Fix lỗi Clerk chưa load kịp nè
+    if (!isLoaded) return null; // 👈 Clerk chưa load, đợi tí
 
     // lắng nghe thay đổi OTP
     const handleTextChange = (text) => {
@@ -57,37 +67,57 @@ export default function VerifyScreen() {
         }
     };
 
-    // Hàm xử lý gửi lại OTP
-  const resendOtp = async () => {
-    if (resending || timer > 0) return; // tránh spam
+    const onVerifyPress = async () => {
+  if (!isLoaded) return;
 
-    setResending(true);
+  try {
+    const attempt = await signIn.attemptFirstFactor({
+      strategy: "email_code",
+      code,
+    });
 
-    try {
-      // 👉 Đây là nơi gọi API thực tế (nếu có backend)
-      // await api.sendOTP(emailAddress);
-      console.log("Đã gửi lại mã OTP!");
-
-      Alert.alert("Thông báo", "Mã xác nhận mới đã được gửi đến email của bạn.");
-
-      // Đếm ngược 30 giây để chặn gửi lại liên tục
-      setTimer(30);
-      const countdown = setInterval(() => {
-        setTimer((prev) => {
-          if (prev <= 1) {
-            clearInterval(countdown);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } catch (error) {
-      console.error("Gửi lại OTP thất bại:", error);
-      Alert.alert("Lỗi", "Không thể gửi lại mã OTP. Vui lòng thử lại.");
-    } finally {
-      setResending(false);
+    if (attempt.status === "complete") {
+      await setActive({ session: attempt.createdSessionId });
+      router.replace("/reset_password"); // hoặc vào trang đặt lại mật khẩu
+    } else {
+      console.log("Attempt result:", JSON.stringify(attempt, null, 2));
     }
-  };
+  } catch (err) {
+    console.error("OTP verify error:", JSON.stringify(err, null, 2));
+  }
+};
+
+    // Hàm xử lý gửi lại OTP
+    const resendOtp = async () => {
+        if (resending || timer > 0) return; // tránh spam
+
+        setResending(true);
+
+        try {
+            // 👉 Đây là nơi gọi API thực tế (nếu có backend)
+            // await api.sendOTP(emailAddress);
+            console.log("Đã gửi lại mã OTP!");
+
+            Alert.alert("Thông báo", "Mã xác nhận mới đã được gửi đến email của bạn.");
+
+            // Đếm ngược 30 giây để chặn gửi lại liên tục
+            setTimer(30);
+            const countdown = setInterval(() => {
+                setTimer((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(countdown);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        } catch (error) {
+            console.error("Gửi lại OTP thất bại:", error);
+            Alert.alert("Lỗi", "Không thể gửi lại mã OTP. Vui lòng thử lại.");
+        } finally {
+            setResending(false);
+        }
+    };
 
     // hiệu ứng đổi icon
     useEffect(() => {
@@ -216,25 +246,25 @@ export default function VerifyScreen() {
                 </View> */}
 
                 <View style={styles.footerContainer}>
-  <Text style={styles.resend}>Nếu bạn chưa nhận được mã?</Text>
+                    <Text style={styles.resend}>Nếu bạn chưa nhận được mã?</Text>
 
-  {timer > 0 ? (
-    <Text style={[styles.resendHighlight, { opacity: 0.6 }]}>
-      Gửi lại sau {timer}s
-    </Text>
-  ) : (
-    <TouchableOpacity onPress={resendOtp} disabled={resending}>
-      <Text
-        style={[
-          styles.resendHighlight,
-          resending && { opacity: 0.5 },
-        ]}
-      >
-        Gửi lại
-      </Text>
-    </TouchableOpacity>
-  )}
-</View>
+                    {timer > 0 ? (
+                        <Text style={[styles.resendHighlight, { opacity: 0.6 }]}>
+                            Gửi lại sau {timer}s
+                        </Text>
+                    ) : (
+                        <TouchableOpacity onPress={resendOtp} disabled={resending}>
+                            <Text
+                                style={[
+                                    styles.resendHighlight,
+                                    resending && { opacity: 0.5 },
+                                ]}
+                            >
+                                Gửi lại
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
 
 
 

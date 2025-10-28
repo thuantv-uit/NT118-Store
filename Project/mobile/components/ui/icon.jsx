@@ -10,6 +10,8 @@ import Setting from "../../assets/icons/actions/Icon-Setting.svg";
 import Logout from "../../assets/icons/actions/Icon-LogOut.svg";
 import Help from "../../assets/icons/actions/Icon-Help.svg";
 import Search from "../../assets/icons/actions/Bot-Search.svg";
+import EyeOpen from "../../assets/icons/actions/eye_open.svg";
+import EyeClose from "../../assets/icons/actions/eye_close.svg";
 
 // ==== NAVIGATION ICONS ====
 import Home from "../../assets/icons/navigation/Home.svg";
@@ -39,6 +41,8 @@ const icons = {
   logout: Logout,
   help: Help,
   search: Search,
+  eye_open: EyeOpen,
+  eye_close: EyeClose,
 
   // navigation
   home: Home,

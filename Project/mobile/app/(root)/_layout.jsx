@@ -6,8 +6,11 @@ export default function Layout() {
   const { isSignedIn, isLoaded } = useUser();
 
   if (!isLoaded) return null; // this is for a better ux
+  // return <Redirect href="/forgot_password" />;
+
 
   if (!isSignedIn) return <Redirect href={"/sign-in"} />;
 
   return <Stack screenOptions={{ headerShown: false }} />;
-}
+
+};

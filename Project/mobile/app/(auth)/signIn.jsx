@@ -122,7 +122,7 @@ export default function SignInScreen() {
                             <Text style={styles.buttonText}>Đăng nhập</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => router.push("/(auth)/sign_up_test")}>
+                        <TouchableOpacity onPress={() => router.push("/(auth)/forgot_password")}>
                             <Text style={styles.forgotText}>Quên mật khẩu?</Text>
                         </TouchableOpacity>
 
