@@ -1,9 +1,8 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
-import SellerScreenLayout from "./components/SellerScreenLayout";
+import { LinearGradient } from "expo-linear-gradient";
+import { StyleSheet, Text, View } from "react-native";
+import { heightPercentageToDP as hp, widthPercentageToDP as wp } from "react-native-responsive-screen";
+import SellerScreenLayout from "../components/SellerScreenLayout";
 
 const ALERTS = [
   { id: "a1", type: "Đơn hàng", message: "Đơn hàng #SN-2301 đã được thanh toán thành công.", time: "2 phút trước" },

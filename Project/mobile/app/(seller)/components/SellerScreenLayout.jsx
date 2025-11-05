@@ -1,9 +1,9 @@
-import React from "react";
-import { SafeAreaView, View, Text, ScrollView, StyleSheet, Pressable } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+// import React from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { heightPercentageToDP as hp, widthPercentageToDP as wp } from "react-native-responsive-screen";
 
 const HEADER_GRADIENT = ["#CC7861", "#E3ABA1"];
 

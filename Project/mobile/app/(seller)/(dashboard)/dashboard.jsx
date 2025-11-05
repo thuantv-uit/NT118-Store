@@ -1,10 +1,9 @@
-import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
-import SellerScreenLayout from "./components/SellerScreenLayout";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { heightPercentageToDP as hp, widthPercentageToDP as wp } from "react-native-responsive-screen";
+import SellerScreenLayout from "../components/SellerScreenLayout";
 
 const STAT_CARDS = [
   { id: "revenue", iconType: MaterialCommunityIcons, icon: "cash-multiple", label: "Doanh thu tháng", value: "124.500.000 đ" },

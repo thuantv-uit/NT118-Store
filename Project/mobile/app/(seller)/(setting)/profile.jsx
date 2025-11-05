@@ -1,9 +1,8 @@
-import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
-import SellerScreenLayout from "./components/SellerScreenLayout";
+import { LinearGradient } from "expo-linear-gradient";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { heightPercentageToDP as hp, widthPercentageToDP as wp } from "react-native-responsive-screen";
+import SellerScreenLayout from "../components/SellerScreenLayout";
 
 const INFO_FIELDS = [
   { id: "name", label: "Tên cửa hàng", placeholder: "Siny Shop" },
