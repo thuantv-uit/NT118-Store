@@ -13,12 +13,6 @@ import Search from "../../assets/icons/actions/Bot-Search.svg";
 import EyeOpen from "../../assets/icons/actions/eye_open.svg";
 import EyeClose from "../../assets/icons/actions/eye_close.svg";
 
-// ==== NAVIGATION ICONS ====
-import Home from "../../assets/icons/navigation/Home.svg";
-import Cart from "../../assets/icons/navigation/cart.svg";
-import Category from "../../assets/icons/navigation/catorgi.svg";
-import Profile from "../../assets/icons/navigation/Profile.svg";
-import Wishlist from "../../assets/icons/navigation/whistlist.svg";
 
 // ==== UI ICONS ====
 import AoKhoac from "../../assets/icons/ui/ao_khoac.svg";
