@@ -1,10 +1,8 @@
-import SafeScreen from "../components/SafeScreen";
-import { Stack } from "expo-router";
-import { LinearGradient } from 'expo-linear-gradient';
 import { ClerkProvider } from '@clerk/clerk-expo';
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
 import { useFonts } from "expo-font";
 import React from "react";
+import SafeScreen from "../components/SafeScreen";
 
 
 import { Slot } from "expo-router";
@@ -32,8 +30,9 @@ export default function RootLayout() {
 
 return (
     <ClerkProvider tokenCache={tokenCache} publishableKey={process.env.EXPO_PUBLIC_CLERK_KEY}>
-      <Slot /> {/* Quan trọng: render route con */}
+      <SafeScreen>
+        <Slot /> {/* Quan trọng: render route con */}
+      </SafeScreen>
     </ClerkProvider>
   );
 }
-

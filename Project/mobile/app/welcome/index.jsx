@@ -6,8 +6,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 import { typography } from "../../theme/typography";
-import { COLORS } from "../../constants/colors";
-import Logo from "../../assets/images/welcome/Logo_welcome.svg" //dung anh svg
+// import { COLORS } from "../../constants/colors";
+// import Logo from "../../assets/images/welcome/Logo_welcome.svg" //dung anh svg
 
 export default function Welcome1() {
     return (
