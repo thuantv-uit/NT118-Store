@@ -33,6 +33,7 @@ export const colors = {
   inside_icon_inactive: '#dcbeb6',
   black: '#000000',
   white: '#FFFFFF',
+  gray: '#D9D9D9',
 
    hmee01: {
     colors: [

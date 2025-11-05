@@ -14,6 +14,7 @@ import Test from "./(auth)/resetPassword";
 import Test2 from "./(welcome)/test";
 import FunctionalIconsPreview from "./(welcome)/FunctionalIconsPreview";
 import Home from "./(root)/homeScreen";
+import ProductDetail from "./(product)/productDetail";
 
 
 import { Slot } from "expo-router";
@@ -30,7 +31,7 @@ export default function RootLayout() {
     "Athiti-Regular": require("../assets/fonts/Athiti/Athiti-Regular.ttf"),
     "Athiti-SemiBold": require("../assets/fonts/Athiti/Athiti-SemiBold.ttf"),
     "Athiti-Medium": require("../assets/fonts/Athiti/Athiti-SemiBold.ttf"),
-    
+
     "Bellota-Light": require("../assets/fonts/Bellota/Bellota-Light.ttf"),
     "Bellota-Regular": require("../assets/fonts/Bellota/Bellota-Regular.ttf"),
     "Bellota-Bold": require("../assets/fonts/Bellota/Bellota-Bold.ttf"),
@@ -68,23 +69,24 @@ export default function RootLayout() {
     //     {/* <OTP/> */}
     //   </SafeScreen>
     // </ClerkProvider>
-      <ClerkProvider tokenCache={tokenCache}>
+    <ClerkProvider tokenCache={tokenCache}>
       {/* <SafeScreen> */}
-        {/* <Slot /> */}
-        {/* <Welcome1 /> */}
-        {/* <Welcome2 /> */}
-        {/* <SignUp /> */}
-        {/* <DangNhap /> */}
-        {/* <SignIn/> */}
-        {/* <SignUp/> */}
-        {/* <ForgotPassword/> */}
-        {/* <Test/> */}
-        {/* <FunctionalIconsPreview/> */}
-        <Home/>
+      {/* <Slot /> */}
+      {/* <Welcome1 /> */}
+      {/* <Welcome2 /> */}
+      {/* <SignUp /> */}
+      {/* <DangNhap /> */}
+      {/* <SignIn/> */}
+      {/* <SignUp/> */}
+      {/* <ForgotPassword/> */}
+      {/* <Test/> */}
+      {/* <FunctionalIconsPreview/> */}
+      {/* <ProductDetail/> */}
+      <ProductDetail/>
+      {/* <Home/> */}
 
-        {/* <OTP/> */}
+      {/* <OTP/> */}
       {/* </SafeScreen> */}
     </ClerkProvider>
   );
 }
-
