@@ -10,7 +10,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import FaceB from '../../assets/icons/ui/fb.svg';
 import Googl from '../../assets/icons/ui/gg.svg';
 import { wpA, hpA, topA, leftA, rightA, bottomA } from "../../utils/scale";
-import { Icon } from "../../components/ui/icon";
+// import { Icon } from "../../components/ui/icon";r
 import React from "react";
 
 //TRANG DANG NHAP

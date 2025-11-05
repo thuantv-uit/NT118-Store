@@ -1,5 +1,7 @@
 import React from "react";
 import { COLORS as c } from "../../theme/colors";
+// import { colors } from "@/theme/colors";
+
 
 // ==== ACTION ICONS ====
 import Back from "../../assets/icons/actions/back.svg";
@@ -38,13 +40,7 @@ const icons = {
   eye_open: EyeOpen,
   eye_close: EyeClose,
 
-  // navigation
-  home: Home,
-  cart: Cart,
-  category: Category,
-  profile: Profile,
-  wishlist: Wishlist,
-
+  
   // ui
   ao_khoac: AoKhoac,
   vest: Vest,

@@ -16,7 +16,7 @@ import { theme } from "../../theme/index";
 import { Dimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { wpA, hpA, topA, leftA, rightA, bottomA } from "../../utils/scale";
-import { Icon } from "../../components/ui/icon";
+// import { Icon } from "../../components/ui/icon";
 import { typography } from "../../theme/typography";
 import { colors } from "@/theme/colors";
 const { width: screenWidth } = Dimensions.get("window");

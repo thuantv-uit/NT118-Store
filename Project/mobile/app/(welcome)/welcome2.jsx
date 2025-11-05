@@ -1,5 +1,5 @@
 import { wpA, hpA, topA, leftA, rightA, bottomA } from "../../utils/scale";
-import { Icon } from "../../components/ui/icon";
+// import { Icon } from "../../components/ui/icon";
 
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView } from "react-native";

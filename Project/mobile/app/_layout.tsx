@@ -12,6 +12,9 @@ import OTP from "./(auth)/otpScreen";
 import ForgotPassword from "./(auth)/forgotPassword";
 import Test from "./(auth)/resetPassword";
 import Test2 from "./(welcome)/test";
+import FunctionalIconsPreview from "./(welcome)/FunctionalIconsPreview";
+import Home from "./(root)/homeScreen";
+
 
 import { Slot } from "expo-router";
 
@@ -48,8 +51,25 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <ClerkProvider tokenCache={tokenCache}>
-      <SafeScreen>
+    // <ClerkProvider tokenCache={tokenCache}>
+    //   <SafeScreen>
+    //     {/* <Slot /> */}
+    //     {/* <Welcome1 /> */}
+    //     {/* <Welcome2 /> */}
+    //     {/* <SignUp /> */}
+    //     {/* <DangNhap /> */}
+    //     {/* <SignIn/> */}
+    //     {/* <SignUp/> */}
+    //     {/* <ForgotPassword/> */}
+    //     {/* <Test/> */}
+    //     {/* <FunctionalIconsPreview/> */}
+    //     <Home/>
+
+    //     {/* <OTP/> */}
+    //   </SafeScreen>
+    // </ClerkProvider>
+      <ClerkProvider tokenCache={tokenCache}>
+      {/* <SafeScreen> */}
         {/* <Slot /> */}
         {/* <Welcome1 /> */}
         {/* <Welcome2 /> */}
@@ -58,10 +78,12 @@ export default function RootLayout() {
         {/* <SignIn/> */}
         {/* <SignUp/> */}
         {/* <ForgotPassword/> */}
-        <Test/>
+        {/* <Test/> */}
+        {/* <FunctionalIconsPreview/> */}
+        <Home/>
 
         {/* <OTP/> */}
-      </SafeScreen>
+      {/* </SafeScreen> */}
     </ClerkProvider>
   );
 }

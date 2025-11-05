@@ -17,7 +17,7 @@ import { useRouter } from "expo-router";
 import { theme } from "@/theme";
 import { wpA, hpA } from "@/utils/scale";
 import { colors } from "@/theme/colors";
-import { Icon } from "../../components/ui/icon";
+// import { Icon } from "../../components/ui/icon";
 // import { useSignUp } from "@clerk/clerk-expo";
 // import { useSignIn } from "@clerk/clerk-expo";
 
