@@ -16,9 +16,9 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-nat
 import { useRouter } from "expo-router";
 
 const FLASH_IMAGES = [
-  require("../../../assets/images/home_seller/flash_sale/Flast sale.png"),
-  require("../../../assets/images/home_seller/flash_sale/fl2.png"),
-  require("../../../assets/images/home_seller/flash_sale/fl3.png"),
+  require("../../assets/images/home_seller/flash_sale/Flast sale.png"),
+  require("../../assets/images/home_seller/flash_sale/fl2.png"),
+  require("../../assets/images/home_seller/flash_sale/fl3.png"),
 ];
 
 const BANNER_WIDTH = Dimensions.get("window").width * 0.92;
@@ -365,11 +365,11 @@ export default function HomeSeller() {
   return (
     <SafeAreaView style={sx.safe}>
       <Header
-        onShopPress={goTo("/seller/profile")}
-        onSearchPress={goTo("/seller/search")}
-        onNotificationsPress={goTo("/seller/notifications")}
-        onMessagesPress={goTo("/seller/messages")}
-        onSettingsPress={goTo("/seller/settings")}
+        onShopPress={goTo("/profile")}
+        onSearchPress={goTo("/search")}
+        onNotificationsPress={goTo("/notifications")}
+        onMessagesPress={goTo("/messages")}
+        onSettingsPress={goTo("/settings")}
       />
       <ScrollView
         style={sx.scroll}
@@ -377,10 +377,10 @@ export default function HomeSeller() {
         showsVerticalScrollIndicator={false}
       >
         <FlashSaleBanner />
-        <RevenueOverview onPress={goTo("/seller/dashboard")} />
-        <ProductCreationCard onPress={goTo("/seller/product-create")} />
-        <NotificationFeed onPress={goTo("/seller/notifications")} />
-        <MessageSection onPress={goTo("/seller/messages")} />
+        <RevenueOverview onPress={goTo("/dashboard")} />
+        <ProductCreationCard onPress={goTo("/product-create")} />
+        <NotificationFeed onPress={goTo("/notifications")} />
+        <MessageSection onPress={goTo("/messages")} />
       </ScrollView>
       <NavigationBar />
     </SafeAreaView>
