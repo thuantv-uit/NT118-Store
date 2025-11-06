@@ -1,26 +1,41 @@
+import { usePathname, useRouter } from 'expo-router'; // Thêm usePathname để check active
 import { Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { styles } from '../styles/HomeStyles';
 
-export default function BottomNav({ navigation }) {
+export default function BottomNav() {
+  const router = useRouter();
+  const pathname = usePathname(); // Lấy route hiện tại để highlight tab
+
+  const navItems = [
+    { route: '/(home)', icon: 'home', label: 'Home', activeColor: '#FF8A65' },
+    { route: '/categories', icon: 'grid', label: 'Categories', activeColor: '#FF8A65' },
+    { route: '/chat', icon: 'chatbubble-ellipses', label: 'Chat', activeColor: '#FF8A65' },
+    { route: '/(profile)', icon: 'person', label: 'Account', activeColor: '#FF8A65' },
+  ];
+
+  const handleNavPress = (route) => {
+    router.push(route); // Chuyển hướng (push) sang route đó
+  };
+
   return (
     <View style={styles.bottomNav}>
-      <TouchableOpacity style={styles.navItem}>
-        <Icon name="home" size={22} color="#FF8A65" />
-        <Text style={styles.navLabel}>Home</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.navItem}>
-        <Icon name="grid" size={22} color="#8D6E63" />
-        <Text style={styles.navLabel}>Categories</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.navItem}>
-        <Icon name="chatbubble-ellipses" size={22} color="#8D6E63" />
-        <Text style={styles.navLabel}>Chat</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.navItem}>
-        <Icon name="person" size={22} color="#8D6E63" />
-        <Text style={styles.navLabel}>Account</Text>
-      </TouchableOpacity>
+      {navItems.map((item) => {
+        const isActive = pathname === item.route;
+        const iconColor = isActive ? item.activeColor : '#8D6E63';
+        const labelColor = isActive ? item.activeColor : '#8D6E63';
+
+        return (
+          <TouchableOpacity
+            key={item.route}
+            style={styles.navItem}
+            onPress={() => handleNavPress(item.route)}
+          >
+            <Icon name={item.icon} size={22} color={iconColor} />
+            <Text style={[styles.navLabel, { color: labelColor }]}>{item.label}</Text>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 }
