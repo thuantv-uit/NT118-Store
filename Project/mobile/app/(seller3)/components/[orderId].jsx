@@ -3,7 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from "react-native-responsive-screen";
-import SellerScreenLayout from "../components/SellerScreenLayout";
+import SellerScreenLayout from "./SellerScreenLayout";
 
 const STATUS_STEPS = [
   { id: "created", label: "Đơn hàng tạo", time: "08:30 • 05/03", description: "Khách hàng đã đặt đơn thành công." },

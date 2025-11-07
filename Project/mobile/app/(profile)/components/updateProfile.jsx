@@ -11,6 +11,7 @@ import {
   View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { API_URL } from "../../../constants/api";
 import { styles } from '../styles/ProfileStyles';
 
 const UpdateProfileScreen = () => {
@@ -25,7 +26,7 @@ const UpdateProfileScreen = () => {
   });
   const [loading, setLoading] = useState(false);
   const [profileExists, setProfileExists] = useState(false);
-  const baseURL = 'http://192.168.1.67:5001/api';
+  const baseURL = API_URL;
 
   useEffect(() => {
     if (userId) {
@@ -117,7 +118,7 @@ const UpdateProfileScreen = () => {
     router.back();
   };
 
-  // Nếu user chưa load xong, show loading
+  // If user has not loaded yet, show loading
   if (!user) {
     return (
       <SafeAreaView style={styles.updateContainer}>
@@ -142,7 +143,7 @@ const UpdateProfileScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Form: Họ và Tên */}
+        {/* Form: Firstname and Lastname */}
         <View style={styles.formGroup}>
           <Text style={styles.label}>Họ và Tên</Text>
           <View style={styles.rowInput}>
@@ -161,7 +162,7 @@ const UpdateProfileScreen = () => {
           </View>
         </View>
 
-        {/* Số điện thoại */}
+        {/* SDT */}
         <View style={styles.formGroup}>
           <Text style={styles.label}>Số điện thoại</Text>
           <TextInput
@@ -176,11 +177,11 @@ const UpdateProfileScreen = () => {
         {/* Role */}
         <View style={styles.formGroup}>
           <Text style={styles.label}>Vai trò</Text>
-          <View style={styles.input}> {/* Wrap Picker trong View để match style */}
-            {/* Role - Thay thế Picker bằng buttons clickable để tránh lỗi import/package */}
+          <View style={styles.input}> {/* Wrap Picker in View to match style */}
+            {/* Role - Replace Picker by buttons clickable to avoid error import/package */}
           <View style={styles.formGroup}>
             <Text style={styles.label}>Vai trò</Text>
-            <View style={styles.rowInput}> {/* Hoặc dùng styles.gioiTinhContainer nếu có */}
+            <View style={styles.rowInput}>
               {['buyer', 'seller', 'shipper'].map((r) => (
                 <TouchableOpacity
                   key={r}
@@ -188,7 +189,7 @@ const UpdateProfileScreen = () => {
                     styles.inputHalf,
                     {
                       backgroundColor: formData.role === r ? '#FF6B9D' : '#E0E0E0',
-                      borderRadius: 8, // Thêm border radius cho đẹp
+                      borderRadius: 8,
                       justifyContent: 'center',
                       alignItems: 'center',
                       margin: 2,

@@ -3,7 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from "react-native-responsive-screen";
-import SellerScreenLayout from "../components/SellerScreenLayout";
+import SellerScreenLayout from "./SellerScreenLayout";
 
 const ORDERS = [
   { id: "SN-2301", customer: "Courtney Henry", value: "420.000 đ", status: "Đã thanh toán", time: "2 phút trước" },
