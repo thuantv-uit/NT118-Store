@@ -35,6 +35,17 @@ export default function ProductDetail() {
     ];
 
     const sizes = ["S", "M", "L", "XL", "XXL"];
+    const RELATED = [
+        { id: "1", img: require("@/assets/images/products/sanpham3.png"), title: "Lorem ipsum dolor sit amet", price: "đ27,000" },
+        { id: "2", img: require("@/assets/images/products/sanpham4.png"), title: "Lorem ipsum dolor sit amet", price: "đ31,700" },
+        { id: "3", img: require("@/assets/images/products/sanpham5.png"), title: "Lorem ipsum dolor sit amet", price: "đ32,000" },
+        { id: "4", img: require("@/assets/images/products/sanpham6.png"), title: "Lorem ipsum dolor sit amet", price: "đ37,200" },
+    ];
+    const REVIEWS = [
+        { id: "r1", user: "N.T****", stars: 5, text: "Áo đẹp, form ổn, chất vải mát. Giao nhanh." },
+        { id: "r2", user: "H.M****", stars: 4, text: "Màu giống hình, đường may ok." },
+        { id: "r3", user: "T.P****", stars: 4, text: "Tỉ lệ giá/ chất lượng ổn." },
+    ];
 
     return (
         <View style={styles.container}>
@@ -74,7 +85,7 @@ export default function ProductDetail() {
                     <TouchableOpacity style={styles.iconBtn}>
                         <Image
                             source={require("@/assets/icons/navigation/Favorite-Off.png")}
-                            style={{ ...styles.iconImage,width: "100%", height: "100%", marginLeft: wpA(360), position: "absolute", marginTop: hpA(10) }}
+                            style={{ ...styles.iconImage, width: "100%", height: "100%", marginLeft: wpA(360), position: "absolute", marginTop: hpA(10) }}
                         />
                         {/* <Icon name="cart" size={wpA(22)} color={colors.black} /> */}
                     </TouchableOpacity>
@@ -207,6 +218,121 @@ export default function ProductDetail() {
                             />
                         </TouchableOpacity>
                     </View>
+                    {/* Shop info */}
+                    <View style={styles.block}>
+                        <View style={styles.shopRow}>
+                            <View style={{ flexDirection: "row", alignItems: "center", gap: wpA(10) }}>
+                                <Image
+                                    source={require("@/assets/images/products/avtShop.png")}
+                                    style={{ width: wpA(44), height: wpA(44), borderRadius: wpA(22) }}
+                                />
+                                <View>
+                                    <Text style={styles.shopName}>LEGENDARY T SHOP</Text>
+                                    <Text style={styles.shopSub}>Online 5 phút trước</Text>
+                                </View>
+                            </View>
+                            <TouchableOpacity style={styles.shopBtn}>
+                                <Text style={styles.shopBtnText}>Xem shop</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.shopStats}>
+                            <View style={styles.statItem}>
+                                <Text style={styles.statValue}>930</Text>
+                                <Text style={styles.statLabel}>Sản phẩm</Text>
+                            </View>
+                            <View style={styles.statDivider} />
+                            <View style={styles.statItem}>
+                                <Text style={styles.statValue}>98%</Text>
+                                <Text style={styles.statLabel}>Tỉ lệ chat</Text>
+                            </View>
+                            <View style={styles.statDivider} />
+                            <View style={styles.statItem}>
+                                <Text style={styles.statValue}>4.7</Text>
+                                <Text style={styles.statLabel}>Điểm đánh giá</Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* Specs */}
+                    <View style={styles.block}>
+                        <Text style={styles.sectionTitle}>Chi tiết sản phẩm</Text>
+                        <View style={{ marginTop: hpA(8), gap: hpA(6) }}>
+                            <SpecRow label="Danh mục" value="Áo nữ > Áo đầm" />
+                            <SpecRow label="Chất liệu" value="Cotton" />
+                            <SpecRow label="Kiểu dáng" value="Trơn" />
+                            <SpecRow label="Phong cách" value="Hàn quốc" />
+                            <SpecRow label="Kích cỡ" value="S - L" />
+                            <SpecRow label="Xuất xứ" value="Việt Nam" />
+                            <SpecRow label="Cổ áo" value="Cổ vuông" />
+                            <SpecRow label="Tay áo" value="Không tay" />
+                        </View>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* Description */}
+                    <View style={styles.block}>
+                        <Text style={styles.sectionTitle}>Mô tả sản phẩm</Text>
+                        <Text style={styles.desc}>
+                            Form nữ tính, chất vải mát, đường may chắc chắn. Hướng tới phong cách
+                            tối giản dễ phối. Vui lòng xem bảng size trước khi đặt. Sản phẩm có thể
+                            chênh lệch 1-2cm do đo thủ công.
+                        </Text>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* Reviews */}
+                    <View style={styles.block}>
+                        <View style={styles.reviewsHeader}>
+                            <View style={{ flexDirection: "row", alignItems: "center", gap: wpA(6) }}>
+                                <Icon name="star" size={wpA(18)} color={colors.black} />
+                                <Text style={styles.ratingBig}>4.5</Text>
+                                <Text style={styles.ratingSmall}>• 1.8k đánh giá</Text>
+                            </View>
+                            <TouchableOpacity>
+                                <Text style={styles.linkText}>Xem tất cả</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={{ marginTop: hpA(10) }}>
+                            {REVIEWS.map((r) => (
+                                <View key={r.id} style={styles.reviewCard}>
+                                    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                                        <Text style={styles.reviewUser}>{r.user}</Text>
+                                        <Text style={styles.reviewStars}>{"★".repeat(r.stars)}</Text>
+                                    </View>
+                                    <Text style={styles.reviewText}>{r.text}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* Related products */}
+                    <View style={[styles.block, { paddingBottom: hpA(8) }]}>
+                        <Text style={styles.sectionTitle}>Sản phẩm liên quan</Text>
+                        <FlatList
+                            data={RELATED}
+                            keyExtractor={(it) => it.id}
+                            numColumns={2}
+                            scrollEnabled={false}
+                            columnWrapperStyle={{ gap: wpA(12) }}
+                            contentContainerStyle={{ gap: hpA(12), marginTop: hpA(10) }}
+                            renderItem={({ item }) => (
+                                <View style={styles.card}>
+                                    <Image source={item.img} style={styles.cardImg} contentFit="cover" />
+                                    <Text numberOfLines={2} style={styles.cardTitle}>{item.title}</Text>
+                                    <Text style={styles.cardPrice}>{item.price}</Text>
+                                </View>
+                            )}
+                        />
+                    </View>
+
                 </View>
             </ScrollView>
 
@@ -241,7 +367,33 @@ export default function ProductDetail() {
         </View>
     );
 }
+// ---------- small subcomponent ----------
+function SpecRow({ label, value }) {
+  return (
+    <View style={specStyles.row}>
+      <Text style={specStyles.label}>{label}</Text>
+      <Text style={specStyles.value}>{value}</Text>
+    </View>
+  );
+}
 
+const specStyles = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  label: {
+    ...typography.caption1,
+    color: colors.hmee08,
+    width: "45%",
+  },
+  value: {
+    ...typography.caption1,
+    color: colors.black,
+    width: "55%",
+    textAlign: "right",
+  },
+});
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.white },
 
@@ -297,19 +449,19 @@ const styles = StyleSheet.create({
     colorBox: {
         borderRadius: wpA(8),
         // borderWidth: 1,
-        
+
         padding: wpA(3),
     },
     colorBoxActive: {
         borderColor: colors.white,
     },
     tickOverlay: {
-  position: "absolute",
-  top: wpA(3),
-  right: wpA(3),
-//   backgroundColor: colors.hmee07,
-  borderRadius: wpA(10),
-  padding: wpA(2),
+        position: "absolute",
+        top: wpA(3),
+        right: wpA(3),
+        //   backgroundColor: colors.hmee07,
+        borderRadius: wpA(10),
+        padding: wpA(2),
     },
     colorImage: {
         width: wpA(48),
@@ -370,6 +522,66 @@ const styles = StyleSheet.create({
         color: colors.black,
         marginLeft: wpA(4),
     },
+    shopRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    shopName: { ...typography.body2, color: colors.black },
+    shopSub: { ...typography.caption1, color: colors.hmee08 },
+    shopBtn: {
+        paddingHorizontal: wpA(12),
+        height: hpA(32),
+        borderRadius: wpA(16),
+        alignItems: "center",
+        justifyContent: "center",
+        borderWidth: 1,
+        borderColor: colors.hmee02,
+    },
+    shopBtnText: { ...typography.caption1, color: colors.black },
+
+    shopStats: {
+        marginTop: hpA(12),
+        padding: wpA(12),
+        borderRadius: wpA(10),
+        backgroundColor: colors.hmee01,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    statItem: { alignItems: "center", flex: 1 },
+    statValue: { ...typography.body2, color: colors.black },
+    statLabel: { ...typography.caption1, color: colors.hmee08 },
+    statDivider: { width: 1, height: "100%", backgroundColor: colors.hmee02, opacity: 0.5 },
+
+    desc: { ...typography.body3, color: colors.black, marginTop: hpA(8), lineHeight: Math.round(wpA(14) * 1.6) },
+
+    reviewsHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+    ratingBig: { ...typography.body2, color: colors.hmee07 },
+    ratingSmall: { ...typography.caption1, color: colors.hmee08 },
+    linkText: { ...typography.caption1, color: colors.hmee07 },
+
+    reviewCard: {
+        paddingVertical: hpA(10),
+        borderBottomWidth: 1,
+        borderColor: colors.hmee01,
+    },
+    reviewUser: { ...typography.caption1, color: colors.black },
+    reviewStars: { ...typography.caption1, color: colors.hmee07 },
+    reviewText: { ...typography.body3, color: colors.black, marginTop: hpA(4) },
+
+    card: {
+        flex: 1,
+        borderWidth: 1,
+        borderColor: colors.hmee01,
+        borderRadius: wpA(10),
+        overflow: "hidden",
+        backgroundColor: colors.white,
+    },
+    cardImg: { width: "100%", height: hpA(120) },
+    cardTitle: { ...typography.body3, color: colors.black, paddingHorizontal: wpA(8), paddingTop: hpA(8) },
+    cardPrice: { ...typography.body2, color: colors.hmee07, paddingHorizontal: wpA(8), paddingBottom: hpA(10) },
+
 
     bottomBar: {
         flexDirection: "row",
