@@ -20,6 +20,8 @@ import { LinearGradient } from "expo-linear-gradient";
 //components
 import FlashSaleSection from "../../components/ui/FlashSaleSection";
 import NavigationBar from "../../components/ui/NavigationBar";
+// import ProductAction from "../../components/ui/ProductActionModal";
+import ProductActionModal from "../../components/ui/ProductActionModal";
 
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -27,6 +29,8 @@ const { width: screenWidth } = Dimensions.get("window");
 export default function ProductDetail() {
     const [selectedColor, setSelectedColor] = useState(0);
     const [selectedSize, setSelectedSize] = useState("M");
+    const [modalMode, setModalMode] = useState(null); // "cart" | "buy" | null
+
 
     const colorsList = [
         require("@/assets/images/products/color/color1.png"),
@@ -46,6 +50,22 @@ export default function ProductDetail() {
         { id: "r2", user: "H.M****", stars: 4, text: "Màu giống hình, đường may ok." },
         { id: "r3", user: "T.P****", stars: 4, text: "Tỉ lệ giá/ chất lượng ổn." },
     ];
+    const product = {
+        id: 1,
+        name: "Váy trắng dáng dài",
+        price: "30,000",
+        oldPrice: "40,000",
+        stock: 111,
+        image: require("../../assets/images/products/sanpham1.png"),
+        colors: [
+            { id: 1, image: require("../../assets/images/products/color/color1.png") },
+            { id: 2, image: require("../../assets/images/products/color/color2.png") },
+            { id: 3, image: require("../../assets/images/products/color/color3.png") },
+            // { id: 4, image: require("../../assets/images/products/color/color4.png") },
+        ],
+        sizes: ["S", "M", "L", "XL", "XXL", "Freesize"],
+    };
+
 
     return (
         <View style={styles.container}>
@@ -337,7 +357,7 @@ export default function ProductDetail() {
             </ScrollView>
 
             {/* Bottom Bar */}
-            <View style={styles.bottomBar}>
+            <View style={{ ...styles.bottomBar, flex: 1 }}>
                 <TouchableOpacity style={styles.bottomIcon}>
                     <View style={{ position: "absolute", flexDirection: "row", alignItems: "center", width: wpA(90), height: hpA(56), justifyContent: "center", backgroundColor: colors.color1, left: wpA(-24), borderRadius: wpA(0), marginTop: hpA(0) }} />
 
@@ -348,8 +368,15 @@ export default function ProductDetail() {
                 </TouchableOpacity>
                 <View style={{ position: "absolute", borderLeftWidth: 1, borderLeftColor: colors.hmee01, height: hpA(40), marginLeft: wpA(85) }}></View>
 
+                <ProductActionModal
+                    visible={!!modalMode}
+                    mode={modalMode}
+                    product={product}
+                    onClose={() => setModalMode(null)}
+                />
 
-                <TouchableOpacity style={styles.bottomIcon}>
+
+                <TouchableOpacity style={styles.bottomIcon} onPress={() => setModalMode("cart")}>
                     <View style={{ position: "absolute", flexDirection: "row", alignItems: "center", width: wpA(77), height: hpA(56), justifyContent: "center", backgroundColor: colors.color1, left: wpA(24), borderRadius: wpA(0), marginTop: hpA(0) }} />
 
                     <Image
@@ -357,7 +384,7 @@ export default function ProductDetail() {
                         style={{ ...styles.iconImage, width: "100%", height: "100%", marginLeft: wpA(70) }}
                     />
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.buyButton, { backgroundColor: colors.hmee07 }]}>
+                <TouchableOpacity style={[styles.buyButton, { backgroundColor: colors.hmee07 }]} onPress={() => setModalMode("buy")}>
 
                     <View style={{ position: "absolute", flexDirection: "row", alignItems: "center", width: wpA(250), height: hpA(56), justifyContent: "center", backgroundColor: colors.icon_square_color, right: wpA(-20), borderRadius: wpA(0), marginTop: hpA(0) }}>
                         <Text style={styles.buyText}>Mua với giá 17.000 đ</Text>
@@ -369,30 +396,30 @@ export default function ProductDetail() {
 }
 // ---------- small subcomponent ----------
 function SpecRow({ label, value }) {
-  return (
-    <View style={specStyles.row}>
-      <Text style={specStyles.label}>{label}</Text>
-      <Text style={specStyles.value}>{value}</Text>
-    </View>
-  );
+    return (
+        <View style={specStyles.row}>
+            <Text style={specStyles.label}>{label}</Text>
+            <Text style={specStyles.value}>{value}</Text>
+        </View>
+    );
 }
 
 const specStyles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  label: {
-    ...typography.caption1,
-    color: colors.hmee08,
-    width: "45%",
-  },
-  value: {
-    ...typography.caption1,
-    color: colors.black,
-    width: "55%",
-    textAlign: "right",
-  },
+    row: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+    },
+    label: {
+        ...typography.caption1,
+        color: colors.black,
+        width: "45%",
+    },
+    value: {
+        ...typography.caption1,
+        color: colors.black,
+        width: "55%",
+        textAlign: "right",
+    },
 });
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.white },
@@ -589,6 +616,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         paddingHorizontal: wpA(20),
         paddingVertical: hpA(10),
+        bottom: wpA(18),
         // borderTopWidth: 1,
         borderColor: colors.hmee01,
         // marginTop: hpA(-10),
