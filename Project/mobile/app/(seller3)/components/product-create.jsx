@@ -1,20 +1,14 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { heightPercentageToDP as hp, widthPercentageToDP as wp } from "react-native-responsive-screen";
+import { Pressable, Text, View } from "react-native";
+import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import SellerScreenLayout from "./SellerScreenLayout";
 
-const BASIC_FIELDS = [
-  { id: "productName", label: "Tên sản phẩm", placeholder: "Ví dụ: Ly gốm Artisan A08" },
-  { id: "category", label: "Danh mục", placeholder: "Đồ gốm / Bộ sưu tập xuân" },
-  { id: "price", label: "Giá bán", placeholder: "Nhập giá bán (đ)" },
-];
-
-const INVENTORY_FIELDS = [
-  { id: "sku", label: "Mã SKU", placeholder: "Nhập mã kho" },
-  { id: "stock", label: "Tồn kho", placeholder: "Số lượng hiện có" },
-  { id: "warehouse", label: "Kho xuất hàng", placeholder: "Kho chính - TP.HCM" },
-];
+import {
+  BASIC_FIELDS,
+  INVENTORY_FIELDS,
+} from "../data/homeSellerData";
+import { styles } from "../styles/HomeSellerStyles";
 
 export default function SellerProductCreate() {
   return (
@@ -69,77 +63,3 @@ export default function SellerProductCreate() {
     </SellerScreenLayout>
   );
 }
-
-const styles = StyleSheet.create({
-  uploadCard: {
-    borderRadius: 22,
-    paddingVertical: hp("1.8%"),
-    paddingHorizontal: wp("4%"),
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: hp("2.4%"),
-  },
-  uploadIcon: {
-    width: wp("12%"),
-    height: wp("12%"),
-    borderRadius: wp("6%"),
-    backgroundColor: "rgba(255,255,255,0.7)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: wp("3%"),
-  },
-  uploadTexts: { flex: 1 },
-  uploadTitle: { fontSize: hp("2%"), fontWeight: "700", color: "#7F1D1D" },
-  uploadSubtitle: { fontSize: hp("1.7%"), color: "#4B5563", marginTop: hp("0.2%") },
-  uploadButton: {
-    backgroundColor: "#FFF",
-    paddingHorizontal: wp("4%"),
-    paddingVertical: hp("0.8%"),
-    borderRadius: 999,
-  },
-  uploadButtonPressed: { backgroundColor: "rgba(255,255,255,0.75)" },
-  uploadButtonText: { fontSize: hp("1.7%"), color: "#BE123C", fontWeight: "700" },
-  section: { marginBottom: hp("2.6%") },
-  sectionTitle: { fontSize: hp("2.1%"), fontWeight: "700", color: "#BE123C", marginBottom: hp("1.2%") },
-  inputShell: {
-    backgroundColor: "#FFF",
-    borderRadius: 16,
-    paddingVertical: hp("1.2%"),
-    paddingHorizontal: wp("4%"),
-    marginBottom: hp("1%"),
-    borderWidth: 1,
-    borderColor: "rgba(204,120,97,0.2)",
-  },
-  inputLabel: { fontSize: hp("1.6%"), color: "#9F1239", fontWeight: "600", marginBottom: hp("0.4%") },
-  inputPlaceholder: { fontSize: hp("1.8%"), color: "#9CA3AF" },
-  shippingCard: {
-    borderRadius: 20,
-    paddingVertical: hp("1.8%"),
-    paddingHorizontal: wp("4%"),
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: hp("2.6%"),
-  },
-  shippingTexts: { marginLeft: wp("3%"), flex: 1 },
-  shippingTitle: { fontSize: hp("2%"), fontWeight: "700", color: "#7F1D1D" },
-  shippingSubtitle: { fontSize: hp("1.7%"), color: "#4B5563", marginTop: hp("0.2%") },
-  publishButton: {
-    backgroundColor: "#CC7861",
-    borderRadius: 18,
-    paddingVertical: hp("1.6%"),
-    alignItems: "center",
-    marginBottom: hp("1%"),
-  },
-  publishButtonPressed: { backgroundColor: "#B35E48" },
-  publishButtonText: { color: "#FFF", fontSize: hp("2%"), fontWeight: "700" },
-  draftButton: {
-    borderRadius: 18,
-    paddingVertical: hp("1.4%"),
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(204,120,97,0.4)",
-    marginBottom: hp("1%"),
-  },
-  draftButtonPressed: { backgroundColor: "rgba(204,120,97,0.1)" },
-  draftButtonText: { color: "#CC7861", fontSize: hp("1.9%"), fontWeight: "700" },
-});
