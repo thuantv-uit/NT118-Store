@@ -1,6 +1,3 @@
-import SafeScreen from "../components/SafeScreen";
-import { Stack } from "expo-router";
-
 import { ClerkProvider } from '@clerk/clerk-expo';
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
 import { useFonts } from "expo-font";
@@ -15,6 +12,9 @@ import Test2 from "./(welcome)/test";
 import FunctionalIconsPreview from "./(welcome)/FunctionalIconsPreview";
 import Home from "./(root)/homeScreen";
 import ProductDetail from "./(product)/productDetail";
+
+import React from "react";
+import SafeScreen from "../components/SafeScreen";
 
 
 import { Slot } from "expo-router";
@@ -87,6 +87,12 @@ export default function RootLayout() {
 
       {/* <OTP/> */}
       {/* </SafeScreen> */}
+{/* return ( */}
+    {/* <ClerkProvider tokenCache={tokenCache} publishableKey={process.env.EXPO_PUBLIC_CLERK_KEY}> */}
+      {/* <SafeScreen> */}
+        <Slot /> Quan trọng: render route con
+      {/* </SafeScreen> */}
     </ClerkProvider>
   );
 }
+
