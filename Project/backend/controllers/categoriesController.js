@@ -1,4 +1,30 @@
 import { sql } from "../config/database.js";
+// import { pool } from "../config/database.js";
+export async function getAllCategories(req, res) {
+  try {
+    const categories = await sql`SELECT * FROM category ORDER BY id ASC`;
+    res.status(200).json(categories);
+  } catch (error) {
+    console.error("Error getting categories:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+// GET /categories/children/:id
+export const getChildrenCategories = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Use the `sql` helper (neon) exported from config/database.js
+    const children = await sql`
+      SELECT * FROM category WHERE parent_id = ${id} ORDER BY id ASC
+    `;
+    // `children` is an array of rows
+    res.json(children);
+  } catch (err) {
+    console.error("Error fetching child categories:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+};
+
 
 // Get Profile for User
 export async function getCategoryById(req, res) {

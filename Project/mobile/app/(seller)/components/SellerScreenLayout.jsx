@@ -45,9 +45,11 @@ export default function SellerScreenLayout({
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#FFF8F6" },
+  safe: { flex: 1, backgroundColor: "#FFF8F6", height: wp("10%"), marginTop: hp("2%") },
   scroll: { flex: 1 },
   headerGradient: {
+    height: hp("10%"),
+    marginTop: hp("20%"),
     paddingTop: hp("1.8%"),
     paddingBottom: hp("2.2%"),
     paddingHorizontal: wp("4.5%"),
@@ -66,8 +68,8 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.22)",
   },
   backButtonPressed: { backgroundColor: "rgba(255,255,255,0.36)" },
-  headerCenter: { flex: 1, alignItems: "center", justifyContent: "center" },
-  headerTitle: { fontSize: hp("2.6%"), fontWeight: "700", color: "#FFF5F2" },
+  headerCenter: { flex: 1, alignItems: "center", justifyContent: "center" , marginTop: 50},
+  headerTitle: { fontSize: hp("2.6%"), fontWeight: "700", color: "#FFF5F2", marginTop: 50 },
   headerSubtitle: { fontSize: hp("1.7%"), color: "#FFE4E1", marginTop: hp("0.4%") },
   rightPlaceholder: { width: wp("10%") },
   content: {

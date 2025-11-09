@@ -14,8 +14,11 @@ const rateLimiter = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.log("Rate limit error", error);
-    next(error);
+    // Log the error but don't fail the entire request pipeline.
+    // Upstash/network issues should not make the whole API return 500.
+    console.log("Rate limit error (allowing request):", error?.message || error);
+    // allow request to proceed
+    next();
   }
 };
 

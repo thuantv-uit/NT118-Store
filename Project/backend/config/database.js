@@ -1,10 +1,18 @@
 import { neon } from "@neondatabase/serverless";
-
+// import pkg from "pg";
+// const { Pool } = pkg;
 import "dotenv/config";
 
 // Creates a SQL connection using our DB URL
 export const sql = neon(process.env.DATABASE_URL);
-
+// export const pool = new Pool({
+//   user: "postgres",
+//   host: "ep-abc123.ap-southeast-1.aws.neon.tech", // hoặc localhost
+//   database: "your_database",
+//   password: "your_password",
+//   port: 5432,
+//   ssl: true,
+// });
 export async function initDB() {
   try {
     await sql`CREATE TABLE IF NOT EXISTS transactions(
@@ -68,6 +76,7 @@ export async function initDB() {
     await sql`CREATE TABLE IF NOT EXISTS "category"(
       id SERIAL PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
+      parent_id INT NULL REFERENCES category(id) ON DELETE SET NULL,
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
     console.log("Database category initialized successfully");
@@ -83,6 +92,52 @@ export async function initDB() {
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
     console.log("Database product initialized successfully");
+     /** ---------- PRODUCT DETAIL ATTRIBUTE (Kho, chất liệu ...) ---------- **/
+    await sql`CREATE TABLE IF NOT EXISTS product_attribute (
+      id SERIAL PRIMARY KEY,
+      product_id INT REFERENCES product(id) ON DELETE CASCADE,
+      name VARCHAR(255) NOT NULL,   -- Kho / Chất liệu / Dịp / ...
+      value VARCHAR(255) NOT NULL
+    )`;
+    console.log("Database product_attribute initialized successfully");
+
+    await sql`CREATE TABLE IF NOT EXISTS product_media (
+      id SERIAL PRIMARY KEY,
+      product_id INT REFERENCES product(id) ON DELETE CASCADE,
+      url VARCHAR(1000) NOT NULL,
+      public_id VARCHAR(500),
+      type VARCHAR(50),
+      is_cover BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`;
+    console.log("Database product_media initialized successfully");
+
+    /** ---------- PRODUCT VARIATION (Màu / Size) ---------- **/
+    await sql`CREATE TABLE IF NOT EXISTS product_variation(
+      id SERIAL PRIMARY KEY,
+      product_id INT REFERENCES product(id) ON DELETE CASCADE,
+      name VARCHAR(255) NOT NULL   -- "Màu sắc" hoặc "Kích cỡ"
+    )`;
+    console.log("Database product_variation initialized successfully");
+
+    /** ---------- PRODUCT VARIATION OPTION (Đen, Trắng, M, L ...) ---------- **/
+    await sql`CREATE TABLE IF NOT EXISTS product_variation_option(
+      id SERIAL PRIMARY KEY,
+      variation_id INT REFERENCES product_variation(id) ON DELETE CASCADE,
+      value VARCHAR(255) NOT NULL,
+      image VARCHAR(500)           -- ảnh ứng với màu (nếu có)
+    )`;
+    console.log("Database product_variation_option initialized successfully");
+
+    /** ---------- PRODUCT SHIPPING ---------- **/
+    await sql`CREATE TABLE IF NOT EXISTS product_shipping (
+      id SERIAL PRIMARY KEY,
+      product_id INT REFERENCES product(id) ON DELETE CASCADE,
+      method VARCHAR(255) NOT NULL,
+      fee DECIMAL(10,2) NOT NULL,
+      handling_time VARCHAR(255) NOT NULL
+    )`;
+    console.log("Database product_shipping initialized successfully");
 
     await sql`CREATE TABLE IF NOT EXISTS "cart"(
       id SERIAL PRIMARY KEY,

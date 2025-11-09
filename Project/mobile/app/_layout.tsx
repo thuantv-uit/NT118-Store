@@ -1,3 +1,4 @@
+// NT118-Store/Project/mobile/app/_layout.tsx
 import { ClerkProvider } from '@clerk/clerk-expo';
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
 import { useFonts } from "expo-font";
@@ -12,12 +13,17 @@ import Test2 from "./(welcome)/test";
 import FunctionalIconsPreview from "./(welcome)/FunctionalIconsPreview";
 import Home from "./(root)/homeScreen";
 import ProductDetail from "./(product)/productDetail";
+import ProductCreate from "./(seller)/product-create";
+import SellerCreateProduct from "./(seller)/sellerCreateProduct";
+import SelectCategory from "./(seller)/select-category";
 
-import React from "react";
+import React,{useEffect} from "react";
 import SafeScreen from "../components/SafeScreen";
+import { ActivityIndicator, View } from "react-native";
 
 
 import { Slot } from "expo-router";
+import { API_URL } from '@/constants/api';
 
 export default function RootLayout() {
 
@@ -47,9 +53,19 @@ export default function RootLayout() {
   });
 
   console.log("fontsLoaded:", fontsLoaded);
+useEffect(() => {
+  fetch(`${API_URL}/ping`).catch(() => {});
+}, []);
 
 
-  if (!fontsLoaded) return null;
+  if (!fontsLoaded)
+    return (
+      <SafeScreen>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator size="large" color="#BE123C" />
+        </View>
+      </SafeScreen>
+    );
 
   return (
     // <ClerkProvider tokenCache={tokenCache}>
@@ -71,7 +87,7 @@ export default function RootLayout() {
     // </ClerkProvider>
     <ClerkProvider tokenCache={tokenCache}>
       {/* <SafeScreen> */}
-      {/* <Slot /> */}
+      <Slot />
       {/* <Welcome1 /> */}
       {/* <Welcome2 /> */}
       {/* <SignUp /> */}
@@ -82,7 +98,11 @@ export default function RootLayout() {
       {/* <Test/> */}
       {/* <FunctionalIconsPreview/> */}
       {/* <ProductDetail/> */}
-      <ProductDetail/>
+      {/* <ProductDetail/> */}
+      {/* <ProductCreate/> */}
+      {/* <SellerCreateProduct/> */}
+      {/* <SelectCategory/> */}
+      {/* <SelectCategory /> */}
       {/* <Home/> */}
 
       {/* <OTP/> */}
@@ -90,7 +110,7 @@ export default function RootLayout() {
 {/* return ( */}
     {/* <ClerkProvider tokenCache={tokenCache} publishableKey={process.env.EXPO_PUBLIC_CLERK_KEY}> */}
       {/* <SafeScreen> */}
-        <Slot /> Quan trọng: render route con
+        {/* <Slot /> Quan trọng: render route con */}
       {/* </SafeScreen> */}
     </ClerkProvider>
   );

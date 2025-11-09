@@ -88,9 +88,65 @@ export async function createProduct(req, res) {
       RETURNING *
     `;
 
-    // To use debug
-    // console.log(product);
-    res.status(201).json(product[0]);
+    const created = product[0];
+    //luu attributes nếu có
+
+    // If attributes provided, save them into product_attribute table
+    // Accept either: attributes = { key: value, ... } or attributes = [{ key, value }, ...]
+    const attrs = req.body.attributes;
+    if (attrs) {
+      try {
+        if (Array.isArray(attrs)) {
+          for (const item of attrs) {
+            const key = item.key ?? item.name ?? null;
+            const value = item.value ?? item.val ?? '';
+            if (key) {
+              await sql`
+                INSERT INTO product_attribute(product_id, name, value)
+                VALUES (${created.id}, ${key}, ${value})
+              `;
+            }
+          }
+        } else if (typeof attrs === 'object') {
+          for (const [k, v] of Object.entries(attrs)) {
+            // store label/key and value
+            await sql`
+              INSERT INTO product_attribute(product_id, name, value)
+              VALUES (${created.id}, ${k}, ${v})
+            `;
+          }
+        }
+      } catch (attrErr) {
+        console.error('Error saving product attributes:', attrErr);
+        // continue without failing product creation
+      }
+    }
+
+    // If imageUrls provided (array of urls or {url, public_id, resource_type}), save into product_media
+    const imageUrls = req.body.imageUrls;
+    if (imageUrls && Array.isArray(imageUrls)) {
+      try {
+        for (const u of imageUrls) {
+          if (!u) continue;
+          if (typeof u === 'string') {
+            await sql`
+              INSERT INTO product_media (product_id, url)
+              VALUES (${created.id}, ${u})
+            `;
+          } else if (typeof u === 'object' && u.url) {
+            await sql`
+              INSERT INTO product_media (product_id, url, public_id, type)
+              VALUES (${created.id}, ${u.url}, ${u.public_id || null}, ${u.resource_type || u.type || null})
+            `;
+          }
+        }
+      } catch (mediaErr) {
+        console.error('Error saving product media:', mediaErr);
+      }
+    }
+
+    // Return created product (attributes saved separately)
+    res.status(201).json(created);
   } catch (error) {
     console.error("Error creating the product:", error.message || error);
     // Handle specific errors if need (example: unique violation)
