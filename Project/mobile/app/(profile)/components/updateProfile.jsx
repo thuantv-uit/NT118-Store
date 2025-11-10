@@ -1,14 +1,16 @@
 import { useUser } from "@clerk/clerk-expo";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   Alert,
+  Image,
   SafeAreaView,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { API_URL } from "../../../constants/api";
@@ -16,23 +18,24 @@ import { styles } from '../styles/ProfileStyles';
 
 const UpdateProfileScreen = () => {
   const router = useRouter();
-  const { user } = useUser(); // get user from Clerk
-  const userId = user?.id; // userId from Clerk user object
+  const { user } = useUser();
+  const userId = user?.id;
   const [formData, setFormData] = useState({
     last_name: '',
     first_name: '',
     phone_number: '',
-    role: 'buyer', // defalut buyer
+    role: 'buyer',
   });
   const [loading, setLoading] = useState(false);
   const [profileExists, setProfileExists] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
   const baseURL = API_URL;
 
   useEffect(() => {
     if (userId) {
       loadProfile();
     }
-  }, [userId]); // Depend on userId to load when user avairable
+  }, [userId]);
 
   const loadProfile = async () => {
     try {
@@ -46,9 +49,12 @@ const UpdateProfileScreen = () => {
           phone_number: data.phone_number || '',
           role: data.role || 'buyer',
         });
+        if (data.avatar) {
+          setSelectedAvatar(data.avatar);
+        }
         setProfileExists(true);
       } else if (response.status === 404) {
-        setProfileExists(false); // Chưa có profile, sẵn sàng POST
+        setProfileExists(false);
       }
     } catch (error) {
       Alert.alert('Error', 'Do not load profile. Please try.');
@@ -57,8 +63,27 @@ const UpdateProfileScreen = () => {
     }
   };
 
+  const pickAvatar = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Lỗi", "Cần quyền truy cập thư viện ảnh để chọn avatar!");
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setSelectedAvatar(result.assets[0].uri);
+      Alert.alert("Thành công", "Đã chọn ảnh avatar! Sẽ được upload khi lưu.");
+    }
+  };
+
   const handleSave = async () => {
-    // Kiểm tra userId trước
     if (!userId) {
       Alert.alert('Error', 'User do not authentic. Please try.');
       return;
@@ -72,36 +97,52 @@ const UpdateProfileScreen = () => {
 
     setLoading(true);
     try {
+      const formPayload = new FormData();
+      formPayload.append("first_name", formData.first_name);
+      formPayload.append("last_name", formData.last_name);
+      formPayload.append("phone_number", formData.phone_number);
+      formPayload.append("role", formData.role);
+
+      if (selectedAvatar && !selectedAvatar.startsWith('http')) {
+        const fileName = selectedAvatar.split('/').pop();
+        const fileType = fileName.includes('.png') ? 'image/png' : 'image/jpeg';
+        formPayload.append("avatar", {
+          uri: selectedAvatar,
+          type: fileType,
+          name: fileName,
+        });
+      } else if (selectedAvatar && selectedAvatar.startsWith('http')) {
+        formPayload.append("avatar", selectedAvatar);
+      }
+
       let response;
       if (!profileExists) {
-        // First: POST create
+        // First: POST create with id
+        formPayload.append("id", userId);
+        formPayload.append("email", user?.emailAddresses[0]?.emailAddress || '');
+        formPayload.append("password", 'default');
+        formPayload.append("address", '');
+
         response = await fetch(`${baseURL}/customers`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: userId,
-            first_name: formData.first_name,
-            last_name: formData.last_name,
-            phone_number: formData.phone_number,
-            role: formData.role,
-          }),
+          body: formPayload,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         });
       } else {
         // After: PUT update
         response = await fetch(`${baseURL}/customers/${userId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            first_name: formData.first_name,
-            last_name: formData.last_name,
-            phone_number: formData.phone_number,
-            role: formData.role,
-          }),
+          body: formPayload,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         });
       }
 
       if (response.ok) {
-        Alert.alert('Success', 'Update pfofile!');
+        Alert.alert('Success', 'Update profile!');
         router.back();
       } else {
         const errorData = await response.json();
@@ -116,6 +157,12 @@ const UpdateProfileScreen = () => {
 
   const handleBack = () => {
     router.back();
+  };
+
+  // Function delete avatar
+  const removeAvatar = () => {
+    setSelectedAvatar(null);
+    Alert.alert("Đã xóa", "Avatar sẽ được xóa khi lưu.");
   };
 
   // If user has not loaded yet, show loading
@@ -141,6 +188,23 @@ const UpdateProfileScreen = () => {
           <TouchableOpacity onPress={handleSave} disabled={loading} style={styles.saveBtnHeader}>
             <Text style={styles.saveTextHeader}>{loading ? 'Đang lưu...' : 'Lưu'}</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Part upload avatar */}
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Avatar</Text>
+          <TouchableOpacity onPress={pickAvatar} disabled={loading} style={styles.avatarUploadButton}>
+            <Icon name="camera-outline" size={24} color="#FF6B9D" />
+            <Text style={styles.avatarUploadText}>Chọn ảnh avatar</Text>
+          </TouchableOpacity>
+          {selectedAvatar && (
+            <View style={styles.avatarPreview}>
+              <Image source={{ uri: selectedAvatar }} style={styles.avatarImage} />
+              <TouchableOpacity onPress={removeAvatar} style={styles.removeAvatarButton}>
+                <Icon name="close-circle" size={24} color="#FF0000" />
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Form: Firstname and Lastname */}
@@ -177,39 +241,33 @@ const UpdateProfileScreen = () => {
         {/* Role */}
         <View style={styles.formGroup}>
           <Text style={styles.label}>Vai trò</Text>
-          <View style={styles.input}> {/* Wrap Picker in View to match style */}
-            {/* Role - Replace Picker by buttons clickable to avoid error import/package */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Vai trò</Text>
-            <View style={styles.rowInput}>
-              {['buyer', 'seller', 'shipper'].map((r) => (
-                <TouchableOpacity
-                  key={r}
-                  style={[
-                    styles.inputHalf,
-                    {
-                      backgroundColor: formData.role === r ? '#FF6B9D' : '#E0E0E0',
-                      borderRadius: 8,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      margin: 2,
-                    }
-                  ]}
-                  onPress={() => setFormData({ ...formData, role: r })}
+          <View style={styles.rowInput}>
+            {['buyer', 'seller', 'shipper'].map((r) => (
+              <TouchableOpacity
+                key={r}
+                style={[
+                  styles.inputHalf,
+                  {
+                    backgroundColor: formData.role === r ? '#FF6B9D' : '#E0E0E0',
+                    borderRadius: 8,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    margin: 2,
+                  }
+                ]}
+                onPress={() => setFormData({ ...formData, role: r })}
+              >
+                <Text
+                  style={{
+                    color: formData.role === r ? '#FFF' : '#000',
+                    fontSize: 14,
+                    fontWeight: formData.role === r ? 'bold' : 'normal',
+                  }}
                 >
-                  <Text
-                    style={{
-                      color: formData.role === r ? '#FFF' : '#000',
-                      fontSize: 14,
-                      fontWeight: formData.role === r ? 'bold' : 'normal',
-                    }}
-                  >
-                    {r.charAt(0).toUpperCase() + r.slice(1)} {/* Capitalize label */}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
+                  {r.charAt(0).toUpperCase() + r.slice(1)} {/* Capitalize label */}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
       </ScrollView>
