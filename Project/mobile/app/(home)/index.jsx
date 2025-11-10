@@ -7,11 +7,15 @@ import { wpA, hpA, topA } from "../../utils/scale";
 import { typography } from "../../theme/typography";
 import { colors } from "@/theme/colors";
 import { LinearGradient } from "expo-linear-gradient";
+import { formatVND } from "../../utils/format";
 
 
 //components
 import FlashSaleSection from "../../components/ui/FlashSaleSection";
 import NavigationBar from "../../components/ui/NavigationBar";
+
+//backend
+import { API_URL } from "@/constants/api";
 
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -20,6 +24,32 @@ const { width: screenWidth } = Dimensions.get("window");
 export default function HomeScreen() {
     const [activeCategory, setActiveCategory] = useState(null);
     const scrollY = useRef(new Animated.Value(0)).current;
+
+    //==Database neon===
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // ========== Fetch products từ API Neon ==========
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch(`${API_URL}/products`);
+                const data = await response.json();
+                console.log('[HomeScreen] fetched products count=', Array.isArray(data) ? data.length : 'not-array');
+                if (Array.isArray(data) && data.length > 0) {
+                    console.log('[HomeScreen] sample product[0]=', JSON.stringify(data[0], null, 2));
+                }
+                if (!response.ok) throw new Error(data.message || "Không thể tải sản phẩm.");
+                setProducts(data); // giả sử backend trả mảng sản phẩm
+            } catch (err) {
+                console.warn("[HomeScreen] Lỗi tải sản phẩm:", err && err.message ? err.message : err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
 
     // ===== Dữ liệu demo =====
     const categories = [
@@ -55,92 +85,92 @@ export default function HomeScreen() {
         },
     ];
 
-    const products = [
-        {
-            id: 1,
-            name: "Đầm Body Maxi Nữ",
-            price: "220.000đ",
-            img: require("@/assets/images/products/sanpham1.png"),
-        },
-        {
-            id: 2,
-            name: "Áo Sơ Mi Đùi MiSoul",
-            price: "350.000đ",
-            img: require("@/assets/images/products/sanpham2.png"),
-        },
-        {
-            id: 3,
-            name: "Đầm Body Maxi Nữ",
-            price: "220.000đ",
-            img: require("@/assets/images/products/sanpham1.png"),
-        },
-        {
-            id: 4,
-            name: "Áo Sơ Mi Đùi MiSoul",
-            price: "350.000đ",
-            img: require("@/assets/images/products/sanpham2.png"),
-        },
-        {
-            id: 5,
-            name: "Đầm Body Maxi Nữ",
-            price: "220.000đ",
-            img: require("@/assets/images/products/sanpham1.png"),
-        },
-        {
-            id: 6,
-            name: "Áo Sơ Mi Đùi MiSoul",
-            price: "350.000đ",
-            img: require("@/assets/images/products/sanpham2.png"),
-        },
-        {
-            id: 7,
-            name: "Đầm Body Maxi Nữ",
-            price: "220.000đ",
-            img: require("@/assets/images/products/sanpham1.png"),
-        },
-        {
-            id: 8,
-            name: "Áo Sơ Mi Đùi MiSoul",
-            price: "350.000đ",
-            img: require("@/assets/images/products/sanpham2.png"),
-        },
-        {
-            id: 9,
-            name: "Đầm Body Maxi Nữ",
-            price: "220.000đ",
-            img: require("@/assets/images/products/sanpham1.png"),
-        },
-        {
-            id: 10,
-            name: "Áo Sơ Mi Đùi MiSoul",
-            price: "350.000đ",
-            img: require("@/assets/images/products/sanpham2.png"),
-        },
-        {
-            id: 11,
-            name: "Đầm Body Maxi Nữ",
-            price: "220.000đ",
-            img: require("@/assets/images/products/sanpham1.png"),
-        },
-        {
-            id: 12,
-            name: "Áo Sơ Mi Đùi MiSoul",
-            price: "350.000đ",
-            img: require("@/assets/images/products/sanpham2.png"),
-        },
-        {
-            id: 13,
-            name: "Đầm Body Maxi Nữ",
-            price: "220.000đ",
-            img: require("@/assets/images/products/sanpham1.png"),
-        },
-        {
-            id: 14,
-            name: "Áo Sơ Mi Đùi MiSoul",
-            price: "350.000đ",
-            img: require("@/assets/images/products/sanpham2.png"),
-        },
-    ];
+    // const products = [
+    //     {
+    //         id: 1,
+    //         name: "Đầm Body Maxi Nữ",
+    //         price: "220.000đ",
+    //         img: require("@/assets/images/products/sanpham1.png"),
+    //     },
+    //     {
+    //         id: 2,
+    //         name: "Áo Sơ Mi Đùi MiSoul",
+    //         price: "350.000đ",
+    //         img: require("@/assets/images/products/sanpham2.png"),
+    //     },
+    //     {
+    //         id: 3,
+    //         name: "Đầm Body Maxi Nữ",
+    //         price: "220.000đ",
+    //         img: require("@/assets/images/products/sanpham1.png"),
+    //     },
+    //     {
+    //         id: 4,
+    //         name: "Áo Sơ Mi Đùi MiSoul",
+    //         price: "350.000đ",
+    //         img: require("@/assets/images/products/sanpham2.png"),
+    //     },
+    //     {
+    //         id: 5,
+    //         name: "Đầm Body Maxi Nữ",
+    //         price: "220.000đ",
+    //         img: require("@/assets/images/products/sanpham1.png"),
+    //     },
+    //     {
+    //         id: 6,
+    //         name: "Áo Sơ Mi Đùi MiSoul",
+    //         price: "350.000đ",
+    //         img: require("@/assets/images/products/sanpham2.png"),
+    //     },
+    //     {
+    //         id: 7,
+    //         name: "Đầm Body Maxi Nữ",
+    //         price: "220.000đ",
+    //         img: require("@/assets/images/products/sanpham1.png"),
+    //     },
+    //     {
+    //         id: 8,
+    //         name: "Áo Sơ Mi Đùi MiSoul",
+    //         price: "350.000đ",
+    //         img: require("@/assets/images/products/sanpham2.png"),
+    //     },
+    //     {
+    //         id: 9,
+    //         name: "Đầm Body Maxi Nữ",
+    //         price: "220.000đ",
+    //         img: require("@/assets/images/products/sanpham1.png"),
+    //     },
+    //     {
+    //         id: 10,
+    //         name: "Áo Sơ Mi Đùi MiSoul",
+    //         price: "350.000đ",
+    //         img: require("@/assets/images/products/sanpham2.png"),
+    //     },
+    //     {
+    //         id: 11,
+    //         name: "Đầm Body Maxi Nữ",
+    //         price: "220.000đ",
+    //         img: require("@/assets/images/products/sanpham1.png"),
+    //     },
+    //     {
+    //         id: 12,
+    //         name: "Áo Sơ Mi Đùi MiSoul",
+    //         price: "350.000đ",
+    //         img: require("@/assets/images/products/sanpham2.png"),
+    //     },
+    //     {
+    //         id: 13,
+    //         name: "Đầm Body Maxi Nữ",
+    //         price: "220.000đ",
+    //         img: require("@/assets/images/products/sanpham1.png"),
+    //     },
+    //     {
+    //         id: 14,
+    //         name: "Áo Sơ Mi Đùi MiSoul",
+    //         price: "350.000đ",
+    //         img: require("@/assets/images/products/sanpham2.png"),
+    //     },
+    // ];
     const flashSaleData = [
         {
             id: 1,
@@ -225,6 +255,40 @@ export default function HomeScreen() {
     });
 
     // ===== Giao diện =====
+    // Helper to safely extract first image URL from various backend shapes
+    const getFirstImageUrl = (item) => {
+        try {
+            // support several possible shapes/casings returned by backend
+            const candidates = [
+                item?.imageUrls,
+                item?.imageurls,
+                item?.images,
+                item?.image,
+                item?.media,
+            ];
+
+            let imgs = null;
+            for (const c of candidates) {
+                if (c != null) {
+                    imgs = c;
+                    break;
+                }
+            }
+
+            if (!imgs) return null;
+            // sometimes backend returns a JSON string
+            const arr = typeof imgs === 'string' ? JSON.parse(imgs) : imgs;
+            if (!Array.isArray(arr) || arr.length === 0) return null;
+            const first = arr[0];
+            if (!first) return null;
+            if (typeof first === 'string') return first;
+            // common keys used by Cloudinary responses: secure_url, url
+            return first.url || first.secure_url || first.src || null;
+        } catch (e) {
+            console.warn('[HomeScreen] getFirstImageUrl parse error', e && e.message ? e.message : e);
+            return null;
+        }
+    };
     return (
         <View style={styles.container}>
             {/* HEADER ẩn khi cuộn */}
@@ -311,35 +375,45 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View> */}
 
-                {/* Sản phẩm */}
-                <Text style={{ ...styles.sectionTitle, marginTop: hpA(-20) }}>Sản phẩm</Text>
+                {/* <View style={{ ...styles.boxProduct, flex:1 }}> */}
+                    {/* Sản phẩm */}
+                    <Text style={{ ...styles.sectionTitle, marginTop: hpA(-20) }}>Sản phẩm</Text>
 
-                <View style={styles.masonryContainer}>
-                    {/* Cột trái */}
-                    <View style={styles.column}>
-                        {products.filter((_, i) => i % 2 === 0).map((item) => (
-                            <TouchableOpacity key={item.id} style={styles.productCard}>
-                                <Image source={item.img} style={styles.productImage} contentFit="cover" />
-                                <Text style={styles.productName}>{item.name}</Text>
-                                <View style={{ height: hpA(0.7), width: "80%", backgroundColor: colors.color1, marginTop: hpA(2), marginBottom: hpA(2) }}></View>
-                                <Text style={styles.productPrice}>{item.price}</Text>
-                            </TouchableOpacity>
-                        ))}
+                    <View style={styles.masonryContainer}>
+                        {/* Cột trái */}
+                        <View style={styles.column}>
+                            {products.filter((_, i) => i % 2 === 0).map((item) => (
+                                <TouchableOpacity key={item.id} style={styles.productCard}>
+                                    <Image
+                                        source={{ uri: getFirstImageUrl(item) || "https://placehold.co/300x400" }}
+                                        style={styles.productImage}
+                                        contentFit="cover"
+                                    />
+                                    <Text style={styles.productName}>{item.name}</Text>
+                                    <View style={{ height: hpA(0.7), width: "80%", backgroundColor: colors.color1, marginTop: hpA(2), marginBottom: hpA(2) }}></View>
+                                    <Text style={styles.productPrice}>{formatVND(item.price)}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        {/* Cột phải (dịch thấp hơn một chút) */}
+                        <View style={[styles.column, { marginTop: hpA(20) }]}>
+                            {products.filter((_, i) => i % 2 !== 0).map((item) => (
+                                <TouchableOpacity key={item.id} style={styles.productCard}>
+                                    <Image
+                                        source={{ uri: getFirstImageUrl(item) || "https://placehold.co/300x400" }}
+                                        style={styles.productImage}
+                                        contentFit="cover"
+                                    />
+                                    <Text style={styles.productName}>{item.name}</Text>
+                                    <View style={{ height: hpA(0.7), width: "80%", backgroundColor: colors.color1, marginTop: hpA(2), marginBottom: hpA(2) }}></View>
+
+                                    <Text style={styles.productPrice}>{formatVND(item.price)}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
                     </View>
-
-                    {/* Cột phải (dịch thấp hơn một chút) */}
-                    <View style={[styles.column, { marginTop: hpA(20) }]}>
-                        {products.filter((_, i) => i % 2 !== 0).map((item) => (
-                            <TouchableOpacity key={item.id} style={styles.productCard}>
-                                <Image source={item.img} style={styles.productImage} contentFit="cover" />
-                                <Text style={styles.productName}>{item.name}</Text>
-                                <View style={{ height: hpA(0.7), width: "80%", backgroundColor: colors.color1, marginTop: hpA(2), marginBottom: hpA(2) }}></View>
-
-                                <Text style={styles.productPrice}>{item.price}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                </View>
+                {/* </View> */}
 
                 {/* lỗi về 2 cột trong FlatList */}
                 {/* <FlatList
@@ -360,7 +434,7 @@ export default function HomeScreen() {
                             >
                                 <Image source={item.img} style={styles.productImage} contentFit="cover" />
                                 <Text style={styles.productName}>{item.name}</Text>
-                                <Text style={styles.productPrice}>{item.price}</Text>
+                                <Text style={styles.productPrice}>{formatVND(item.price)}</Text>
                             </TouchableOpacity>
                         );
                     }}
@@ -376,7 +450,7 @@ export default function HomeScreen() {
                         <TouchableOpacity style={styles.productCardGrid}>
                             <Image source={item.img} style={styles.productImage} contentFit="cover" />
                             <Text style={styles.productName}>{item.name}</Text>
-                            <Text style={styles.productPrice}>{item.price}</Text>
+                                <Text style={styles.productPrice}>{formatVND(item.price)}</Text>
                         </TouchableOpacity>
                     )}
                 /> */}
@@ -470,6 +544,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         paddingHorizontal: wpA(12),
         marginTop: hpA(10),
+        backgroundColor: "#f6f3f3ba"
     },
     column: {
         flex: 1,
@@ -479,19 +554,19 @@ const styles = StyleSheet.create({
 
     productCard: {
         backgroundColor: colors.white,
-    borderRadius: wpA(12),
-    padding: wpA(8),
-    marginBottom: hpA(14),
-    marginHorizontal: wpA(4),
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+        borderRadius: wpA(12),
+        padding: wpA(8),
+        marginBottom: hpA(14),
+        marginHorizontal: wpA(4),
+        shadowColor: "#000",
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
     },
 
     productImage: { width: "100%", height: hpA(160), borderRadius: wpA(8) },
 
     productName: { ...typography.body2, color: colors.color1, marginTop: hpA(6) },
 
-    productPrice: { ...typography.body1, fontStyle: "bold" ,color: colors.inside_color_icon_on },
+    productPrice: { ...typography.body1, fontStyle: "bold", color: colors.inside_color_icon_on },
 });

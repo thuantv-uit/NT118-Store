@@ -1,5 +1,5 @@
 // app/(app)/seller/index.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { useRouter } from "expo-router";
+import { API_URL } from "@/constants/api";
 
 const FLASH_IMAGES = [
   require("../../assets/images/home_seller/flash_sale/Flast sale.png"),
@@ -23,7 +24,8 @@ const FLASH_IMAGES = [
 
 const BANNER_WIDTH = Dimensions.get("window").width * 0.92;
 
-const MESSAGES = [
+// fallback/default messages used when API is unavailable
+const DEFAULT_MESSAGES = [
   {
     id: "1",
     name: "Marvin McKinney",
@@ -40,7 +42,7 @@ const MESSAGES = [
   },
 ];
 
-const NOTIFICATIONS = [
+const DEFAULT_NOTIFICATIONS = [
   { id: "n1", title: "Đơn hàng #SN-2301 đã thanh toán", time: "2 phút trước" },
   { id: "n2", title: "Ly gốm A08 đang có 15 người xem", time: "10 phút trước" },
   { id: "n3", title: "Thêm voucher lễ hội để tăng chuyển đổi", time: "1 giờ trước" },
@@ -244,7 +246,7 @@ const ProductCreationCard = ({ onPress }) => {
 };
 
 /* ===== Notification ===== */
-const NotificationFeed = ({ onPress }) => {
+const NotificationFeed = ({ onPress, notifications }) => {
   const handleNavigate = () => {
     if (onPress) onPress();
   };
@@ -267,7 +269,7 @@ const NotificationFeed = ({ onPress }) => {
           </Pressable>
         </View>
 
-        {NOTIFICATIONS.map((item, index) => (
+        {(notifications || DEFAULT_NOTIFICATIONS).map((item, index) => (
           <Pressable
             key={item.id}
             onPress={handleNavigate}
@@ -316,7 +318,7 @@ const Comment = ({ name, username, date, message, onPress }) => {
 };
 
 /* ===== Message ===== */
-const MessageSection = ({ onPress }) => {
+const MessageSection = ({ onPress, messages }) => {
   const handleNavigate = () => {
     if (onPress) onPress();
   };
@@ -332,15 +334,15 @@ const MessageSection = ({ onPress }) => {
         >
           <Text style={sx.messageTitle}>Tin nhắn gần đây</Text>
           <View style={sx.messageBadge}>
-            <Text style={sx.messageBadgeText}>Bạn có 2 tin nhắn mới</Text>
+            <Text style={sx.messageBadgeText}>Bạn có {(messages || DEFAULT_MESSAGES).length} tin nhắn mới</Text>
           </View>
         </Pressable>
 
         <View style={sx.messageList}>
-          {MESSAGES.map((item, index) => (
+          {(messages || DEFAULT_MESSAGES).map((item, index) => (
             <React.Fragment key={item.id}>
               <Comment {...item} onPress={handleNavigate} />
-              {index < MESSAGES.length - 1 && <View style={sx.hr} />}
+              {index < (messages || DEFAULT_MESSAGES).length - 1 && <View style={sx.hr} />}
             </React.Fragment>
           ))}
         </View>
@@ -361,6 +363,48 @@ const NavigationBar = () => {
 export default function HomeSeller() {
   const router = useRouter();
   const goTo = (path) => () => router.push(path);
+  const [products, setProducts] = useState([]);
+  const [messages, setMessages] = useState(DEFAULT_MESSAGES);
+  const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATIONS);
+  const [loadingData, setLoadingData] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      setLoadingData(true);
+      try {
+        const pRes = await fetch(`${API_URL}/products`);
+        if (pRes.ok) {
+          const pJson = await pRes.json();
+          if (mounted && Array.isArray(pJson)) setProducts(pJson);
+        }
+      } catch (err) {
+        console.warn('[HomeSeller] fetch products failed', err && err.message);
+      }
+
+      try {
+        const mRes = await fetch(`${API_URL}/messages`);
+        if (mRes.ok) {
+          const mJson = await mRes.json();
+          if (mounted && Array.isArray(mJson)) setMessages(mJson);
+        }
+      } catch (err) {}
+
+      try {
+        const nRes = await fetch(`${API_URL}/notifications`);
+        if (nRes.ok) {
+          const nJson = await nRes.json();
+          if (mounted && Array.isArray(nJson)) setNotifications(nJson);
+        }
+      } catch (err) {}
+
+      if (mounted) setLoadingData(false);
+    }
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <SafeAreaView style={sx.safe}>
@@ -380,8 +424,20 @@ export default function HomeSeller() {
         <RevenueOverview onPress={goTo("/dashboard")} />
         {/* <ProductCreationCard onPress={goTo("/product-create")} /> */}
         <ProductCreationCard onPress={goTo("/sellercreateproduct")} />
-        <NotificationFeed onPress={goTo("/notifications")} />
-        <MessageSection onPress={goTo("/messages")} />
+        <NotificationFeed onPress={goTo("/notifications")} notifications={notifications} />
+        <MessageSection onPress={goTo("/messages")} messages={messages} />
+        {loadingData ? (
+          <View style={{ padding: 16 }}>
+            <Text>Đang tải dữ liệu sản phẩm...</Text>
+          </View>
+        ) : (
+          products.slice(0, 4).map((p) => (
+            <View key={String(p.id)} style={{ paddingHorizontal: wp("3%"), paddingVertical: hp("1%") }}>
+              <Text style={{ fontWeight: "700" }}>{p.name}</Text>
+              {p.price != null && <Text style={{ color: "#6B7280" }}>{p.price} đ</Text>}
+            </View>
+          ))
+        )}
       </ScrollView>
       <NavigationBar />
     </SafeAreaView>

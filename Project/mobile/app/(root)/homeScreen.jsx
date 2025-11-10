@@ -7,6 +7,7 @@ import { wpA, hpA, topA } from "../../utils/scale";
 import { typography } from "../../theme/typography";
 import { colors } from "@/theme/colors";
 import { LinearGradient } from "expo-linear-gradient";
+import { formatVND } from "../../utils/format";
 
 
 //components
@@ -322,7 +323,7 @@ export default function HomeScreen() {
                                 <Image source={item.img} style={styles.productImage} contentFit="cover" />
                                 <Text style={styles.productName}>{item.name}</Text>
                                 <View style={{ height: hpA(0.7), width: "80%", backgroundColor: colors.color1, marginTop: hpA(2), marginBottom: hpA(2) }}></View>
-                                <Text style={styles.productPrice}>{item.price}</Text>
+                                <Text style={styles.productPrice}>{formatVND(item.price)}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -335,7 +336,7 @@ export default function HomeScreen() {
                                 <Text style={styles.productName}>{item.name}</Text>
                                 <View style={{ height: hpA(0.7), width: "80%", backgroundColor: colors.color1, marginTop: hpA(2), marginBottom: hpA(2) }}></View>
 
-                                <Text style={styles.productPrice}>{item.price}</Text>
+                                <Text style={styles.productPrice}>{formatVND(item.price)}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -360,7 +361,7 @@ export default function HomeScreen() {
                             >
                                 <Image source={item.img} style={styles.productImage} contentFit="cover" />
                                 <Text style={styles.productName}>{item.name}</Text>
-                                <Text style={styles.productPrice}>{item.price}</Text>
+                                <Text style={styles.productPrice}>{formatVND(item.price)}</Text>
                             </TouchableOpacity>
                         );
                     }}
@@ -376,7 +377,7 @@ export default function HomeScreen() {
                         <TouchableOpacity style={styles.productCardGrid}>
                             <Image source={item.img} style={styles.productImage} contentFit="cover" />
                             <Text style={styles.productName}>{item.name}</Text>
-                            <Text style={styles.productPrice}>{item.price}</Text>
+                            <Text style={styles.productPrice}>{formatVND(item.price)}</Text>
                         </TouchableOpacity>
                     )}
                 /> */}
@@ -478,7 +479,7 @@ const styles = StyleSheet.create({
     productList: { paddingVertical: hpA(10) },
 
     productCard: {
-        backgroundColor: colors.white,
+        backgroundColor: colors.icon_square_color,
     borderRadius: wpA(12),
     padding: wpA(8),
     marginBottom: hpA(14),

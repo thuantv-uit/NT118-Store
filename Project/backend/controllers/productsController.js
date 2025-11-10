@@ -17,8 +17,37 @@ export async function getProductById(req, res) {
 
     // Thực hiện truy vấn
     const products = await sql`
-      SELECT * FROM product WHERE id = ${id}
-    `;
+  SELECT 
+    p.*,
+    c.name AS category_name,
+    COALESCE(
+      json_agg(
+        json_build_object(
+          'url', pm.url,
+          'public_id', pm.public_id,
+          'type', pm.type,
+          'is_cover', pm.is_cover
+        )
+      ) FILTER (WHERE pm.id IS NOT NULL),
+      '[]'
+    ) AS imageUrls,
+    COALESCE(
+      json_agg(
+        json_build_object(
+          'name', pa.name,
+          'value', pa.value
+        )
+      ) FILTER (WHERE pa.id IS NOT NULL),
+      '[]'
+    ) AS attributes
+  FROM product p
+  LEFT JOIN category c ON p.category_id = c.id
+  LEFT JOIN product_media pm ON pm.product_id = p.id
+  LEFT JOIN product_attribute pa ON pa.product_id = p.id
+  WHERE p.id = ${id}
+  GROUP BY p.id, c.name
+`;
+
 
     // Kiểm tra xem có bản ghi nào được tìm thấy không
     if (products.length === 0) {
@@ -33,24 +62,68 @@ export async function getProductById(req, res) {
   }
 }
 
+
 // Get all Products
+// export async function getAllProducts(req, res) {
+//   try {
+//     // Thực hiện truy vấn lấy tất cả products, join với category để lấy tên
+//     const products = await sql`
+//       SELECT p.*, c.name as category_name
+//       FROM product p
+//       JOIN category c ON p.category_id = c.id
+//       ORDER BY p.id DESC  -- Sắp xếp theo ID mới nhất trước (tùy chọn)
+//     `;
+
+//     // Trả về mảng products
+//     res.status(200).json(products);
+//   } catch (error) {
+//     console.error("Error getting all products:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// }
+
+// Get all Products (có ảnh, category, attribute)
 export async function getAllProducts(req, res) {
   try {
-    // Thực hiện truy vấn lấy tất cả products, join với category để lấy tên
     const products = await sql`
-      SELECT p.*, c.name as category_name
+      SELECT 
+        p.*,
+        c.name AS category_name,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'url', pm.url,
+              'public_id', pm.public_id,
+              'type', pm.type,
+              'is_cover', pm.is_cover
+            )
+          ) FILTER (WHERE pm.id IS NOT NULL),
+          '[]'
+        ) AS imageUrls,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'name', pa.name,
+              'value', pa.value
+            )
+          ) FILTER (WHERE pa.id IS NOT NULL),
+          '[]'
+        ) AS attributes
       FROM product p
-      JOIN category c ON p.category_id = c.id
-      ORDER BY p.id DESC  -- Sắp xếp theo ID mới nhất trước (tùy chọn)
+      LEFT JOIN category c ON p.category_id = c.id
+      LEFT JOIN product_media pm ON pm.product_id = p.id
+      LEFT JOIN product_attribute pa ON pa.product_id = p.id
+      GROUP BY p.id, c.name
+      ORDER BY p.id DESC
     `;
 
-    // Trả về mảng products
     res.status(200).json(products);
   } catch (error) {
     console.error("Error getting all products:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }
+
 
 export async function createProduct(req, res) {
   try {
