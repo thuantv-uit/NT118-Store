@@ -7,25 +7,13 @@ export const sql = neon(process.env.DATABASE_URL);
 
 export async function initDB() {
   try {
-    await sql`CREATE TABLE IF NOT EXISTS transactions(
-      id SERIAL PRIMARY KEY,
-      user_id VARCHAR(255) NOT NULL,
-      title  VARCHAR(255) NOT NULL,
-      amount  DECIMAL(10,2) NOT NULL,
-      category VARCHAR(255) NOT NULL,
-      created_at DATE NOT NULL DEFAULT CURRENT_DATE
-    )`;
-    console.log("Database initialized successfully");
-
     await sql`CREATE TABLE IF NOT EXISTS customer(
       id VARCHAR(255) PRIMARY KEY,
       first_name VARCHAR(255) NOT NULL,
       last_name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) NOT NULL UNIQUE,
-      password VARCHAR(255) NOT NULL,
-      address VARCHAR(255) NOT NULL,
       phone_number VARCHAR(255) NOT NULL,
-      role VARCHAR(50) NOT NULL DEFAULT 'buyer' CHECK (role IN ('seller', 'buyer', 'shiper')),
+      avatar VARCHAR(255) NOT NULL DEFAULT '',
+      role VARCHAR(50) NOT NULL DEFAULT 'buyer' CHECK (role IN ('seller', 'buyer', 'shipper')),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
     console.log("Database customer initialized successfully");
@@ -77,6 +65,8 @@ export async function initDB() {
     await sql`CREATE TABLE IF NOT EXISTS "cart"(
       id SERIAL PRIMARY KEY,
       quantity INT NOT NULL,
+      size VARCHAR(10) NULL,
+      color VARCHAR(50) NULL,
       customer_id VARCHAR(255) NULL REFERENCES customer(id),
       product_id INT NULL REFERENCES product(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
