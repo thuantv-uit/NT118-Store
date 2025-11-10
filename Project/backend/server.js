@@ -11,14 +11,14 @@ import productRoutes from "./routes/productsRoutes.js"
 import cartRoutes from "./routes/cartsRoutes.js"
 import orderItemsRoutes from "./routes/orderItemsRoutes.js"
 import wishListRoutes from "./routes/wishListRoutes.js"
-import rateLimiter from "./middleware/rateLimiter.js";
+// import rateLimiter from "./middleware/rateLimiter.js";
 
 dotenv.config();
 
 const app = express();
 
 // Middleware
-app.use(rateLimiter)
+// app.use(rateLimiter)
 app.use(express.json());
 
 const PORT = process.env.PORT;

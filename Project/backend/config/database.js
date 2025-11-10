@@ -54,17 +54,6 @@ export async function initDB() {
     )`;
     console.log("Database payment initialized successfully");
 
-    // await sql`CREATE TABLE IF NOT EXISTS "order"(
-    //   id SERIAL PRIMARY KEY,
-    //   order_date TIMESTAMP NOT NULL,
-    //   total_price DECIMAL(10,2) NOT NULL,
-    //   customer_id VARCHAR(255) NULL REFERENCES customer(id),
-    //   payment_id INT NULL REFERENCES payment(id),
-    //   shipment_id INT NULL REFERENCES shipment(id),
-    //   created_at DATE NOT NULL DEFAULT CURRENT_DATE
-    // )`;
-    // console.log("Database order initialized successfully");
-
     await sql`CREATE TABLE IF NOT EXISTS "category"(
       id SERIAL PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
@@ -79,6 +68,7 @@ export async function initDB() {
       description VARCHAR(255) NOT NULL,
       price DECIMAL(10,2) NOT NULL,
       stock INT NOT NULL,
+      image VARCHAR(255) NOT NULL DEFAULT '',
       category_id INT NULL REFERENCES category(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
