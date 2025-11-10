@@ -1,9 +1,12 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+// use choose image
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -14,8 +17,8 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
-import { API_URL } from "../../constants/api";
-import SellerScreenLayout from "./components/SellerScreenLayout";
+import { API_URL } from "../../../constants/api";
+import SellerScreenLayout from "./SellerScreenLayout";
 
 const BASIC_FIELDS = [
   { id: "name", label: "Tên sản phẩm", placeholder: "Ví dụ: Ly gốm Artisan A08", value: "" },
@@ -38,9 +41,32 @@ export default function SellerProductCreate({ navigation }) {
     }, {})
   );
   const [loading, setLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const handleInputChange = (id, value) => {
     setFormData((prev) => ({ ...prev, [id]: value }));
+  };
+
+  // Add: Function choose and handle image from gallery/camera
+  const pickImage = async () => {
+    // Require access (if need platform)
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Lỗi", "Cần quyền truy cập thư viện ảnh để chọn ảnh!");
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1], // Square aspect ratio for product images
+      quality: 0.8, // Image quality to reduce size
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri); // Save URI to preview
+      Alert.alert("Thành công", "Đã chọn ảnh! Sẽ được upload khi đăng sản phẩm.");
+    }
   };
 
   const validateForm = () => {
@@ -58,44 +84,62 @@ export default function SellerProductCreate({ navigation }) {
     return true;
   };
 
+  // SỬA: Funtion create product with FormData to support upload file image
   const handleCreateProduct = async () => {
     if (!validateForm()) return;
     const baseURL = API_URL;
 
     setLoading(true);
     try {
-      const payload = {
-        SKU: formData.SKU,
-        name: formData.name,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        category_id: parseInt(formData.category_id),
-        stock: parseInt(formData.stock),
-      };
+      // Create FormData for multipart/form-data
+      const formPayload = new FormData();
+      formPayload.append("SKU", formData.SKU);
+      formPayload.append("name", formData.name);
+      formPayload.append("description", formData.description);
+      formPayload.append("price", parseFloat(formData.price));
+      formPayload.append("category_id", parseInt(formData.category_id));
+      formPayload.append("stock", parseInt(formData.stock));
+
+      // Add: If any image, append file into FormData
+      if (selectedImage) {
+        const imageUri = selectedImage;
+        const fileName = imageUri.split('/').pop(); // Name file from URI
+        const fileType = fileName.includes('.png') ? 'image/png' : 'image/jpeg';
+
+        formPayload.append("image", { // Field name matches backend (req.file)
+          uri: imageUri,
+          type: fileType,
+          name: fileName,
+        }); // Type assertion because FormData append need object specifically
+      }
 
       const response = await fetch(`${baseURL}/product`, {
         method: "POST",
+        body: formPayload, // using FormData instead of JSON
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "multipart/form-data", // Headers for multipart
         },
-        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
 
       if (response.ok) {
         Alert.alert("Thành công", "Sản phẩm đã được tạo!", [
-          { text: "OK", onPress: () => navigation?.navigate("ProductList") },
+          { text: "OK", onPress: () => {
+            navigation?.navigate("ProductList");
+            // Clear form and image after success
+            setFormData({
+              SKU: "",
+              name: "",
+              description: "",
+              price: "",
+              category_id: "",
+              stock: "",
+              warehouse: formData.warehouse,
+            });
+            setSelectedImage(null);
+          }},
         ]);
-        setFormData({
-          SKU: "",
-          name: "",
-          description: "",
-          price: "",
-          category_id: "",
-          stock: "",
-          warehouse: formData.warehouse,
-        });
       } else {
         Alert.alert("Lỗi", result.message || "Không thể tạo sản phẩm!");
       }
@@ -108,12 +152,23 @@ export default function SellerProductCreate({ navigation }) {
   };
 
   const handleSaveDraft = () => {
-    console.log("Lưu nháp:", formData);
+    console.log("Lưu nháp:", formData, "Image URI:", selectedImage);
     Alert.alert("Nháp", "Đã lưu nháp!");
   };
 
   return (
     <SellerScreenLayout title="Tạo sản phẩm mới" subtitle="Hoàn tất thông tin để lên kệ">
+      {/* Add: Session preview image after choose */}
+      {selectedImage && (
+        <View style={styles.imagePreview}>
+          <Image source={{ uri: selectedImage }} style={styles.previewImage} />
+          <Pressable style={styles.removeImageButton} onPress={() => setSelectedImage(null)}>
+            <Ionicons name="close-circle" size={20} color="#FF0000" />
+          </Pressable>
+        </View>
+      )}
+
+      {/* Upload card with onPress to pickImage */}
       <LinearGradient
         colors={["#FFE5EA", "#FAD4D6"]}
         start={{ x: 0, y: 0 }}
@@ -132,6 +187,8 @@ export default function SellerProductCreate({ navigation }) {
             styles.uploadButton,
             pressed && styles.uploadButtonPressed,
           ]}
+          onPress={pickImage} // Add: call pickImage when press
+          disabled={loading} // Disable when loading
         >
           <Text style={styles.uploadButtonText}>Tải lên</Text>
         </Pressable>
@@ -206,6 +263,7 @@ export default function SellerProductCreate({ navigation }) {
           pressed && styles.draftButtonPressed,
         ]}
         onPress={handleSaveDraft}
+        disabled={loading}
       >
         <Text style={styles.draftButtonText}>Lưu nháp</Text>
       </Pressable>
@@ -214,6 +272,31 @@ export default function SellerProductCreate({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  // THÊM: Styles cho preview ảnh
+  imagePreview: {
+    width: wp("90%"),
+    height: hp("25%"),
+    alignSelf: "center",
+    marginBottom: hp("2%"),
+    position: "relative",
+    borderRadius: 16,
+    overflow: "hidden",
+    backgroundColor: "#F0F0F0",
+  },
+  previewImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  removeImageButton: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    backgroundColor: "rgba(255,255,255,0.8)",
+    borderRadius: 20,
+    padding: 2,
+  },
+
   uploadCard: {
     borderRadius: 22,
     paddingVertical: hp("1.8%"),

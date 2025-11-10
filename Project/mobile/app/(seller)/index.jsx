@@ -379,7 +379,7 @@ export default function HomeSeller() {
       >
         <FlashSaleBanner />
         <RevenueOverview onPress={goTo("/dashboard")} />
-        <ProductCreationCard onPress={goTo("/product-create")} />
+        <ProductCreationCard onPress={goTo("/(seller)/components/product-create")} />
         <NotificationFeed onPress={goTo("/notifications")} />
         <MessageSection onPress={goTo("/messages")} />
       </ScrollView>

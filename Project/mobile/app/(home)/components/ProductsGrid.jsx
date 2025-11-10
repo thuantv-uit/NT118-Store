@@ -52,7 +52,7 @@ export default function ProductsGrid() {
       <Image 
         source={{ uri: item.image }} 
         style={styles.productImage}
-        defaultSource={{ uri: 'https://via.placeholder.com/150' }} // Fallback nếu image lỗi
+        defaultSource={{ uri: 'https://via.placeholder.com/150' }}
       />
       <View style={styles.productMeta}>
         <Text style={styles.productName} numberOfLines={2}>
@@ -103,21 +103,6 @@ export default function ProductsGrid() {
           <Text style={styles.sectionMore}>Xem tất cả</Text>
         </TouchableOpacity>
       </View>
-
-      {/* <FlatList
-        data={products}
-        numColumns={2}
-        renderItem={renderProduct}
-        keyExtractor={(item) => item.id.toString()}
-        scrollEnabled={true}
-        contentContainerStyle={styles.productsGrid}
-        ListEmptyComponent={
-          <View style={{ alignItems: 'center', padding: 20 }}>
-            <Text>Không có sản phẩm nào</Text>
-          </View>
-        }
-      /> */}
-
         <FlatList
         data={products}
         numColumns={2}
