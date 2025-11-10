@@ -2,6 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Image, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { colors } from '@/theme/colors';
+import { typography } from '@/theme/typography';
+import { wpA, hpA } from "@/utils/scale";
+
+
 
 // Component now accepts props: images (array) and onChange callback
 export default function ProductMediaPicker({ images = [], onChange = () => {} }) {
@@ -130,7 +135,7 @@ export default function ProductMediaPicker({ images = [], onChange = () => {} })
       <Text style={styles.title}>Thêm hình ảnh & video sản phẩm</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <Pressable style={styles.addBox} onPress={onPressAdd}>
-          <Ionicons name="add-outline" size={32} color="#BE123C" />
+          <Ionicons name="add-outline" size={32} color={colors.color1} />
         </Pressable>
 
         {media.map((m) => (
@@ -150,16 +155,41 @@ export default function ProductMediaPicker({ images = [], onChange = () => {} })
 }
 
 const styles = StyleSheet.create({
-  container: { marginBottom: 20 },
-  title: { fontWeight: "700", fontSize: 16, color: "#BE123C", marginBottom: 8 },
-  addBox: {
-    width: 100, height: 100, borderRadius: 10, borderWidth: 1,
-    borderColor: "#CC7861", justifyContent: "center", alignItems: "center",
-    backgroundColor: "#FFF"
+  container: { 
+    marginBottom: hpA(20) 
   },
-  scrollContent: { alignItems: "center" , paddingRight: 8},
-  thumbShell: { marginLeft: 8, width: 100, height: 100, borderRadius: 10, overflow: "hidden" },
-  thumb: { width: 100, height: 100, resizeMode: "cover" },
+  title: { 
+    ...typography.title2,
+    fontSize: 20,
+    color: colors.color1, 
+     marginBottom: hpA(8) 
+    },
+  addBox: {
+    width: wpA(75), 
+    height: hpA(75), 
+    borderRadius: wpA(10),
+    borderWidth: 1,
+    borderColor: colors.color1, 
+    justifyContent: "center", 
+    alignItems: "center",
+    backgroundColor: "#FFF",
+  },
+  scrollContent: { 
+    alignItems: "center" ,
+    paddingRight: 8
+  },
+  thumbShell: {
+     marginLeft: 8, 
+     width: 100, 
+     height: 100, 
+     borderRadius: 10,
+     overflow: "hidden" 
+    },
+  thumb: { 
+    width: 100, 
+    height: 100, 
+    resizeMode: "cover" 
+  },
   videoBadge: {
     position: "absolute",
     right: 6,
@@ -170,5 +200,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  hint: { color: "#9CA3AF", fontSize: 12, marginTop: 6 }
+  hint: { 
+    color: colors.black,
+    ...typography.caption2,
+    fontSize: 12, 
+    marginTop: 6 }
 });

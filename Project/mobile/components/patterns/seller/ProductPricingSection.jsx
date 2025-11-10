@@ -41,7 +41,13 @@ export default function ProductPricingSection({ price, stock, onChange }) {
 
 const styles = StyleSheet.create({
   section: { marginBottom: hpA(18) },
-  title: { fontWeight: "700", fontSize: hpA(16), color: colors.hmee05, marginBottom: hpA(10) },
+  title: { 
+    ...typography.title2,
+    fontSize: 20,
+    // fontWeight: "700", 
+    // fontSize: hpA(16), 
+    color: colors.color1,
+     marginBottom: hpA(10) },
   field: {
     backgroundColor: colors.white,
     borderRadius: 16,
@@ -51,6 +57,15 @@ const styles = StyleSheet.create({
     paddingVertical: hpA(8),
     paddingHorizontal: wpA(14),
   },
-  label: { fontSize: hpA(13), fontWeight: "600", color: colors.hmee05, marginBottom: hpA(4) },
-  input: { fontSize: hpA(15), color: colors.textPrimary },
+  label: { 
+    ...typography.headline3,
+    // fontSize: hpA(13), 
+    // fontWeight: "600", 
+    color: colors.black, 
+    marginBottom: hpA(4) 
+  },
+  input: { 
+    ...typography.body4,
+    fontSize: hpA(15),
+    color: colors.dark_mode_icon_square },
 });

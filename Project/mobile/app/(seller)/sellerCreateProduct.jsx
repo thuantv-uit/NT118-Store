@@ -1,12 +1,15 @@
 // NT118-Store/Project/mobile/app/(seller)/sellerCreateProduct.jsx
 import React, { useState } from "react";
-import { Alert, ScrollView, View, Text, Pressable, ActivityIndicator } from "react-native";
-import SellerScreenLayout from "@/components/layout/SellerScreenLayout";
+import { Alert, ScrollView, View, Text, StyleSheet, Pressable, ActivityIndicator, Modal } from "react-native";
+// import SellerScreenLayout from "@/components/layout/SellerScreenLayout";
+import SellerScreenLayout from "./components/SellerScreenLayout";
+
 import { useLocalSearchParams } from "expo-router";
 
 // import dùng trong mọi file
 import { colors } from "@/theme/colors";
 import { typography } from "@/theme/typography";
+import {theme} from '@/theme/index';
 import { wpA, hpA } from "@/utils/scale";
 
 import ProductMediaPicker from "@/components/patterns/seller/ProductMediaPicker";
@@ -20,6 +23,7 @@ import ProductActionButtons from "@/components/patterns/seller/ProductActionButt
 import { API_URL } from '@/constants/api';
 import { useRouter } from "expo-router";
 import { saveDraftSync as saveTempDraftSync, getDraft as getTempDraft, clearDraftSync as clearTempDraftSync } from '@/utils/tempDraft';
+import SelectCategory from '@/components/patterns/seller/SelectCategory';
 
 
 export default function SellerCreateProduct() {
@@ -50,6 +54,7 @@ export default function SellerCreateProduct() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0); // 0..100
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   // cập nhật dữ liệu con
   const updateField = (field, value) => {
@@ -132,8 +137,6 @@ export default function SellerCreateProduct() {
           }
         };
         xhr.onerror = (e) => {
-          setUploading(false);
-          setUploadProgress(0);
           console.warn('[uploadFilesToServer] xhr.onerror', e, '- attempting fetch fallback');
           // Fallback to fetch if XHR fails (some environments don't support XHR FormData well)
           (async () => {
@@ -142,10 +145,20 @@ export default function SellerCreateProduct() {
               const text = await res.text();
               console.log('[uploadFilesToServer] fetch fallback status', res.status, 'resp', text);
               const data = text ? JSON.parse(text) : {};
-              if (res.ok) resolve(data.files || []);
-              else reject(new Error(data.message || `Upload failed (fetch fallback ${res.status})`));
+              if (res.ok) {
+                // ensure UI updates
+                setUploadProgress(100);
+                setUploading(false);
+                resolve(data.files || []);
+              } else {
+                setUploadProgress(0);
+                setUploading(false);
+                reject(new Error(data.message || `Upload failed (fetch fallback ${res.status})`));
+              }
             } catch (fe) {
               console.warn('[uploadFilesToServer] fetch fallback failed', fe);
+              setUploadProgress(0);
+              setUploading(false);
               reject(new Error('Network error during upload'));
             }
           })();
@@ -153,10 +166,12 @@ export default function SellerCreateProduct() {
         if (xhr.upload && typeof xhr.upload.addEventListener === 'function') {
           xhr.upload.onprogress = (event) => {
             if (event.lengthComputable) {
-              const pct = Math.round((event.loaded / event.total) * 100);
-              setUploadProgress(pct);
-              onProgress(pct);
-            }
+                let pct = Math.round((event.loaded / event.total) * 100);
+                // clamp to 0..100 to avoid odd >100 values from some environments
+                pct = Math.max(0, Math.min(100, pct));
+                setUploadProgress(pct);
+                onProgress(pct);
+              }
           };
         }
         xhr.send(form);
@@ -287,8 +302,16 @@ export default function SellerCreateProduct() {
   };
 
   return (
+    //  <View style={styles.container}>
+    //             {/* nút Back */}
+    //             {/* <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+    //         <Ionicons name="arrow-back-outline" size={24} color={theme.colors.textPrimary} />
+    //       </TouchableOpacity> */}
+    
+    //             <Text style={styles.title}>Thêm Sản Phẩm</Text>
     <SellerScreenLayout title="Tạo sản phẩm mới" subtitle="Điền thông tin chi tiết để đăng bán" style={{ marginTop: wpA(16) }}>
-      <ScrollView showsVerticalScrollIndicator={false} style={{ marginBottom: hpA(20), marginTop: hpA(40) }}>
+      {/* <LinearGradient colors={["#FFE5EA", "#FAD4D6"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.uploadCard}>  </LinearGradient> */}
+      <ScrollView showsVerticalScrollIndicator={false} style={{ marginBottom: hpA(20), marginTop: hpA(0) }}>
         <ProductMediaPicker
           images={productData.images}
           onChange={(imgs) => updateField("images", imgs)}
@@ -303,20 +326,27 @@ export default function SellerCreateProduct() {
         />
         {/* Chọn danh mục */}
         <View style={{ marginVertical: hpA(12) }}>
-          <Text style={{ fontSize: 16, fontWeight: "700", color: colors.hmee04, marginBottom: hpA(8) }}>
+          <Text style={{ color: colors.color1,...typography.title2,fontSize: 20,marginBottom: hpA(8) }}>
             Danh mục sản phẩm *
           </Text>
           <Pressable
             style={{ paddingVertical: 12, paddingHorizontal: 10, backgroundColor: "#fff", borderRadius: 8 }}
             onPress={() => {
-              // Save current form to temporary store so returning screen can restore it
-                console.log('[sellerCreateProduct] saving temp draft before navigate, name=', productData.name || '<empty>');
-                saveTempDraftSync(productData);
-              router.push('/select-category');
+              // open inline modal selector instead of navigating away (preserve form state)
+              setShowCategoryModal(true);
             }}
           >
             <Text>{productData.category || "Chọn danh mục"}</Text>
           </Pressable>
+          <Modal visible={showCategoryModal} animationType="slide">
+            <SelectCategory
+              onSelect={(cat) => {
+                updateField('category', cat.name);
+                updateField('category_id', cat.id);
+                setShowCategoryModal(false);
+              }}
+            />
+          </Modal>
           {/* {productData.category ? (
             <Text style={{ color: colors.hmee03, marginTop: hpA(4) }}>
               Đã chọn: {productData.category}
@@ -368,6 +398,23 @@ export default function SellerCreateProduct() {
           </View>
         ) : null}
       </ScrollView>
-    </SellerScreenLayout>
+    </SellerScreenLayout> 
+    // </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+        flex: 1,
+        backgroundColor: colors['#FFF4F1'],
+        alignItems: "center",
+        // paddingTop: hpA(60),
+    },
+   
+    title: {
+        ...theme.typography.title1,
+        color: "#C97C68",
+        marginTop: hpA(24),
+        // marginBottom: hpA(24),
+    },
+});

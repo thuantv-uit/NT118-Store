@@ -37,6 +37,7 @@ export const typography = {
     // fontWeight: "500",
   },
 
+
   // ===== HEADLINES (section / card headers) =====
   headline1: {
     fontFamily: "Athiti-SemiBold",
@@ -76,6 +77,12 @@ export const typography = {
     lineHeight: Math.round(14 * 1.4),
     // fontWeight: "300",
   },
+  body4: {
+    fontFamily: "Nunito-Regular",
+    fontSize: 14,
+    lineHeight: Math.round(14 * 1.4),
+    // fontWeight: "300",
+  },
 
   // ===== LABELS / BUTTONS =====
   label1: {
@@ -99,6 +106,109 @@ export const typography = {
     // fontWeight: "600",
     letterSpacing: 0.3,
   },
+
+  //  // ===== DISPLAY (hero / splash) =====
+  // display1: {
+  //   fontFamily: "Nunito-Black",
+  //   fontSize: 48,
+  //   lineHeight: Math.round(48 * 1.2),
+  //   fontWeight: "900",
+  // },
+  // display2: {
+  //   fontFamily: "Nunito-ExtraBold",
+  //   fontSize: 36,
+  //   lineHeight: Math.round(36 * 1.25),
+  //   fontWeight: "800",
+  // },
+
+  // // ===== TITLES (page / section headings) =====
+  // title1: {
+  //   fontFamily: "Nunito-Bold",
+  //   fontSize: 28,
+  //   lineHeight: Math.round(28 * 1.3),
+  //   fontWeight: "700",
+  // },
+  // title2: {
+  //   fontFamily: "Nunito-SemiBold",
+  //   fontSize: 24,
+  //   lineHeight: Math.round(24 * 1.3),
+  //   fontWeight: "600",
+  // },
+  // title3: {
+  //   fontFamily: "Nunito-Medium",
+  //   fontSize: 20,
+  //   lineHeight: Math.round(20 * 1.3),
+  //   fontWeight: "500",
+  // },
+
+  // // ===== HEADLINES (section / card headers) =====
+  // headline1: {
+  //   fontFamily: "Nunito-SemiBold",
+  //   fontSize: 18,
+  //   lineHeight: Math.round(18 * 1.4),
+  //   fontWeight: "600",
+  // },
+  // headline2: {
+  //   fontFamily: "Nunito-Regular",
+  //   fontSize: 16,
+  //   lineHeight: Math.round(16 * 1.4),
+  //   fontWeight: "400",
+  // },
+  // headline3: {
+  //   fontFamily: "Nunito-Light",
+  //   fontSize: 15,
+  //   lineHeight: Math.round(15 * 1.4),
+  //   fontWeight: "300",
+  // },
+
+  // // ===== BODY (main content text) =====
+  // body1: {
+  //   fontFamily: "Nunito-Bold",
+  //   fontSize: 16,
+  //   lineHeight: Math.round(16 * 1.5),
+  //   fontWeight: "700",
+  // },
+  // body2: {
+  //   fontFamily: "Nunito-Regular",
+  //   fontSize: 15,
+  //   lineHeight: Math.round(15 * 1.5),
+  //   fontWeight: "400",
+  // },
+  // body3: {
+  //   fontFamily: "Nunito-Light",
+  //   fontSize: 14,
+  //   lineHeight: Math.round(14 * 1.5),
+  //   fontWeight: "300",
+  // },
+  // body4: {
+  //   fontFamily: "Nunito-ExtraLight",
+  //   fontSize: 13,
+  //   lineHeight: Math.round(13 * 1.45),
+  //   fontWeight: "200",
+  // },
+
+  // // ===== LABELS / BUTTONS =====
+  // label1: {
+  //   fontFamily: "Nunito-SemiBold",
+  //   fontSize: 18,
+  //   lineHeight: Math.round(18 * 1.25),
+  //   fontWeight: "600",
+  //   letterSpacing: 0.3,
+  // },
+  // label2: {
+  //   fontFamily: "Nunito-SemiBold",
+  //   fontSize: 16,
+  //   lineHeight: Math.round(16 * 1.25),
+  //   fontWeight: "600",
+  //   letterSpacing: 0.3,
+  // },
+  // label3: {
+  //   fontFamily: "Nunito-Medium",
+  //   fontSize: 14,
+  //   lineHeight: Math.round(14 * 1.25),
+  //   fontWeight: "500",
+  //   letterSpacing: 0.3,
+  // },
 
   // ===== CAPTIONS =====
   caption2:{

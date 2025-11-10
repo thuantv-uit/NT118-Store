@@ -378,7 +378,8 @@ export default function HomeSeller() {
       >
         <FlashSaleBanner />
         <RevenueOverview onPress={goTo("/dashboard")} />
-        <ProductCreationCard onPress={goTo("/product-create")} />
+        {/* <ProductCreationCard onPress={goTo("/product-create")} /> */}
+        <ProductCreationCard onPress={goTo("/sellercreateproduct")} />
         <NotificationFeed onPress={goTo("/notifications")} />
         <MessageSection onPress={goTo("/messages")} />
       </ScrollView>
@@ -398,15 +399,18 @@ const sx = StyleSheet.create({
     paddingTop: hp("1.2%"),
     paddingBottom: hp("1.8%"),
     paddingHorizontal: wp("5%"),
+    marginTop: hp("0%"),
+
   },
   header: {
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginTop: wp("7%"),
   },
   headerGreeting: { fontSize: hp("2%"), color: "#FFE4E1", fontWeight: "500" },
-  headerTitle: { fontSize: hp("3%"), color: "#FFFFFF", fontWeight: "700" },
+  headerTitle: { fontSize: hp("3%"), color: "#FFFFFF", fontWeight: "700", },
   headerRight: { flexDirection: "row", alignItems: "center" },
   shopNamePressable: { marginTop: hp("0.4%") },
   headerIconButton: {

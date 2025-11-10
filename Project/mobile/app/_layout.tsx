@@ -14,10 +14,10 @@ import FunctionalIconsPreview from "./(welcome)/FunctionalIconsPreview";
 import Home from "./(root)/homeScreen";
 import ProductDetail from "./(product)/productDetail";
 import ProductCreate from "./(seller)/product-create";
-import SellerCreateProduct from "./(seller)/sellerCreateProduct";
+import SellerCreateProduct from "./(seller)/sellercreateproduct";
 import SelectCategory from "./(seller)/select-category";
 
-import React,{useEffect} from "react";
+import React, { useEffect } from "react";
 import SafeScreen from "../components/SafeScreen";
 import { ActivityIndicator, View } from "react-native";
 
@@ -50,12 +50,35 @@ export default function RootLayout() {
     "Mali-Regular": require("../assets/fonts/Mali/Mali-Regular.ttf"),
     "Mali-SemiBold": require("../assets/fonts/Mali/Mali-SemiBold.ttf"),
     "Borel-Regular": require("../assets/fonts/Borel/Borel-Regular.ttf"),
+
+    "CherryBombOne-Regular": require("../assets/fonts/Cherry/CherryBombOne-Regular.ttf"),
+
+    "Nunito-Black": require("../assets/fonts/Nunito/Nunito-Black.ttf"),
+    "Nunito-BlackItalic": require("../assets/fonts/Nunito/Nunito-BlackItalic.ttf"),
+    "Nunito-Bold": require("../assets/fonts/Nunito/Nunito-Bold.ttf"),
+    "Nunito-BoldItalic": require("../assets/fonts/Nunito/Nunito-BoldItalic.ttf"),
+    "Nunito-ExtraBold": require("../assets/fonts/Nunito/Nunito-ExtraBold.ttf"),
+    "Nunito-ExtraBoldItalic": require("../assets/fonts/Nunito/Nunito-ExtraBoldItalic.ttf"),
+    "Nunito-ExtraLight": require("../assets/fonts/Nunito/Nunito-ExtraLight.ttf"),
+    "Nunito-ExtraLightItalic": require("../assets/fonts/Nunito/Nunito-ExtraLightItalic.ttf"),
+    "Nunito-Italic": require("../assets/fonts/Nunito/Nunito-Italic.ttf"),
+    "Nunito-Light": require("../assets/fonts/Nunito/Nunito-Light.ttf"),
+    "Nunito-LightItalic": require("../assets/fonts/Nunito/Nunito-LightItalic.ttf"),
+    "Nunito-Medium": require("../assets/fonts/Nunito/Nunito-Medium.ttf"),
+    "Nunito-MediumItalic": require("../assets/fonts/Nunito/Nunito-MediumItalic.ttf"),
+    "Nunito-Regular": require("../assets/fonts/Nunito/Nunito-Regular.ttf"),
+    "Nunito-SemiBold": require("../assets/fonts/Nunito/Nunito-SemiBold.ttf"),
+    "Nunito-SemiBoldItalic": require("../assets/fonts/Nunito/Nunito-SemiBoldItalic.ttf"),
+
+
+
+
   });
 
   console.log("fontsLoaded:", fontsLoaded);
-useEffect(() => {
-  fetch(`${API_URL}/ping`).catch(() => {});
-}, []);
+  useEffect(() => {
+    fetch(`${API_URL}/ping`).catch(() => { });
+  }, []);
 
 
   if (!fontsLoaded)
@@ -107,10 +130,10 @@ useEffect(() => {
 
       {/* <OTP/> */}
       {/* </SafeScreen> */}
-{/* return ( */}
-    {/* <ClerkProvider tokenCache={tokenCache} publishableKey={process.env.EXPO_PUBLIC_CLERK_KEY}> */}
+      {/* return ( */}
+      {/* <ClerkProvider tokenCache={tokenCache} publishableKey={process.env.EXPO_PUBLIC_CLERK_KEY}> */}
       {/* <SafeScreen> */}
-        {/* <Slot /> Quan trọng: render route con */}
+      {/* <Slot /> Quan trọng: render route con */}
       {/* </SafeScreen> */}
     </ClerkProvider>
   );

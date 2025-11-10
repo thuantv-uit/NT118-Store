@@ -5,11 +5,14 @@ import { Picker } from "@react-native-picker/picker";
 import { API_URL } from "@/constants/api";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { colors } from "@/theme/colors";
+import { typography } from "@/theme/typography";
 
 export default function ProductBasicInfo({
   name,
   description,
   brand,
+  sku,
   category,
   onChange,
   // onSelectCategory,
@@ -81,6 +84,16 @@ export default function ProductBasicInfo({
         value={description}
         onChangeText={(t) => onChange("description", t)}
       />
+      {/* Mã kho */}
+      <Text style={styles.label}>Mã kho *</Text>
+      <TextInput
+        style={[styles.input]}
+        placeholder="Nhập mã kho sản phẩm..."
+        // multiline
+        // numberOfLines={4}
+        value={sku}
+        onChangeText={(t) => onChange("sku", t)}
+      />
 
       {/* Dropdown danh mục
       <Text style={styles.label}>Danh mục *</Text>
@@ -145,15 +158,28 @@ export default function ProductBasicInfo({
 
 const styles = StyleSheet.create({
   container: { marginBottom: 20 },
-  sectionTitle: { fontWeight: "700", fontSize: 16, color: "#BE123C", marginBottom: 10 },
-  label: { fontWeight: "600", color: "#7F1D1D", marginTop: 10, marginBottom: 4 },
+  sectionTitle: { 
+ ...typography.title2,
+        fontSize: 20,
+    color: colors.color1,   },
+  label: { 
+     marginLeft: 8, 
+        color: colors.black, 
+        ...typography.headline1,
+        fontSize: 16,
+    marginTop: 10, 
+    marginBottom: 4 
+  },
   input: {
+     ...typography.body1,
+    color: colors.dark_mode_icon_square,
     borderWidth: 1,
     borderColor: "rgba(204,120,97,0.3)",
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 8,
     backgroundColor: "#FFF",
+    fontSize: 15,
   },
   textarea: { height: 100, textAlignVertical: "top" },
   dropdownWrapper: {

@@ -4,6 +4,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { colors } from '@/theme/colors';
+import { typography } from '@/theme/typography';
+import { wpA, hpA } from "@/utils/scale";
+
 
 const HEADER_GRADIENT = ["#CC7861", "#E3ABA1"];
 
@@ -45,13 +49,17 @@ export default function SellerScreenLayout({
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#FFF8F6", height: wp("10%"), marginTop: hp("2%") },
+  safe: { 
+    flex: 1,
+     backgroundColor: "#FFF8F6",
+    marginTop: hp("0%") 
+  },
   scroll: { flex: 1 },
   headerGradient: {
-    height: hp("10%"),
-    marginTop: hp("20%"),
+    // height: hp("10%"),
+    // marginTop: hp("5%"),
     paddingTop: hp("1.8%"),
-    paddingBottom: hp("2.2%"),
+    paddingBottom: hp("0.5%"),
     paddingHorizontal: wp("4.5%"),
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
@@ -65,12 +73,24 @@ const styles = StyleSheet.create({
     borderRadius: wp("5%"),
     justifyContent: "center",
     alignItems: "center",
+    marginTop: wp("7%"),
     backgroundColor: "rgba(255,255,255,0.22)",
   },
   backButtonPressed: { backgroundColor: "rgba(255,255,255,0.36)" },
-  headerCenter: { flex: 1, alignItems: "center", justifyContent: "center" , marginTop: 50},
-  headerTitle: { fontSize: hp("2.6%"), fontWeight: "700", color: "#FFF5F2", marginTop: 50 },
-  headerSubtitle: { fontSize: hp("1.7%"), color: "#FFE4E1", marginTop: hp("0.4%") },
+  headerCenter: { flex: 1, alignItems: "center", justifyContent: "center" , marginTop: 0},
+  headerTitle: { 
+    ...typography.title1,
+    // fontSize: hp("2.6%"),
+    //  fontWeight: "700", 
+     color: "#FFF5F2", 
+     marginTop: wpA(30) 
+    },
+  headerSubtitle: {
+    ...typography.caption1, 
+    // fontSize: hp("1.7%"), 
+    color: "#FFE4E1", 
+    marginTop: hp("0.4%") 
+  },
   rightPlaceholder: { width: wp("10%") },
   content: {
     paddingHorizontal: wp("4.5%"),
