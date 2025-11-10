@@ -6,9 +6,9 @@ export default function Categories() {
   const renderCategory = ({ item }) => (
     <TouchableOpacity style={styles.categoryItem}>
       <View style={styles.categoryIconWrapper}>
-        <Image source={{ uri: item.image }} style={styles.categoryIcon} />
+        <Image source={{ uri: item.image || 'https://via.placeholder.com/50' }} style={styles.categoryIcon} />
       </View>
-      <Text style={styles.categoryLabel} numberOfLines={1}>{item.name}</Text>
+      <Text style={styles.categoryLabel} numberOfLines={1}>{item.name || 'Danh mục'}</Text>
     </TouchableOpacity>
   );
 
@@ -16,15 +16,22 @@ export default function Categories() {
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Danh mục</Text>
-        <TouchableOpacity><Text style={styles.sectionMore}>Xem tất cả</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => console.log('View all categories')}>
+          <Text style={styles.sectionMore}>Xem tất cả</Text>
+        </TouchableOpacity>
       </View>
       <FlatList
-        data={categories}
+        data={categories || []}
         numColumns={4}
         renderItem={renderCategory}
-        keyExtractor={(i) => i.id}
+        keyExtractor={(i) => i.id.toString()}
         scrollEnabled={false}
         contentContainerStyle={styles.categoriesGrid}
+        ListEmptyComponent={
+          <View style={{ alignItems: 'center', padding: 20 }}>
+            <Text>Không có danh mục</Text>
+          </View>
+        }
       />
     </View>
   );

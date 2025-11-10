@@ -19,40 +19,45 @@ export default function ProductsGrid() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await fetch(`${API_BASE_URL}/product`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setProducts(data);
-      } catch (err) {
-        setError(err.message);
-        console.error('Error fetching products:', err);
-      } finally {
-        setLoading(false);
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch(`${API_BASE_URL}/product`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    };
+      const data = await response.json();
+      // Fallback nếu data có vấn đề text
+      setProducts((data || []).map(p => ({
+        ...p,
+        name: p.name || 'Sản phẩm không tên',
+        category_name: p.category_name || '',
+      })));
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching products:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProducts();
   }, []);
+
+  const handleRetry = () => {
+    fetchProducts();
+  };
 
   const renderProduct = ({ item }) => (
     <TouchableOpacity 
       style={styles.productCard}
-      onPress={() => {
-        // console.log('Navigate to product detail:', item.id);
-        navigation.navigate('(home)/components/ProductDetail', { id: item.id });
-      }}
+      onPress={() => navigation.navigate('(home)/components/ProductDetail', { id: item.id })}
     >
       <Image 
-        source={{ uri: item.image }} 
+        source={{ uri: item.image || 'https://via.placeholder.com/150' }} 
         style={styles.productImage}
-        defaultSource={{ uri: 'https://via.placeholder.com/150' }}
       />
       <View style={styles.productMeta}>
         <Text style={styles.productName} numberOfLines={2}>
@@ -64,7 +69,7 @@ export default function ProductsGrid() {
           </Text>
         )}
         <Text style={styles.productPrice}>
-          {item.price.toLocaleString()}₫
+          {(item.price || 0).toLocaleString()}₫
         </Text>
       </View>
     </TouchableOpacity>
@@ -83,8 +88,11 @@ export default function ProductsGrid() {
     return (
       <View style={[styles.section, { justifyContent: 'center', alignItems: 'center' }]}>
         <Text style={{ color: 'red' }}>Lỗi: {error}</Text>
-        <TouchableOpacity onPress={() => {/* Retry fetch */}}>
-          <Text>Thử lại</Text>
+        <TouchableOpacity 
+          style={{ marginTop: 10, padding: 10, backgroundColor: '#FF8A65', borderRadius: 5 }}
+          onPress={handleRetry}
+        >
+          <Text style={{ color: '#fff' }}>Thử lại</Text>
         </TouchableOpacity>
       </View>
     );
@@ -95,15 +103,12 @@ export default function ProductsGrid() {
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Sản phẩm</Text>
         <TouchableOpacity 
-          onPress={() => {
-            // Placeholder: Navigate đến full Products list
-            console.log('View all products');
-          }}
+          onPress={() => console.log('View all products')} // Thêm navigation nếu cần
         >
           <Text style={styles.sectionMore}>Xem tất cả</Text>
         </TouchableOpacity>
       </View>
-        <FlatList
+      <FlatList
         data={products}
         numColumns={2}
         renderItem={renderProduct}

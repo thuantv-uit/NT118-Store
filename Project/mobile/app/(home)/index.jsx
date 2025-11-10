@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SafeAreaView, ScrollView } from 'react-native';
+import { SafeAreaView, ScrollView } from 'react-native'; // Thêm Text để fallback nếu cần
 import BannerCarousel from './components/BannerCarousel';
 import BottomNav from './components/BottomNav';
 import Categories from './components/Categories';
@@ -16,12 +16,15 @@ export default function HomeScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safe}>
       <Header 
-        username={username} 
+        username={username || 'User'} // Fallback để tránh lỗi nếu undefined
         searchQuery={searchQuery} 
         onSearchChange={setSearchQuery} 
       />
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 90 }} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={{ paddingBottom: 90 }} 
+        showsVerticalScrollIndicator={false}
+      >
         <BannerCarousel />
         <Categories />
         <FlashSale />
@@ -29,6 +32,7 @@ export default function HomeScreen({ navigation }) {
         <ProductsGrid />
       </ScrollView>
 
+      {/* Truyền navigation cho BottomNav nếu cần, nhưng code BottomNav dùng expo-router nên có thể bỏ */}
       <BottomNav navigation={navigation} />
     </SafeAreaView>
   );

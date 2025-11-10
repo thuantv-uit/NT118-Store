@@ -13,24 +13,24 @@ export default function BannerCarousel() {
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 50 });
 
   const renderBanner = ({ item }) => (
-    <Image source={{ uri: item.image }} style={styles.bannerImage} />
+    <Image source={{ uri: item.image || 'https://via.placeholder.com/300x150' }} style={styles.bannerImage} />
   );
 
   return (
     <View style={styles.bannerWrapper}>
       <FlatList
         ref={bannerRef}
-        data={banners}
+        data={banners || []}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         renderItem={renderBanner}
-        keyExtractor={(i) => i.id}
+        keyExtractor={(i) => i.id.toString()}
         onViewableItemsChanged={onViewRef.current}
         viewabilityConfig={viewConfigRef.current}
       />
       <View style={styles.dots}>
-        {banners.map((b, i) => (
+        {(banners || []).map((b, i) => (
           <View key={b.id} style={[styles.dot, i === activeBanner && styles.dotActive]} />
         ))}
       </View>

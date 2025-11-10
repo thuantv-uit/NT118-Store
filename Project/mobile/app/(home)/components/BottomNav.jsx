@@ -1,11 +1,11 @@
-import { usePathname, useRouter } from 'expo-router'; // Thêm usePathname để check active
+import { usePathname, useRouter } from 'expo-router';
 import { Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { styles } from '../styles/HomeStyles';
 
 export default function BottomNav() {
   const router = useRouter();
-  const pathname = usePathname(); // Lấy route hiện tại để highlight tab
+  const pathname = usePathname() || '/(home)'; // Fallback nếu pathname undefined
 
   const navItems = [
     { route: '/(home)', icon: 'home', label: 'Home', activeColor: '#FF8A65' },
@@ -15,13 +15,13 @@ export default function BottomNav() {
   ];
 
   const handleNavPress = (route) => {
-    router.push(route); // Chuyển hướng (push) sang route đó
+    router.push(route);
   };
 
   return (
     <View style={styles.bottomNav}>
       {navItems.map((item) => {
-        const isActive = pathname === item.route;
+        const isActive = pathname === item.route || pathname.startsWith(item.route);
         const iconColor = isActive ? item.activeColor : '#8D6E63';
         const labelColor = isActive ? item.activeColor : '#8D6E63';
 

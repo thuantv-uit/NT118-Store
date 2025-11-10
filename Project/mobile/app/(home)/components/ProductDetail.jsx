@@ -103,12 +103,12 @@ const API_BASE_URL = API_URL;
 export default function ProductDetail() {
   const route = useRoute();
   const navigation = useNavigation();
-  const { id } = route.params || {}; // Get id from params (transmitted from ProductGrid)
+  const { id } = route.params || {};
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Mock detail (if backend don't have sizes/colors, you can fetch add to DB)
+  // Mock detail
   const details = {
     sizes: ['S', 'M', 'L', 'XL'],
     colors: ['Trắng', 'Đen', 'Xanh'],
@@ -133,7 +133,12 @@ export default function ProductDetail() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setProduct(data); // data is object product từ API
+        // Fallback nếu data không có text hợp lệ
+        setProduct({
+          ...data,
+          name: data.name || 'Sản phẩm không tên',
+          description: data.description || 'Không có mô tả.',
+        });
       } catch (err) {
         setError(err.message);
         console.error('Error fetching product:', err);
@@ -169,6 +174,12 @@ export default function ProductDetail() {
     </View>
   );
 
+  const handleRetry = () => {
+    setLoading(true);
+    setError(null);
+    // Gọi lại fetchProduct ở đây nếu cần
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={detailStyles.safe}>
@@ -187,11 +198,7 @@ export default function ProductDetail() {
           <Text style={detailStyles.errorText}>Lỗi: {error || 'Không tìm thấy sản phẩm!'}</Text>
           <TouchableOpacity
             style={detailStyles.retryButton}
-            onPress={() => {
-              // Retry fetch
-              setLoading(true);
-              setError(null);
-            }}
+            onPress={handleRetry}
           >
             <Text style={detailStyles.retryText}>Thử lại</Text>
           </TouchableOpacity>
@@ -202,7 +209,6 @@ export default function ProductDetail() {
 
   return (
     <SafeAreaView style={detailStyles.safe}>
-      {/* Back button */}
       <TouchableOpacity style={detailStyles.header} onPress={() => navigation.goBack()}>
         <Icon name="arrow-back" style={detailStyles.backButton} />
       </TouchableOpacity>
@@ -215,48 +221,40 @@ export default function ProductDetail() {
 
         <View style={detailStyles.content}>
           <Text style={detailStyles.name}>{product.name}</Text>
-          <Text style={detailStyles.price}>{product.price.toLocaleString()}₫</Text>
+          <Text style={detailStyles.price}>{(product.price || 0).toLocaleString()}₫</Text>
 
-          {/* Category if any */}
           {product.category_name && (
             <Text style={{ fontSize: 14, color: 'gray', marginBottom: 16 }}>
               Danh mục: {product.category_name}
             </Text>
           )}
 
-          {/* Size selector */}
           <View style={detailStyles.section}>
             <Text style={detailStyles.sectionTitle}>Kích cỡ</Text>
             {renderSelector(details.sizes, setSelectedSize, selectedSize)}
           </View>
 
-          {/* Color selector */}
           <View style={detailStyles.section}>
             <Text style={detailStyles.sectionTitle}>Màu sắc</Text>
             {renderSelector(details.colors, setSelectedColor, selectedColor)}
           </View>
 
-          {/* Description from API */}
           <View style={detailStyles.section}>
             <Text style={detailStyles.sectionTitle}>Mô tả</Text>
             <Text style={detailStyles.description}>
-              {product.description || 'Không có mô tả.'}
+              {product.description}
             </Text>
           </View>
 
-          {/* Stock info if any */}
           {product.stock !== undefined && (
             <Text style={{ fontSize: 12, color: 'green', marginBottom: 20 }}>
               Còn lại: {product.stock} sản phẩm
             </Text>
           )}
 
-          {/* Add to cart button */}
           <TouchableOpacity 
             style={detailStyles.addButton}
             onPress={() => {
-              // Placeholder: Add to cart logic
-              // Ví dụ: dispatch(addToCart({ ...product, size: selectedSize, color: selectedColor }));
               console.log('Add to cart:', { id: product.id, size: selectedSize, color: selectedColor });
             }}
           >

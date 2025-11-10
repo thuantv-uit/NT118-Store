@@ -6,14 +6,17 @@ export default function PromoCard() {
   return (
     <View style={styles.promoWrapper}>
       <View style={styles.promoLeft}>
-        <Text style={styles.promoTitle}>Emty Club</Text>
+        <Text style={styles.promoTitle}>Empty Club</Text>
         <Text style={styles.promoDesc}>Deal hot mỗi ngày — giảm đến 50%!</Text>
         <View style={styles.promoRow}>
           <View style={styles.rating}>
             <Icon name="star" size={14} color="#FFD54F" />
             <Text style={styles.ratingText}>4.5</Text>
           </View>
-          <TouchableOpacity style={styles.shopNow}>
+          <TouchableOpacity 
+            style={styles.shopNow}
+            onPress={() => console.log('Shop now pressed')}
+          >
             <Text style={styles.shopNowText}>Shop Now</Text>
           </TouchableOpacity>
         </View>

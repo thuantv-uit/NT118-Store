@@ -6,7 +6,7 @@ export default function Header({ username, searchQuery, onSearchChange }) {
   return (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
-        <Text style={styles.hello}>Hi, <Text style={styles.username}>{username}</Text></Text>
+        <Text style={styles.hello}>Hi, <Text style={styles.username}>{username || 'User'}</Text></Text>
       </View>
 
       <View style={styles.headerCenter}>
