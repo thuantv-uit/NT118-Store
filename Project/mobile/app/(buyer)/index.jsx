@@ -1,40 +1,75 @@
-import { useState } from 'react';
-import { FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { useUser } from '@clerk/clerk-expo';
+import { ActivityIndicator, Alert, FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import CartItem from './components/CartItem';
 import CartSummary from './components/CartSummary';
-import { cartItems as initialCart } from './data/cartData';
+import { useCart } from './hook/useCart';
 import { buyerStyles } from './styles/BuyerStyles';
 
 export default function CartScreen({ navigation }) {
-  const [cartItems, setCartItems] = useState(initialCart); // Mock state, có thể từ Context/API
+  const { user } = useUser();
+  const customerId = user?.id;
 
-  const updateQuantity = (id, newQty) => {
-    if (newQty < 1) {
-      removeItem(id);
-      return;
-    }
-    setCartItems(prev => prev.map(item => 
-      item.id === id ? { ...item, quantity: newQty } : item
-    ));
-  };
-
-  const removeItem = (id) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
-  };
-
-  const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  // use hook to get all logic
+  const {
+    cartItems,
+    loading,
+    error,
+    total,
+    updateQuantity,
+    removeItem,
+    refetchCart,
+  } = useCart(customerId);
 
   const handleCheckout = () => {
-    // Placeholder: Navigate đến checkout screen hoặc gọi API
     console.log('Checkout with cart:', cartItems);
-    alert('Chuyển đến màn hình thanh toán!'); // Mock
+    Alert.alert('Thanh toán', 'Chuyển đến màn hình thanh toán!');
   };
 
   const handleContinueShopping = () => {
-    navigation.goBack(); // Quay về Home hoặc Product list
+    navigation.goBack();
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <SafeAreaView style={buyerStyles.safe}>
+        <View style={buyerStyles.container}>
+          <View style={[buyerStyles.header, { justifyContent: 'center' }]}>
+            <Text style={buyerStyles.headerTitle}>Đang tải giỏ hàng...</Text>
+          </View>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#6D4C41" />
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <SafeAreaView style={buyerStyles.safe}>
+        <View style={buyerStyles.container}>
+          <View style={buyerStyles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Icon name="arrow-back" size={24} color="#6D4C41" />
+            </TouchableOpacity>
+            <Text style={buyerStyles.headerTitle}>Giỏ hàng của bạn</Text>
+            <View style={{ width: 24 }} />
+          </View>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ color: 'red', textAlign: 'center' }}>Lỗi: {error}</Text>
+            <TouchableOpacity onPress={refetchCart} style={{ marginTop: 10 }}>
+              <Text>Thử lại</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Empty cart
   if (cartItems.length === 0) {
     return (
       <SafeAreaView style={buyerStyles.safe}>
@@ -44,7 +79,7 @@ export default function CartScreen({ navigation }) {
               <Icon name="arrow-back" size={24} color="#6D4C41" />
             </TouchableOpacity>
             <Text style={buyerStyles.headerTitle}>Giỏ hàng của bạn</Text>
-            <View style={{ width: 24 }} /> {/* Spacer */}
+            <View style={{ width: 24 }} />
           </View>
           <View style={buyerStyles.emptyCart}>
             <Icon name="cart-outline" size={80} color="#BDAAA8" />
@@ -76,15 +111,15 @@ export default function CartScreen({ navigation }) {
         </View>
 
         <FlatList
-          data={cartItems}
-          renderItem={({ item }) => (
+          data={cartItems}  // Array { cart, product }
+          renderItem={({ item }) => (  // item = { cart, product }
             <CartItem
-              item={item}
+              item={item}  // Transmit { cart, product }
               onUpdateQuantity={updateQuantity}
               onRemove={removeItem}
             />
           )}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={({ cart }) => cart.id.toString()}
           showsVerticalScrollIndicator={false}
         />
 
