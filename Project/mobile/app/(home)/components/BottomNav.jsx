@@ -9,8 +9,9 @@ export default function BottomNav() {
 
   const navItems = [
     { route: '/(home)', icon: 'home', label: 'Home', activeColor: '#FF8A65' },
-    { route: '/categories', icon: 'grid', label: 'Categories', activeColor: '#FF8A65' },
-    { route: '/chat', icon: 'chatbubble-ellipses', label: 'Chat', activeColor: '#FF8A65' },
+    // { route: '/categories', icon: 'grid', label: 'Categories', activeColor: '#FF8A65' },
+    { route: '/(buyer)', icon: 'cart-outline', label: 'Cart', activeColor: '#FF8A65' }, // Thêm tab Cart ở giữa
+    // { route: '/chat', icon: 'chatbubble-ellipses', label: 'Chat', activeColor: '#FF8A65' },
     { route: '/(profile)', icon: 'person', label: 'Account', activeColor: '#FF8A65' },
   ];
 

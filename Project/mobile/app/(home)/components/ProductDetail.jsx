@@ -1,7 +1,9 @@
+import { useUser } from '@clerk/clerk-expo';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Dimensions,
   Image,
   SafeAreaView,
@@ -96,6 +98,36 @@ const detailStyles = StyleSheet.create({
     borderRadius: 8,
   },
   retryText: { color: '#fff', fontWeight: 'bold' },
+  quantityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    marginTop: 8,
+  },
+  qtyButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#FF8A65',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  qtyText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  qtyNumber: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#5B453F',
+    minWidth: 30,
+    textAlign: 'center',
+    marginHorizontal: 12,
+  },
 });
 
 const API_BASE_URL = API_URL;
@@ -116,6 +148,11 @@ export default function ProductDetail() {
 
   const [selectedSize, setSelectedSize] = useState('M');
   const [selectedColor, setSelectedColor] = useState('Trắng');
+  const [quantity, setQuantity] = useState(1);
+
+  // Get user from Clerk
+  const { user, isSignedIn } = useUser();
+  const customerId = user?.id;
 
   useEffect(() => {
     if (!id) {
@@ -133,7 +170,6 @@ export default function ProductDetail() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        // Fallback nếu data không có text hợp lệ
         setProduct({
           ...data,
           name: data.name || 'Sản phẩm không tên',
@@ -149,6 +185,46 @@ export default function ProductDetail() {
 
     fetchProduct();
   }, [id]);
+
+  // Funtion check customer exsit
+  const checkCustomerExists = async () => {
+    if (!customerId) {
+      Alert.alert('Lỗi', 'Vui lòng đăng nhập để tiếp tục!');
+      // Cant navigate from sign in if need
+      return false;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/customers/${customerId}`);
+      if (response.status === 404) {
+        Alert.alert(
+          'Thông báo',
+          'Tài khoản của bạn chưa được cập nhật. Vui lòng hoàn tất hồ sơ trước khi mua sắm.',
+          [
+            {
+              text: 'Bỏ qua',
+              style: 'cancel',
+              onPress: () => {},
+            },
+            {
+              text: 'Cập nhật hồ sơ',
+              onPress: () => {
+                navigation.navigate('(profile)/components/updateProfile');
+              },
+            },
+          ]
+        );
+        return false;
+      } else if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return true;
+    } catch (err) {
+      console.error('Error checking customer:', err);
+      Alert.alert('Lỗi', 'Không thể kiểm tra hồ sơ. Vui lòng thử lại!');
+      return false;
+    }
+  };
 
   const renderSelector = (items, onSelect, selected) => (
     <View style={detailStyles.row}>
@@ -177,7 +253,53 @@ export default function ProductDetail() {
   const handleRetry = () => {
     setLoading(true);
     setError(null);
-    // Gọi lại fetchProduct ở đây nếu cần
+  };
+
+  // Funtion update quantity
+  const updateQuantity = (newQty) => {
+    if (newQty < 1) newQty = 1; // Don't allow quantity < 1
+    setQuantity(newQty);
+  };
+
+  // Function add into cart (call check customer priority)
+  const handleAddToCart = async () => {
+    const customerExists = await checkCustomerExists();
+    if (!customerExists) {
+      return;
+    }
+
+    if (!product) {
+      Alert.alert('Lỗi', 'Không thể thêm sản phẩm!');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/cart`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          quantity: quantity,
+          customer_id: customerId,
+          product_id: product.id,
+          size: selectedSize,
+          color: selectedColor,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const newCartItem = await response.json();
+      console.log('Added to cart:', newCartItem);
+      Alert.alert('Thành công', `Đã thêm ${quantity} sản phẩm vào giỏ hàng!`);
+      setQuantity(1);
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+      Alert.alert('Lỗi', 'Không thể thêm vào giỏ hàng!');
+    }
   };
 
   if (loading) {
@@ -240,6 +362,25 @@ export default function ProductDetail() {
           </View>
 
           <View style={detailStyles.section}>
+            <Text style={detailStyles.sectionTitle}>Số lượng</Text>
+            <View style={detailStyles.quantityContainer}>
+              <TouchableOpacity
+                style={detailStyles.qtyButton}
+                onPress={() => updateQuantity(quantity - 1)}
+              >
+                <Text style={detailStyles.qtyText}>-</Text>
+              </TouchableOpacity>
+              <Text style={detailStyles.qtyNumber}>{quantity}</Text>
+              <TouchableOpacity
+                style={detailStyles.qtyButton}
+                onPress={() => updateQuantity(quantity + 1)}
+              >
+                <Text style={detailStyles.qtyText}>+</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={detailStyles.section}>
             <Text style={detailStyles.sectionTitle}>Mô tả</Text>
             <Text style={detailStyles.description}>
               {product.description}
@@ -254,9 +395,7 @@ export default function ProductDetail() {
 
           <TouchableOpacity 
             style={detailStyles.addButton}
-            onPress={() => {
-              console.log('Add to cart:', { id: product.id, size: selectedSize, color: selectedColor });
-            }}
+            onPress={handleAddToCart}
           >
             <Text style={detailStyles.addText}>Thêm vào giỏ hàng</Text>
           </TouchableOpacity>
