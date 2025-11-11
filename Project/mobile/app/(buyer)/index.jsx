@@ -1,4 +1,5 @@
 import { useUser } from '@clerk/clerk-expo';
+import { useNavigation } from '@react-navigation/native';
 import { ActivityIndicator, Alert, FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import CartItem from './components/CartItem';
@@ -6,11 +7,12 @@ import CartSummary from './components/CartSummary';
 import { useCart } from './hook/useCart';
 import { buyerStyles } from './styles/BuyerStyles';
 
-export default function CartScreen({ navigation }) {
+
+export default function CartScreen() {
   const { user } = useUser();
   const customerId = user?.id;
+  const navigation = useNavigation();
 
-  // use hook to get all logic
   const {
     cartItems,
     loading,
@@ -24,6 +26,7 @@ export default function CartScreen({ navigation }) {
   const handleCheckout = () => {
     console.log('Checkout with cart:', cartItems);
     Alert.alert('Thanh toán', 'Chuyển đến màn hình thanh toán!');
+    navigation.navigate('(buyer)/components/CheckoutScreen');
   };
 
   const handleContinueShopping = () => {

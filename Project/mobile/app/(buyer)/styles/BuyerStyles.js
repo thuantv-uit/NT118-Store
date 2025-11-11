@@ -2,6 +2,7 @@ import { Dimensions, StyleSheet } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
+// Styles of the cart
 export const buyerStyles = StyleSheet.create({
   safe: {
     flex: 1,
@@ -153,3 +154,204 @@ export const buyerStyles = StyleSheet.create({
     color: '#fff',
   },
 });
+
+// Styles of the checkout
+export const checkoutStyles = {
+  section: {
+    margin: 16,
+    padding: 16,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#6D4C41',
+    marginBottom: 12,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#BDAAA8',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    backgroundColor: 'white',
+    fontSize: 16,
+  },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    marginBottom: 8,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#BDAAA8',
+  },
+  selectedOption: {
+    borderColor: '#6D4C41',
+    backgroundColor: '#FFF8E1',
+  },
+  optionText: {
+    flex: 1,
+    marginLeft: 12,
+    fontSize: 16,
+    color: '#6D4C41',
+  },
+  orderItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#BDAAA8',
+  },
+  itemName: {
+    flex: 1,
+    fontSize: 16,
+    color: '#6D4C41',
+  },
+  itemDetails: {
+    alignItems: 'flex-end',
+  },
+  subtotal: {
+    fontWeight: 'bold',
+    color: '#6D4C41',
+  },
+  summary: {
+    margin: 16,
+    padding: 16,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+  },
+  totalText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#6D4C41',
+    textAlign: 'right',
+    marginBottom: 12,
+  },
+  button: {
+    backgroundColor: '#6D4C41',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  emptySection: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#8D6E63',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  emptyButton: {
+    backgroundColor: '#6D4C41',
+    padding: 12,
+    borderRadius: 8,
+  },
+  emptyButtonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  paymentOptions: [ // Inline array cho options
+    { key: 'card', label: 'Thẻ tín dụng', icon: 'card-outline' },
+    { key: 'cash', label: 'Thanh toán khi nhận hàng', icon: 'cash-outline' },
+    { key: 'bank', label: 'Chuyển khoản ngân hàng', icon: 'banknote-outline' },
+  ],
+};
+
+// Styles of the order
+export const orderConfirmStyles = {
+  section: {
+    margin: 16,
+    padding: 16,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#6D4C41',
+    marginBottom: 8,
+  },
+  info: {
+    fontSize: 16,
+    color: '#8D6E63',
+    marginBottom: 4,
+  },
+  orderItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#BDAAA8',
+  },
+  itemName: {
+    flex: 1,
+    fontSize: 16,
+    color: '#6D4C41',
+  },
+  itemDetails: {
+    alignItems: 'flex-end',
+  },
+  subtotal: {
+    fontWeight: 'bold',
+    color: '#6D4C41',
+  },
+  actions: {
+    padding: 16,
+  },
+  button: {
+    backgroundColor: '#6D4C41',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  buttonSecondary: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#6D4C41',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonTextSecondary: {
+    color: '#6D4C41',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  emptySection: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#8D6E63',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  emptyButton: {
+    backgroundColor: '#6D4C41',
+    padding: 12,
+    borderRadius: 8,
+  },
+  emptyButtonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+};
