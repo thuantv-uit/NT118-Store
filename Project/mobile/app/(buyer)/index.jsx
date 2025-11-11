@@ -1,6 +1,6 @@
 import { useUser } from '@clerk/clerk-expo';
 import { useNavigation } from '@react-navigation/native';
-import { ActivityIndicator, Alert, FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import CartItem from './components/CartItem';
 import CartSummary from './components/CartSummary';
@@ -25,7 +25,7 @@ export default function CartScreen() {
 
   const handleCheckout = () => {
     console.log('Checkout with cart:', cartItems);
-    Alert.alert('Thanh toán', 'Chuyển đến màn hình thanh toán!');
+    // Alert.alert('Thanh toán', 'Chuyển đến màn hình thanh toán!');
     navigation.navigate('(buyer)/components/CheckoutScreen');
   };
 

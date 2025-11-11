@@ -47,7 +47,7 @@ export default function OrderConfirmScreen() {
   };
 
   const handleBackToHome = () => {
-    navigation.navigate('/(home)');
+    navigation.goBack();
   };
 
   return (
@@ -114,7 +114,7 @@ export default function OrderConfirmScreen() {
             <Text style={orderConfirmStyles.buttonText}>Theo dõi đơn hàng</Text>
           </TouchableOpacity>
           <TouchableOpacity style={orderConfirmStyles.buttonSecondary} 
-            // onPress={handleBackToHome}
+            onPress={handleBackToHome}
             >
             <Text style={orderConfirmStyles.buttonTextSecondary}>Về trang chủ</Text>
           </TouchableOpacity>

@@ -1,18 +1,18 @@
 import { useUser } from '@clerk/clerk-expo';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
 import {
-    Alert,
-    FlatList,
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  FlatList,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useCart } from '../hook/useCart';
+import { useCheckout } from '../hook/useCheckout'; // Import hook mới
 import { buyerStyles, checkoutStyles } from '../styles/BuyerStyles';
 
 export default function CheckoutScreen() {
@@ -21,52 +21,23 @@ export default function CheckoutScreen() {
   const { cartItems, total } = useCart(customerId);
   const navigation = useNavigation();
 
-  const [shipmentData, setShipmentData] = useState({
-    address: '',
-    city: '',
-    state: '',
-    country: '',
-    zipcode: '',
-  });
-  const [paymentData, setPaymentData] = useState({
-    method: 'card', // Default: card, cash, bank_transfer
-  });
-
-  const handleShipmentChange = (field, value) => {
-    setShipmentData({ ...shipmentData, [field]: value });
-  };
-
-  const handlePaymentChange = (method) => {
-    setPaymentData({ ...paymentData, method });
-  };
-
-  const handleSubmit = () => {
-    // Validate form (simple check)
-    if (!shipmentData.address || !shipmentData.city || !paymentData.method) {
-      Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin!');
-      return;
-    }
-
-    // TODO: Gọi API real: POST /api/orders với {shipmentData, paymentData, cartItems}
-    console.log('Submit checkout:', { shipmentData, paymentData, cartItems, total });
-
-    // Navigate to OrderConfirm with data
-    navigation.navigate('(buyer)/components/OrderConfirmScreen', {
-      orderData: {
-        id: 'ORD-' + Date.now(), // Placeholder, thay bằng real ID
-        date: new Date().toISOString(),
-        items: cartItems,
-        shipment: shipmentData,
-        payment: paymentData,
-        total,
-      },
-    });
-  };
+  // Sử dụng hook thay vì local state
+  const {
+    shipmentData,
+    paymentData,
+    onShipmentChange,
+    onPaymentChange,
+    handleCheckout,
+    loading,
+    error,
+    currentCustomerId,
+  } = useCheckout(total, customerId);
 
   const handleBack = () => {
     navigation.goBack();
   };
 
+  // Empty cart state
   if (cartItems.length === 0) {
     return (
       <SafeAreaView style={buyerStyles.safe}>
@@ -89,6 +60,29 @@ export default function CheckoutScreen() {
     );
   }
 
+  // Error state từ hook
+  if (error) {
+    return (
+      <SafeAreaView style={buyerStyles.safe}>
+        <View style={buyerStyles.container}>
+          <View style={buyerStyles.header}>
+            <TouchableOpacity onPress={handleBack}>
+              <Icon name="arrow-back" size={24} color="#6D4C41" />
+            </TouchableOpacity>
+            <Text style={buyerStyles.headerTitle}>Thanh toán</Text>
+            <View style={{ width: 24 }} />
+          </View>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ color: 'red', textAlign: 'center', marginBottom: 10 }}>Lỗi: {error}</Text>
+            <TouchableOpacity onPress={() => window.location.reload()} style={checkoutStyles.emptyButton}>
+              <Text style={checkoutStyles.emptyButtonText}>Thử lại</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={buyerStyles.safe}>
       <View style={buyerStyles.container}>
@@ -101,59 +95,82 @@ export default function CheckoutScreen() {
         </View>
 
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          {/* Shipment Form */}
+          {/* Shipment Form - dùng state từ hook */}
           <View style={checkoutStyles.section}>
             <Text style={checkoutStyles.sectionTitle}>Thông tin giao hàng</Text>
             <TextInput
               style={checkoutStyles.input}
               placeholder="Địa chỉ giao hàng"
               value={shipmentData.address}
-              onChangeText={(value) => handleShipmentChange('address', value)}
+              onChangeText={(value) => onShipmentChange('address', value)}
             />
             <TextInput
               style={checkoutStyles.input}
               placeholder="Thành phố"
               value={shipmentData.city}
-              onChangeText={(value) => handleShipmentChange('city', value)}
+              onChangeText={(value) => onShipmentChange('city', value)}
             />
             <TextInput
               style={checkoutStyles.input}
               placeholder="Tỉnh/Thành"
               value={shipmentData.state}
-              onChangeText={(value) => handleShipmentChange('state', value)}
+              onChangeText={(value) => onShipmentChange('state', value)}
             />
             <TextInput
               style={checkoutStyles.input}
               placeholder="Quốc gia"
               value={shipmentData.country}
-              onChangeText={(value) => handleShipmentChange('country', value)}
+              onChangeText={(value) => onShipmentChange('country', value)}
             />
             <TextInput
               style={checkoutStyles.input}
               placeholder="Mã bưu điện"
               value={shipmentData.zipcode}
-              onChangeText={(value) => handleShipmentChange('zipcode', value)}
+              onChangeText={(value) => onShipmentChange('zipcode', value)}
               keyboardType="numeric"
             />
           </View>
 
-          {/* Payment Form */}
+          {/* Payment Form - dùng state từ hook */}
           <View style={checkoutStyles.section}>
             <Text style={checkoutStyles.sectionTitle}>Phương thức thanh toán</Text>
-            {checkoutStyles.paymentOptions.map((option) => (
-              <TouchableOpacity
+            {checkoutStyles.paymentOptions.map((option) => {
+            const isSelected = paymentData.method === option.key;
+            return (
+                <TouchableOpacity
                 key={option.key}
                 style={[
-                  checkoutStyles.option,
-                  paymentData.method === option.key && checkoutStyles.selectedOption,
+                    checkoutStyles.option,
+                    isSelected && checkoutStyles.selectedOption,
                 ]}
-                onPress={() => handlePaymentChange(option.key)}
-              >
-                <Icon name={option.icon} size={24} color="#6D4C41" />
-                <Text style={checkoutStyles.optionText}>{option.label}</Text>
-                {paymentData.method === option.key && <Icon name="checkmark" size={20} color="#6D4C41" />}
-              </TouchableOpacity>
-            ))}
+                onPress={() => onPaymentChange(option.key)}
+                activeOpacity={0.8}
+                >
+                <View style={checkoutStyles.optionLeft}>
+                    <MaterialCommunityIcons
+                    name={option.icon}
+                    size={26}
+                    color={isSelected ? '#fff' : '#6D4C41'}
+                    />
+                    <Text
+                    style={[
+                        checkoutStyles.optionText,
+                        isSelected && { color: '#fff', fontWeight: '600' },
+                    ]}
+                    >
+                    {option.label}
+                    </Text>
+                </View>
+                {isSelected && (
+                    <MaterialCommunityIcons
+                    name="check-circle"
+                    size={24}
+                    color="#fff"
+                    />
+                )}
+                </TouchableOpacity>
+            );
+            })}
           </View>
 
           {/* Cart Items List */}
@@ -179,11 +196,17 @@ export default function CheckoutScreen() {
           </View>
         </ScrollView>
 
-        {/* Cart Summary */}
+        {/* Cart Summary - dùng handleCheckout từ hook */}
         <View style={checkoutStyles.summary}>
           <Text style={checkoutStyles.totalText}>Tổng cộng: {total.toLocaleString('vi-VN')} VNĐ</Text>
-          <TouchableOpacity style={checkoutStyles.button} onPress={handleSubmit}>
-            <Text style={checkoutStyles.buttonText}>Xác nhận đơn hàng</Text>
+          <TouchableOpacity 
+            style={[checkoutStyles.button, loading && { opacity: 0.7 }]} 
+            onPress={() => handleCheckout(cartItems)}
+            disabled={loading || !currentCustomerId}
+          >
+            <Text style={checkoutStyles.buttonText}>
+              {loading ? 'Đang xử lý...' : 'Xác nhận đơn hàng'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
