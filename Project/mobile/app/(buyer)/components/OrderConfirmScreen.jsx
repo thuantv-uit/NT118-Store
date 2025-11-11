@@ -1,6 +1,6 @@
-// OrderConfirmScreen.jsx (Cập nhật)
+import { useUser } from '@clerk/clerk-expo';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { useEffect, useState } from 'react'; // Thêm useState và useEffect
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -15,58 +15,70 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { API_URL } from '../../../constants/api';
 import { buyerStyles, orderConfirmStyles } from '../styles/BuyerStyles';
 
-// Giả sử base URL API (có thể config ở nơi khác)
-const API_BASE_URL = API_URL; // Thay bằng URL thực tế của bạn
+const API_BASE_URL = API_URL;
 
-// Hàm helper để tạo order (dựa trên controllers)
-const createOrder = async (orderData) => {
+// Hàm helper để tạo order (thêm debug logs và đảm bảo fields là null nếu undefined)
+const createOrder = async (orderData, customerId) => {
   try {
-    console.log("orderData: ", orderData);
+    const payload = {
+      order_date: new Date().toISOString(),
+      payment_id: orderData.payment?.id || null,
+      customer_id: customerId || null,
+      shipment_id: orderData.shipment?.id || null,
+      cart_id: orderData.items[0].cart.id || null,
+    };
+
     const response = await fetch(`${API_BASE_URL}/order`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        order_date: new Date().toISOString(), // Sử dụng ngày hiện tại
-        payment_id: orderData.payment.id || null, // Giả sử payment có id, nếu chưa tạo thì null hoặc tạo trước
-        customer_id: orderData.customerId,
-        shipment_id: orderData.shipment.id || null, // Tương tự, nếu shipment cần id riêng
-        cart_id: orderData.cartItems[0]?.cart?.id || null, // Lấy cart_id từ item đầu
-      }),
+      body: JSON.stringify(payload),
     });
 
+    console.log("Debug createOrder - response status:", response.status);
     if (!response.ok) {
-      throw new Error('Failed to create order');
+      const errorText = await response.text();
+      console.error("Debug createOrder - full error response:", errorText);
+      throw new Error(`Failed to create order: ${response.status} - ${errorText}`);
     }
 
     const newOrder = await response.json();
+    console.log('Debug createOrder - newOrder created:', newOrder);
     return newOrder;
   } catch (error) {
+    console.error('Debug createOrder - caught error:', error);
     throw new Error(`Lỗi tạo order: ${error.message}`);
   }
 };
 
-// Hàm helper để tạo orderItems (dựa trên controllers)
-const createOrderItems = async (orderId, cartItems) => {
+// Hàm helper để tạo orderItems (thêm debug logs)
+const createOrderItems = async (orderId, Data) => {
+  console.log("Debug createOrderItems - orderId:", orderId);
+  console.log("Debug createOrderItems - Data length:", Data);
   try {
     const createdItems = [];
-    for (const item of cartItems) {
+    for (const [index, item] of (Data || []).entries()) {
+      const payload = {
+        quantity: item.cart?.quantity || 0,
+        price: item.product?.price || 0,
+        order_id: orderId,
+        product_id: item.product?.id || null,
+      };
+
       const response = await fetch(`${API_BASE_URL}/order_item`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          quantity: item.cart?.quantity || 0,
-          price: item.product?.price || 0,
-          order_id: orderId,
-          product_id: item.product?.id || null,
-        }),
+        body: JSON.stringify(payload),
       });
 
+      console.log(`Debug createOrderItems - response status cho item ${index}:`, response.status);
       if (!response.ok) {
-        throw new Error('Failed to create order item');
+        const errorText = await response.text();
+        console.error(`Debug createOrderItems - full error response cho item ${index}:`, errorText);
+        throw new Error(`Failed to create order item ${index}: ${response.status} - ${errorText}`);
       }
 
       const newItem = await response.json();
@@ -74,6 +86,7 @@ const createOrderItems = async (orderId, cartItems) => {
     }
     return createdItems;
   } catch (error) {
+    console.error('Debug createOrderItems - caught error:', error);
     throw new Error(`Lỗi tạo order items: ${error.message}`);
   }
 };
@@ -81,59 +94,81 @@ const createOrderItems = async (orderId, cartItems) => {
 export default function OrderConfirmScreen() {
   const route = useRoute();
   const navigation = useNavigation();
-  const { orderData: passedData } = route.params || {}; // Nhận dữ liệu từ Checkout
-  const [orderData, setOrderData] = useState(null); // State để lưu order sau khi tạo
+  const { user } = useUser();
+  const fallbackCustomerId = user?.id;
+  const { orderData: passedData } = route.params || {};
+  const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  console.log("passedData:", passedData);
+  // const carts = passedData.items.map(item => item.cart.product_id);
+  // console.log("Debug OrderConfirm - passedData - items.id:", carts);
+  // console.log("Debug OrderConfirm - passedData - items:", passedData.items);
+  // console.log("Debug OrderConfirm - passedData:", passedData);
+  // console.log("Debug OrderConfirm - fallbackCustomerId from user:", fallbackCustomerId);
 
   // Effect để tạo order và orderItems khi component mount
   useEffect(() => {
-    if (!passedData) {
+    // if (!passedData) {
+    //   setLoading(false);
+    //   setError('Không tìm thấy dữ liệu đơn hàng!');
+    //   return;
+    // }
+
+    // Validate customerId: Ưu tiên từ passedData, fallback user.id, nếu vẫn undefined thì error
+    const currentCustomerId = passedData.customerId || fallbackCustomerId;
+    console.log("Debug OrderConfirm - currentCustomerId:", currentCustomerId);
+    if (!currentCustomerId) {
       setLoading(false);
-      setError('Không tìm thấy dữ liệu đơn hàng!');
+      setError('Không tìm thấy thông tin khách hàng! Vui lòng đăng nhập lại.');
       return;
     }
 
+    // Validate các field cần thiết khác
+    if (!passedData.items || passedData.items.length === 0) {
+      setLoading(false);
+      setError('Giỏ hàng trống!');
+      return;
+    }
     const createFullOrder = async () => {
       try {
+        console.log('Debug OrderConfirm - Bắt đầu tạo full order...');
         setLoading(true);
         setError(null);
 
-        // Bước 1: Tạo order
-        const newOrder = await createOrder(passedData);
-        console.log('New order created:', newOrder);
+        // Bước 1: Tạo order - Truyền currentCustomerId
+        const newOrder = await createOrder(passedData, currentCustomerId);
+        console.log('Debug OrderConfirm - New order created:', newOrder);
 
         // Bước 2: Tạo orderItems với order_id mới
-        const newItems = await createOrderItems(newOrder.id, passedData.cartItems);
-        console.log('New order items created:', newItems);
+        const newItems = await createOrderItems(newOrder.id, passedData.items);
+        console.log('Debug OrderConfirm - New order items created:', newItems);
 
-        // Bước 3: Chuẩn bị dữ liệu hiển thị
-        const fullOrderData = {
-          id: newOrder.id,
-          date: newOrder.order_date,
-          items: newItems.map(item => ({
-            ...item,
-            product: passedData.cartItems.find(ci => ci.product.id === item.product_id)?.product, // Map lại product info
-            cart: passedData.cartItems.find(ci => ci.cart.id === item.cart_id)?.cart, // Nếu cần
-          })),
-          shipment: passedData.shipment,
-          payment: passedData.payment,
-          total: passedData.total,
-        };
-
-        setOrderData(fullOrderData);
+        // Bước 3: Chuẩn bị dữ liệu hiển thị (bỏ map cart vì order_item không có cart_id)
+        // const fullOrderData = {
+        //   id: newOrder.id,
+        //   date: newOrder.order_date || new Date().toISOString(),
+        //   items: newItems.map(item => ({
+        //     ...item,
+        //     product: passedData.cartItems.find(ci => ci.product.id === item.product_id)?.product,
+        //     // Bỏ map cart vì không cần (quantity/price đã từ order_item)
+        //   })),
+        //   shipment: passedData.shipment || {},
+        //   payment: passedData.payment || {},
+        //   total: passedData.total || 0,
+        // };
+        // console.log('Debug OrderConfirm - fullOrderData prepared:', fullOrderData);
+        // setOrderData(fullOrderData);
       } catch (err) {
+        console.error('Debug OrderConfirm - Error creating full order:', err);
         setError(err.message);
-        console.error('Error creating order:', err);
       } finally {
         setLoading(false);
       }
     };
 
     createFullOrder();
-  }, [passedData]);
+  }, [passedData, fallbackCustomerId]);
 
   if (loading) {
     return (
@@ -180,12 +215,11 @@ export default function OrderConfirmScreen() {
   const { id, date, items, shipment, payment, total } = orderData;
 
   const handleTrackOrder = () => {
-    // TODO: Navigate to TrackOrderScreen or call API track
     Alert.alert('Theo dõi', 'Chuyển đến màn hình theo dõi đơn hàng!');
   };
 
   const handleBackToHome = () => {
-    navigation.navigate('Home'); // Chuyển về Home thay vì goBack để reset stack
+    navigation.navigate('Home');
   };
 
   return (
@@ -215,15 +249,15 @@ export default function OrderConfirmScreen() {
                 <View style={orderConfirmStyles.orderItem}>
                   <Text style={orderConfirmStyles.itemName}>{item.product?.name || 'Sản phẩm'}</Text>
                   <View style={orderConfirmStyles.itemDetails}>
-                    <Text>Số lượng: {item.quantity || 0}</Text> {/* Dùng quantity từ orderItem */}
-                    <Text>Đơn giá: {(item.price || 0).toLocaleString('vi-VN')} VNĐ</Text> {/* Dùng price từ orderItem */}
+                    <Text>Số lượng: {item.quantity || 0}</Text>
+                    <Text>Đơn giá: {(item.price || 0).toLocaleString('vi-VN')} VNĐ</Text>
                     <Text style={orderConfirmStyles.subtotal}>
                       Tạm tính: {((item.quantity || 0) * (item.price || 0)).toLocaleString('vi-VN')} VNĐ
                     </Text>
                   </View>
                 </View>
               )}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item) => item.id?.toString() || Math.random().toString()} // Fallback key nếu id undefined
               scrollEnabled={false}
             />
           </View>
@@ -232,15 +266,16 @@ export default function OrderConfirmScreen() {
           <View style={orderConfirmStyles.section}>
             <Text style={orderConfirmStyles.title}>Giao hàng đến</Text>
             <Text style={orderConfirmStyles.info}>
-              {shipment.address}, {shipment.city}
+              {shipment.address || 'N/A'}, {shipment.city || 'N/A'}
             </Text>
           </View>
 
-          {/* Payment Info */}
+          {/* Payment Info - Xử lý cả method và payment_method */}
           <View style={orderConfirmStyles.section}>
             <Text style={orderConfirmStyles.title}>Thanh toán</Text>
             <Text style={orderConfirmStyles.info}>
-              Phương thức: {payment.method === 'card' ? 'Thẻ tín dụng' : payment.method === 'cash' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản'}
+              Phương thức: {payment.method === 'card' || payment.payment_method === 'card' ? 'Thẻ tín dụng' : 
+                           payment.method === 'cash' || payment.payment_method === 'cash' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản'}
             </Text>
             <Text style={orderConfirmStyles.info}>Tổng tiền: {total.toLocaleString('vi-VN')} VNĐ</Text>
           </View>
@@ -251,9 +286,7 @@ export default function OrderConfirmScreen() {
           <TouchableOpacity style={orderConfirmStyles.button} onPress={handleTrackOrder}>
             <Text style={orderConfirmStyles.buttonText}>Theo dõi đơn hàng</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={orderConfirmStyles.buttonSecondary} 
-            onPress={handleBackToHome}
-            >
+          <TouchableOpacity style={orderConfirmStyles.buttonSecondary} onPress={handleBackToHome}>
             <Text style={orderConfirmStyles.buttonTextSecondary}>Về trang chủ</Text>
           </TouchableOpacity>
         </View>

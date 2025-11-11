@@ -1,4 +1,3 @@
-// hooks/useCheckout.js (cập nhật để fix amount reactive và debug)
 import { useUser } from '@clerk/clerk-expo';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
@@ -8,7 +7,7 @@ import { API_URL } from '../../../constants/api';
 
 const API_BASE_URL = API_URL;
 
-export const useCheckout = (cartTotal, customerId) => {
+export const useCheckout = (cartTotal, customerIdFromProp) => { // Đổi tên prop để rõ
   const [shipmentData, setShipmentData] = useState({
     shipment_date: new Date().toISOString(),
     address: '',
@@ -18,20 +17,24 @@ export const useCheckout = (cartTotal, customerId) => {
     zipcode: '',
   });
   const [paymentData, setPaymentData] = useState({
-    payment_method: 'card',
-    amount: cartTotal, // Init với total
+    payment_method: 'card', // Consistent với option.key
+    amount: cartTotal,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigation = useNavigation();
-  const { user } = useUser();
+  const { user } = useUser(); // Lấy trực tiếp để fallback, tránh null từ prop
 
-  const currentCustomerId = customerId || user?.id;
+  // Fallback customerId: Ưu tiên prop, rồi user.id
+  const currentCustomerId = customerIdFromProp || user?.id;
+  console.log("Debug - currentCustomerId:", currentCustomerId); // Log để check null
+  console.log("Debug - user?.id:", user?.id);
+  console.log("Debug - customerIdFromProp:", customerIdFromProp);
 
-  // Effect để update amount khi cartTotal thay đổi (reactive)
+  // Effect update amount reactive (giữ nguyên)
   useEffect(() => {
     setPaymentData(prev => ({ ...prev, amount: cartTotal }));
-    console.log('Updated payment amount:', cartTotal); // Debug log
+    console.log('Updated payment amount:', cartTotal);
   }, [cartTotal]);
 
   const handleShipmentChange = (field, value) => {
@@ -40,20 +43,23 @@ export const useCheckout = (cartTotal, customerId) => {
   };
 
   const handlePaymentChange = (method) => {
-    setPaymentData(prev => ({ ...prev, payment_method: method })); // Đổi method → payment_method cho consistent
+    setPaymentData(prev => ({ ...prev, payment_method: method }));
     setError(null);
   };
 
   const createShipment = async () => {
+    if (!currentCustomerId) {
+      throw new Error('User ID không hợp lệ, không thể tạo shipment');
+    }
     const payload = {
       ...shipmentData,
-      customer_id: currentCustomerId,
+      customer_id: currentCustomerId, // Đảm bảo truyền
     };
-    console.log('Sending shipment payload:', payload); // Debug: Log trước khi gửi
+    console.log('Sending shipment payload:', payload);
 
     try {
       const response = await axios.post(`${API_BASE_URL}/shipment`, payload);
-      console.log('Shipment created:', response.data); // Debug success
+      console.log('Shipment created:', response.data);
       return { success: true, data: response.data };
     } catch (err) {
       console.error('Error creating shipment:', err.response?.data || err.message);
@@ -62,22 +68,24 @@ export const useCheckout = (cartTotal, customerId) => {
   };
 
   const createPayment = async () => {
+    if (!currentCustomerId) {
+      throw new Error('User ID không hợp lệ, không thể tạo payment');
+    }
     const payload = {
       payment_date: new Date().toISOString(),
       payment_method: paymentData.payment_method,
       amount: paymentData.amount,
-      customer_id: currentCustomerId,
+      customer_id: currentCustomerId, // Đảm bảo truyền
     };
-    console.log('Sending payment payload:', payload); // Debug: Log chi tiết trước gửi
+    console.log('Sending payment payload:', payload);
 
-    // Check local trước gửi (mimic backend validation)
     if (!payload.payment_date || !payload.payment_method || !payload.amount) {
-      throw new Error('Thiếu thông tin thanh toán: payment_date, payment_method, hoặc amount');
+      throw new Error('Thiếu thông tin thanh toán');
     }
 
     try {
       const response = await axios.post(`${API_BASE_URL}/payment`, payload);
-      console.log('Payment created:', response.data); // Debug success
+      console.log('Payment created:', response.data);
       return { success: true, data: response.data };
     } catch (err) {
       console.error('Error creating payment:', err.response?.data || err.message);
@@ -120,12 +128,12 @@ export const useCheckout = (cartTotal, customerId) => {
       const paymentResult = await createPayment();
       const paymentId = paymentResult.data.id;
 
-      // TODO: Tạo order với IDs này
       console.log('Checkout success with IDs:', { shipmentId, paymentId });
 
+      // Navigate với data đầy đủ (giữ nguyên)
       navigation.navigate('(buyer)/components/OrderConfirmScreen', {
         orderData: {
-          id: `ORD-${Date.now()}`,
+          // id: `ORD-${Date.now()}`,
           date: new Date().toISOString(),
           items: cartItems,
           shipment: { ...shipmentData, id: shipmentId },
@@ -151,6 +159,6 @@ export const useCheckout = (cartTotal, customerId) => {
     handleCheckout,
     loading,
     error,
-    currentCustomerId,
+    currentCustomerId, // Export để screen check
   };
 };
