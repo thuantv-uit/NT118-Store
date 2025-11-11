@@ -43,9 +43,9 @@ export async function getCartsByCustomerId(req, res) {
       SELECT * FROM cart WHERE customer_id = ${customerId}
     `;
 
-    // check carts
+    // Trả về mảng rỗng nếu không có carts (thay vì 404 error)
     if (carts.length === 0) {
-      return res.status(404).json({ message: "No carts found for this customer" });
+      return res.status(200).json([]);
     }
 
     // return entire array carts
@@ -55,6 +55,7 @@ export async function getCartsByCustomerId(req, res) {
     res.status(500).json({ message: "Internal server error" });
   }
 }
+
 
 // Create cart
 export async function createCart(req, res) {
