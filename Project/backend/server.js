@@ -11,6 +11,7 @@ import productRoutes from "./routes/productsRoutes.js"
 import cartRoutes from "./routes/cartsRoutes.js"
 import orderItemsRoutes from "./routes/orderItemsRoutes.js"
 import wishListRoutes from "./routes/wishListRoutes.js"
+import shippingAddressRouter from './routes/shippingAddressRoute.js';
 // import rateLimiter from "./middleware/rateLimiter.js";
 
 dotenv.config();
@@ -27,7 +28,6 @@ app.get("/", (req, res) => {
     res.send("It's working")
 })
 
-app.use("/api/transactions", router);
 app.use("/api/customers", customerRoutes);
 app.use("/api/shipment", shipmentRoutes);
 app.use("/api/payment", paymentRoutes);
@@ -37,6 +37,7 @@ app.use("/api/product", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/order_item", orderItemsRoutes);
 app.use("/api/wish_list", wishListRoutes);
+app.use("/api/shipping_addresses", shippingAddressRouter);
 
 initDB().then(() => {
     app.listen(PORT, () => {

@@ -1,5 +1,28 @@
 import { sql } from "../config/database.js";
 
+// Hàm mới: Lấy danh sách địa chỉ giao hàng của customer
+export async function getShippingAddressesByCustomer(req, res) {
+  try {
+    const { customer_id } = req.params;  // Lấy từ URL: /:customer_id/addresses
+
+    if (!customer_id) {
+      return res.status(400).json({ message: "Customer ID is required" });
+    }
+
+    const addresses = await sql`
+      SELECT id, name, address, city, state, country, zipcode, is_default, created_at
+      FROM shipping_address
+      WHERE customer_id = ${customer_id}
+      ORDER BY is_default DESC, created_at DESC
+    `;
+
+    res.status(200).json(addresses);
+  } catch (error) {
+    console.error("Error getting shipping addresses:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 // Get Profile for User
 export async function getShipmentById(req, res) {
   try {
@@ -33,27 +56,41 @@ export async function getShipmentById(req, res) {
   }
 }
 
+// Create shipment (update: recive address_id, query address from shipping_address, copy into shipment)
 export async function createShipment(req, res) {
-try {
-    const { shipment_date, address, city, state, country, zipcode, customer_id } = req.body;
+  try {
+    const { shipment_date, address_id, customer_id } = req.body;  // Nhận address_id và customer_id
 
-    if (!shipment_date || !city || !state || !address || !country || !zipcode) {
-    return res.status(400).json({ message: "All fields are required" });
+    // Validation: Bắt buộc shipment_date, address_id, customer_id
+    if (!shipment_date || !address_id || !customer_id) {
+      return res.status(400).json({ message: "shipment_date, address_id, and customer_id are required" });
     }
 
-    const transaction = await sql`
-    INSERT INTO shipment(shipment_date, city, state, country, address, zipcode, customer_id)
-    VALUES (${shipment_date},${city},${state},${country},${address},${zipcode},${customer_id})
-    RETURNING *
+    // Query địa chỉ từ shipping_address (kiểm tra ownership)
+    const addressQuery = await sql`
+      SELECT address, city, state, country, zipcode, name
+      FROM shipping_address
+      WHERE id = ${address_id} AND customer_id = ${customer_id}
     `;
 
-    // To use debug
-    // console.log(customer);
-    res.status(201).json(transaction[0]);
-} catch (error) {
-    console.log("Error creating the transaction", error);
-    res.status(500).json({ message: "Internal server error" });
+    if (addressQuery.length === 0) {
+      return res.status(404).json({ message: "Shipping address not found or not owned by customer" });
     }
+
+    const { address, city, state, country, zipcode, name } = addressQuery[0];
+
+    // Insert shipment với địa chỉ copy từ query
+    const newShipment = await sql`
+      INSERT INTO shipment (shipment_date, address, city, state, country, zipcode, customer_id)
+      VALUES (${shipment_date}, ${address}, ${city}, ${state}, ${country}, ${zipcode}, ${customer_id})
+      RETURNING *, ${name} as address_name;  -- Trả thêm tên địa chỉ
+    `;
+
+    res.status(201).json(newShipment[0]);
+  } catch (error) {
+    console.error("Error creating the shipment:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 }
 
 // Update profile for user
@@ -114,7 +151,7 @@ export async function deleteShipment(req, res) {
     `;
 
     // Nếu không có bản ghi nào bị xóa
-    if (deletedShipment.length === 0) {
+    if (deletedShipment.length === 0) {``
       return res.status(404).json({ message: "Shipment not found" });
     }
 

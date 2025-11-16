@@ -18,6 +18,20 @@ export async function initDB() {
     )`;
     console.log("Database customer initialized successfully");
 
+    await sql`CREATE TABLE IF NOT EXISTS shipping_address(
+      id SERIAL PRIMARY KEY,
+      customer_id VARCHAR(255) NOT NULL REFERENCES customer(id) ON DELETE CASCADE,
+      name VARCHAR(255) NOT NULL DEFAULT 'Địa chỉ mặc định',
+      address VARCHAR(255) NOT NULL,
+      city VARCHAR(255) NOT NULL,
+      state VARCHAR(255) NOT NULL,
+      country VARCHAR(255) NOT NULL,
+      zipcode VARCHAR(255) NOT NULL,
+      is_default BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at DATE NOT NULL DEFAULT CURRENT_DATE
+    )`;
+    console.log("Database shipping_address initialized successfully");
+
     await sql`CREATE TABLE IF NOT EXISTS shipment(
       id SERIAL PRIMARY KEY,
       shipment_date TIMESTAMP NOT NULL,
