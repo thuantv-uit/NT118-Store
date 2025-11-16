@@ -22,7 +22,7 @@ export const useCheckout = (cartTotal, customerIdFromProp) => { // Đổi tên p
   const { user } = useUser(); // Lấy trực tiếp để fallback, tránh null từ prop
 
   // Fallback customerId: Ưu tiên prop, rồi user.id
-  // const currentCustomerId = customerIdFromProp || user?.id;
+  const currentCustomerId = customerIdFromProp || user?.id;
   // console.log("Debug - currentCustomerId:", currentCustomerId); // Log để check null
   // console.log("Debug - user?.id:", user?.id);
   // console.log("Debug - customerIdFromProp:", customerIdFromProp);
