@@ -116,6 +116,25 @@ export async function initDB() {
     )`;
     console.log("Database order_item initialized successfully");
 
+    await sql`CREATE TABLE IF NOT EXISTS wallet(
+      id SERIAL PRIMARY KEY,
+      balance DECIMAL(10,2) NOT NULL DEFAULT 0,
+      customer_id VARCHAR(255) NULL REFERENCES customer(id),
+      created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`;
+    console.log("Database wallet initialized successfully");
+
+    await sql`CREATE TABLE IF NOT EXISTS bank_account(
+      id SERIAL PRIMARY KEY,
+      customer_id VARCHAR(255) NOT NULL REFERENCES customer(id),
+      bank_name VARCHAR(255) NOT NULL,
+      card_number VARCHAR(255) NOT NULL,
+      is_default BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at DATE NOT NULL DEFAULT CURRENT_DATE
+    )`;
+    console.log("Database bank_account initialized successfully");
+
   } catch (error) {
     console.log("Error initializing DB", error);
     process.exit(1); // status code 1 means failure, 0 success

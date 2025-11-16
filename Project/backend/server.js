@@ -1,7 +1,6 @@
 import express from "express";
 import dotenv from "dotenv"
 import { initDB } from "./config/database.js";
-import router from "./routes/transactionsRoute.js";
 import customerRoutes from "./routes/customersRoute.js";
 import shipmentRoutes from "./routes/shipmentsRoute.js"
 import paymentRoutes from "./routes/paymentsRoute.js"
@@ -12,6 +11,8 @@ import cartRoutes from "./routes/cartsRoutes.js"
 import orderItemsRoutes from "./routes/orderItemsRoutes.js"
 import wishListRoutes from "./routes/wishListRoutes.js"
 import shippingAddressRouter from './routes/shippingAddressRoute.js';
+import walletRoutes from './routes/walletRoutes.js';
+import bankAccountRoutes from './routes/bankAccountRoutes.js';
 // import rateLimiter from "./middleware/rateLimiter.js";
 
 dotenv.config();
@@ -38,6 +39,8 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/order_item", orderItemsRoutes);
 app.use("/api/wish_list", wishListRoutes);
 app.use("/api/shipping_addresses", shippingAddressRouter);
+app.use('/api/wallets', walletRoutes);
+app.use('/api/bank_accounts', bankAccountRoutes);
 
 initDB().then(() => {
     app.listen(PORT, () => {
