@@ -1,5 +1,5 @@
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Text, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
 import { styles } from '../styles/ProfileStyles';
 
 const UtilitiesSection = ({ utilities }) => (
@@ -11,7 +11,7 @@ const UtilitiesSection = ({ utilities }) => (
         {utilities.slice(0, 3).map((item, index) => (
           <TouchableOpacity key={index} style={styles.utilityItem}>
             <View style={styles.utilityIcon}>
-              <Icon name={item.icon} size={32} color="#FF6B9D" />
+              <MaterialIcons name={item.icon} size={32} color="#FF6B9D" />
             </View>
             <Text style={styles.utilityLabel}>{item.label}</Text>
           </TouchableOpacity>
@@ -22,7 +22,7 @@ const UtilitiesSection = ({ utilities }) => (
         {utilities.slice(3, 6).map((item, index) => (
           <TouchableOpacity key={index + 3} style={styles.utilityItem}>
             <View style={styles.utilityIcon}>
-              <Icon name={item.icon} size={32} color="#FF6B9D" />
+              <MaterialIcons name={item.icon} size={32} color="#FF6B9D" />
             </View>
             <Text style={styles.utilityLabel}>{item.label}</Text>
           </TouchableOpacity>

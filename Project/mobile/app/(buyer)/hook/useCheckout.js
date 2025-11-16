@@ -10,11 +10,7 @@ const API_BASE_URL = API_URL;
 export const useCheckout = (cartTotal, customerIdFromProp) => { // Đổi tên prop để rõ
   const [shipmentData, setShipmentData] = useState({
     shipment_date: new Date().toISOString(),
-    address: '',
-    city: '',
-    state: '',
-    country: 'Việt Nam',
-    zipcode: '',
+    address_id: '', // Thay đổi: Chỉ cần address_id thay vì các trường địa chỉ chi tiết
   });
   const [paymentData, setPaymentData] = useState({
     payment_method: 'card', // Consistent với option.key
@@ -26,10 +22,10 @@ export const useCheckout = (cartTotal, customerIdFromProp) => { // Đổi tên p
   const { user } = useUser(); // Lấy trực tiếp để fallback, tránh null từ prop
 
   // Fallback customerId: Ưu tiên prop, rồi user.id
-  const currentCustomerId = customerIdFromProp || user?.id;
-  console.log("Debug - currentCustomerId:", currentCustomerId); // Log để check null
-  console.log("Debug - user?.id:", user?.id);
-  console.log("Debug - customerIdFromProp:", customerIdFromProp);
+  // const currentCustomerId = customerIdFromProp || user?.id;
+  // console.log("Debug - currentCustomerId:", currentCustomerId); // Log để check null
+  // console.log("Debug - user?.id:", user?.id);
+  // console.log("Debug - customerIdFromProp:", customerIdFromProp);
 
   // Effect update amount reactive (giữ nguyên)
   useEffect(() => {
@@ -99,11 +95,11 @@ export const useCheckout = (cartTotal, customerIdFromProp) => { // Đổi tên p
       return;
     }
 
-    // Validate shipment
-    const requiredFields = ['address', 'city', 'state', 'country', 'zipcode'];
+    // Validate shipment - Thay đổi: Chỉ check address_id
+    const requiredFields = ['address_id'];
     const missing = requiredFields.find(field => !shipmentData[field]);
     if (missing) {
-      Alert.alert('Lỗi', `Vui lòng điền đầy đủ thông tin giao hàng (${missing})!`);
+      Alert.alert('Lỗi', `Vui lòng chọn địa chỉ giao hàng!`);
       return;
     }
 
@@ -130,7 +126,8 @@ export const useCheckout = (cartTotal, customerIdFromProp) => { // Đổi tên p
 
       console.log('Checkout success with IDs:', { shipmentId, paymentId });
 
-      // Navigate với data đầy đủ (giữ nguyên)
+      // Navigate với data đầy đủ (giữ nguyên, nhưng shipmentData giờ chỉ có shipment_date và address_id)
+      // Lưu ý: Nếu cần full address details ở OrderConfirmScreen, có thể fetch thêm hoặc backend return full info
       navigation.navigate('(buyer)/components/OrderConfirmScreen', {
         orderData: {
           // id: `ORD-${Date.now()}`,

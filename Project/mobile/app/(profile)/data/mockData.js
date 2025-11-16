@@ -12,13 +12,12 @@ export const mockOrdersTabs = [
 ];
 
 export const mockUtilities = [
-  { icon: 'document-text-outline', label: 'Cài đặt' },
-  { icon: 'card-outline', label: 'Chính sách' },
-  { icon: 'help-circle-outline', label: 'Trở chuyển' },
-  { icon: 'swap-horizontal-outline', label: 'Với sinh' },
-  { icon: 'people-outline', label: 'Bảo mật' },
-  { icon: 'chatbubble-outline', label: 'Hỗ trợ' },
-  // Chỉ dùng 6, bỏ 2 cuối
+  { icon: 'settings', label: 'Cài đặt' },
+  { icon: 'local-police', label: 'Chính sách' },
+  { icon: 'emoji-transportation', label: 'Giao hàng' },
+  { icon: 'payment', label: 'Thanh toán' },
+  { icon: 'security', label: 'Bảo mật' },
+  { icon: 'contact-support', label: 'Hỗ trợ' },
 ];
 
 export const mockExpenses = [
