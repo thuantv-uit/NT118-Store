@@ -1,7 +1,7 @@
 import { useUser } from '@clerk/clerk-expo';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useCallback, useEffect, useState } from 'react'; // Thêm useCallback cho useFocusEffect
 import {
   ActivityIndicator,
   Alert,
@@ -14,6 +14,16 @@ import {
   View,
 } from 'react-native';
 import { API_URL } from '../../../constants/api';
+
+// Hàm format VND (sử dụng Intl.NumberFormat)
+const formatVND = (amount) => {
+  if (amount == null || isNaN(amount)) return '0 ₫';
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    minimumFractionDigits: 0, // VND thường không cần thập phân
+  }).format(amount);
+};
 
 const WalletScreen = () => {
   const { user } = useUser();
@@ -46,8 +56,18 @@ const WalletScreen = () => {
     }
   };
 
+  // Sử dụng useFocusEffect để refresh data khi screen focus (ví dụ sau khi back từ screen khác)
+  useFocusEffect(
+    useCallback(() => {
+      fetchWalletData();
+    }, [user])
+  );
+
+  // Giữ useEffect cho initial load với user
   useEffect(() => {
-    fetchWalletData();
+    if (user) {
+      fetchWalletData();
+    }
   }, [user]);
 
   const onRefresh = async () => {
@@ -91,6 +111,14 @@ const WalletScreen = () => {
 
   const handleLinkBankAccount = () => {
     navigation.navigate('(profile)/components/BankAccountScreen');
+  };
+
+  const handleDepositWithdraw = () => {
+    if (!walletData) {
+      Alert.alert('Thông báo', 'Vui lòng tạo ví trước!');
+      return;
+    }
+    navigation.navigate('(profile)/components/DepositWithdrawScreen', { walletData });
   };
 
   const handleBack = () => {
@@ -172,7 +200,7 @@ const WalletScreen = () => {
             </View>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Số dư</Text>
-              <Text style={styles.infoValue}>₫{walletData.balance?.toLocaleString() || 0}</Text>
+              <Text style={styles.infoValue}>{formatVND(walletData.balance)}</Text>
             </View>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Ngày tạo</Text>
@@ -182,6 +210,16 @@ const WalletScreen = () => {
               <Text style={styles.infoLabel}>Cập nhật lần cuối</Text>
               <Text style={styles.infoValue}>{new Date(walletData.updated_at).toLocaleDateString('vi-VN')}</Text>
             </View>
+
+            {/* Button nạp/rút tiền chung */}
+            <TouchableOpacity
+              style={styles.depositWithdrawButton}
+              onPress={handleDepositWithdraw}
+            >
+              <MaterialIcons name="account-balance" size={20} color="#FFF" />
+              <Text style={styles.depositWithdrawButtonText}>Nạp/Rút tiền</Text>
+            </TouchableOpacity>
+
             {fetchLoading && <ActivityIndicator size="small" color="#EE4D2D" />}
           </View>
         )}
@@ -342,6 +380,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#111',
+  },
+  // Style cho button nạp/rút tiền
+  depositWithdrawButton: {
+    backgroundColor: '#EE4D2D',
+    paddingVertical: 16,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 20,
+  },
+  depositWithdrawButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '700',
   },
   center: {
     flex: 1,
