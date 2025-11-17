@@ -1,19 +1,20 @@
-// app/(app)/seller/index.jsx
+// import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
+  Dimensions,
   Image,
-  StyleSheet,
+  Pressable,
   SafeAreaView,
   ScrollView,
-  Dimensions,
-  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
-import { useRouter } from "expo-router";
+import { heightPercentageToDP as hp, widthPercentageToDP as wp } from "react-native-responsive-screen";
 
 const FLASH_IMAGES = [
   require("../../assets/images/home_seller/flash_sale/Flast sale.png"),
@@ -378,7 +379,7 @@ export default function HomeSeller() {
       >
         <FlashSaleBanner />
         <RevenueOverview onPress={goTo("/dashboard")} />
-        <ProductCreationCard onPress={goTo("/product-create")} />
+        <ProductCreationCard onPress={goTo("/(seller)/components/product-create")} />
         <NotificationFeed onPress={goTo("/notifications")} />
         <MessageSection onPress={goTo("/messages")} />
       </ScrollView>

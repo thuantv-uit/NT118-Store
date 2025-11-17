@@ -7,28 +7,30 @@ export const sql = neon(process.env.DATABASE_URL);
 
 export async function initDB() {
   try {
-    await sql`CREATE TABLE IF NOT EXISTS transactions(
-      id SERIAL PRIMARY KEY,
-      user_id VARCHAR(255) NOT NULL,
-      title  VARCHAR(255) NOT NULL,
-      amount  DECIMAL(10,2) NOT NULL,
-      category VARCHAR(255) NOT NULL,
-      created_at DATE NOT NULL DEFAULT CURRENT_DATE
-    )`;
-    console.log("Database initialized successfully");
-
     await sql`CREATE TABLE IF NOT EXISTS customer(
       id VARCHAR(255) PRIMARY KEY,
       first_name VARCHAR(255) NOT NULL,
       last_name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) NOT NULL UNIQUE,
-      password VARCHAR(255) NOT NULL,
-      address VARCHAR(255) NOT NULL,
       phone_number VARCHAR(255) NOT NULL,
-      role VARCHAR(50) NOT NULL DEFAULT 'buyer' CHECK (role IN ('seller', 'buyer', 'shiper')),
+      avatar VARCHAR(255) NOT NULL DEFAULT '',
+      role VARCHAR(50) NOT NULL DEFAULT 'buyer' CHECK (role IN ('seller', 'buyer', 'shipper')),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
     console.log("Database customer initialized successfully");
+
+    await sql`CREATE TABLE IF NOT EXISTS shipping_address(
+      id SERIAL PRIMARY KEY,
+      customer_id VARCHAR(255) NOT NULL REFERENCES customer(id) ON DELETE CASCADE,
+      name VARCHAR(255) NOT NULL DEFAULT 'Địa chỉ mặc định',
+      address VARCHAR(255) NOT NULL,
+      city VARCHAR(255) NOT NULL,
+      state VARCHAR(255) NOT NULL,
+      country VARCHAR(255) NOT NULL,
+      zipcode VARCHAR(255) NOT NULL,
+      is_default BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at DATE NOT NULL DEFAULT CURRENT_DATE
+    )`;
+    console.log("Database shipping_address initialized successfully");
 
     await sql`CREATE TABLE IF NOT EXISTS shipment(
       id SERIAL PRIMARY KEY,
@@ -54,17 +56,6 @@ export async function initDB() {
     )`;
     console.log("Database payment initialized successfully");
 
-    // await sql`CREATE TABLE IF NOT EXISTS "order"(
-    //   id SERIAL PRIMARY KEY,
-    //   order_date TIMESTAMP NOT NULL,
-    //   total_price DECIMAL(10,2) NOT NULL,
-    //   customer_id VARCHAR(255) NULL REFERENCES customer(id),
-    //   payment_id INT NULL REFERENCES payment(id),
-    //   shipment_id INT NULL REFERENCES shipment(id),
-    //   created_at DATE NOT NULL DEFAULT CURRENT_DATE
-    // )`;
-    // console.log("Database order initialized successfully");
-
     await sql`CREATE TABLE IF NOT EXISTS "category"(
       id SERIAL PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
@@ -79,6 +70,7 @@ export async function initDB() {
       description VARCHAR(255) NOT NULL,
       price DECIMAL(10,2) NOT NULL,
       stock INT NOT NULL,
+      image VARCHAR(255) NOT NULL DEFAULT '',
       category_id INT NULL REFERENCES category(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
@@ -87,6 +79,8 @@ export async function initDB() {
     await sql`CREATE TABLE IF NOT EXISTS "cart"(
       id SERIAL PRIMARY KEY,
       quantity INT NOT NULL,
+      size VARCHAR(10) NULL,
+      color VARCHAR(50) NULL,
       customer_id VARCHAR(255) NULL REFERENCES customer(id),
       product_id INT NULL REFERENCES product(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
@@ -121,6 +115,38 @@ export async function initDB() {
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
     console.log("Database order_item initialized successfully");
+
+    await sql`CREATE TABLE IF NOT EXISTS wallet(
+      id SERIAL PRIMARY KEY,
+      balance DECIMAL(10,2) NOT NULL DEFAULT 0,
+      customer_id VARCHAR(255) NULL REFERENCES customer(id),
+      created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`;
+    console.log("Database wallet initialized successfully");
+
+    await sql`CREATE TABLE IF NOT EXISTS bank_account(
+      id SERIAL PRIMARY KEY,
+      customer_id VARCHAR(255) NOT NULL REFERENCES customer(id),
+      bank_name VARCHAR(255) NOT NULL,
+      card_number VARCHAR(255) NOT NULL,
+      is_default BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at DATE NOT NULL DEFAULT CURRENT_DATE
+    )`;
+    console.log("Database bank_account initialized successfully");
+
+    await sql`CREATE TABLE IF NOT EXISTS wallet_transaction(
+      id SERIAL PRIMARY KEY,
+      wallet_id INT NOT NULL REFERENCES wallet(id) ON DELETE CASCADE,
+      customer_id VARCHAR(255) NOT NULL REFERENCES customer(id) ON DELETE CASCADE,
+      type VARCHAR(50) NOT NULL CHECK (type IN ('deposit', 'withdraw', 'purchase', 'refund', 'adjustment')),
+      amount DECIMAL(10,2) NOT NULL,
+      description TEXT,
+      status VARCHAR(50) NOT NULL DEFAULT 'completed' CHECK (status IN ('pending', 'completed', 'failed')),
+      transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      created_at DATE NOT NULL DEFAULT CURRENT_DATE
+    )`;
+    console.log("Database wallet_transaction initialized successfully");
 
   } catch (error) {
     console.log("Error initializing DB", error);

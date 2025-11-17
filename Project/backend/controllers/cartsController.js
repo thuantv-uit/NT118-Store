@@ -3,29 +3,24 @@ import { sql } from "../config/database.js";
 // Get for Cart
 export async function getCartById(req, res) {
   try {
-    const cartId = req.params;
-    // cartId sẽ trả về dữ liệu dạng mảng { id: '54321' }
-    // console.log("cartId:",cartId);
-    const id = cartId.id
-    // vậy nên phải lấy id từ mảng đó ra chứ không được sử dụng trực tiếp
-    // console.log("cartId:",id);
+    const { id } = req.params;
 
-    // Kiểm tra xem cartId có được cung cấp không
+    // Check cartId is it provider
     if (!id) {
       return res.status(400).json({ message: "cart ID is required" });
     }
 
-    // Thực hiện truy vấn
+    // Handle query
     const carts = await sql`
       SELECT * FROM cart WHERE id = ${id}
     `;
 
-    // Kiểm tra xem có bản ghi nào được tìm thấy không
+    // Check if any records are found
     if (carts.length === 0) {
       return res.status(404).json({ message: "cart not found" });
     }
 
-    // Trả về bản ghi đầu tiên (vì id thường là duy nhất)
+    // Returns the first record (since id is usually unique)
     res.status(200).json(carts[0]);
   } catch (error) {
     console.error("Error getting the cart:", error);
@@ -36,13 +31,9 @@ export async function getCartById(req, res) {
 // Get all Cart by UserId
 export async function getCartsByCustomerId(req, res) {
   try {
-    const params = req.params;
-    // console.log("params:", params);
-    const customerId = params.id; // Lấy customerId từ params
-    // log to debug
-    // console.log('customerId:', customerId)
-    // console.log('params:', params)
-    // check customerId
+    const { id: customerId } = req.params;
+
+    // Check customerId
     if (!customerId) {
       return res.status(400).json({ message: "customer ID is required" });
     }
@@ -52,9 +43,9 @@ export async function getCartsByCustomerId(req, res) {
       SELECT * FROM cart WHERE customer_id = ${customerId}
     `;
 
-    // check carts
+    // Trả về mảng rỗng nếu không có carts (thay vì 404 error)
     if (carts.length === 0) {
-      return res.status(404).json({ message: "No carts found for this customer" });
+      return res.status(200).json([]);
     }
 
     // return entire array carts
@@ -65,46 +56,48 @@ export async function getCartsByCustomerId(req, res) {
   }
 }
 
+
 // Create cart
 export async function createCart(req, res) {
-try {
-    const { quantity, customer_id, product_id } = req.body;
+  try {
+    const { quantity, customer_id, product_id, size, color } = req.body;
 
-    if (!quantity) {
-    return res.status(400).json({ message: "All fields are required" });
+    // Validation: quantity is required, size and color optional (vì NULL allowed)
+    if (!quantity || !customer_id || !product_id) {
+      return res.status(400).json({ message: "quantity, customer_id, and product_id are required" });
     }
 
     const cart = await sql`
-    INSERT INTO cart(quantity, customer_id, product_id)
-    VALUES (${quantity},${customer_id},${product_id})
-    RETURNING *
+      INSERT INTO cart(quantity, customer_id, product_id, size, color)
+      VALUES (${quantity}, ${customer_id}, ${product_id}, ${size || null}, ${color || null})
+      RETURNING *
     `;
 
-    // To use debug
-    // console.log(cart);
     res.status(201).json(cart[0]);
-} catch (error) {
-    console.log("Error creating the cart", error);
+  } catch (error) {
+    console.error("Error creating the cart", error);
     res.status(500).json({ message: "Internal server error" });
-    }
+  }
 }
 
 // Update for cart
 export async function updateCart(req, res) {
   try {
     const { id } = req.params; // lấy id từ URL
-    const { quantity } = req.body; // lấy data từ body
+    const { quantity, size, color } = req.body; // lấy data từ body (tất cả optional cho partial update)
 
     // Kiểm tra input
     if (!id) {
       return res.status(400).json({ message: "Cart ID is required" });
     }
 
-    // Thực hiện update
+    // Sử dụng COALESCE để chỉ update field nếu được cung cấp (không NULL), nếu không giữ nguyên giá trị cũ
     const updatedCart = await sql`
       UPDATE cart
       SET 
-        quantity = ${quantity}
+        quantity = COALESCE(${quantity}, quantity),
+        size = COALESCE(${size}, size),
+        color = COALESCE(${color}, color)
       WHERE id = ${id}
       RETURNING *;
     `;

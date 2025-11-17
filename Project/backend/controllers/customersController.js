@@ -1,31 +1,59 @@
 import { sql } from "../config/database.js";
+import { streamUpload } from '../config/cloudinaryProvider.js';
+
+// Constants for upload
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const VALID_IMAGE_MIMES = ['image/jpeg', 'image/png', 'image/gif'];
+
+// Helper function for upload avatar (reusable)
+async function handleAvatarUpload(req) {
+  if (!req.file) return null;
+
+  // Validate file
+  if (req.file.size > MAX_FILE_SIZE) {
+    throw new Error('File too large (max 5MB)');
+  }
+  if (!VALID_IMAGE_MIMES.includes(req.file.mimetype)) {
+    throw new Error('Invalid file type. Only images allowed.');
+  }
+
+  try {
+    const result = await streamUpload(req.file.buffer, 'customer_avatars');
+    // Cleanup buffer
+    delete req.file.buffer;
+    return result.secure_url;
+  } catch (uploadError) {
+    console.error('Cloudinary upload failed:', uploadError);
+    throw new Error('Failed to upload avatar');
+  }
+}
 
 // Get Profile for User
 export async function getCustomerById(req, res) {
   try {
     const userId = req.params;
-    // userId sẽ trả về dữ liệu dạng mảng { id: '54321' }
+    // userId will return data array { id: '54321' }
     // console.log("userId:",userId);
     const id = userId.id
-    // vậy nên phải lấy id từ mảng đó ra chứ không được sử dụng trực tiếp
+    // so we have to get id from that array
     // console.log("userId:",id);
 
-    // Kiểm tra xem userId có được cung cấp không
+    // Check userId is it provided
     if (!id) {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    // Thực hiện truy vấn
+    // Execute the query
     const customer = await sql`
       SELECT * FROM customer WHERE id = ${id}
     `;
 
-    // Kiểm tra xem có bản ghi nào được tìm thấy không
+    // Check if any records are found
     if (customer.length === 0) {
       return res.status(404).json({ message: "Customer not found" });
     }
 
-    // Trả về bản ghi đầu tiên (vì id thường là duy nhất)
+    // Returns the first record (since id is usually unique)
     res.status(200).json(customer[0]);
   } catch (error) {
     console.error("Error getting the customer:", error);
@@ -36,15 +64,24 @@ export async function getCustomerById(req, res) {
 // Create profile for user
 export async function createCustomer(req, res) {
   try {
-    const { first_name, last_name, email, password, address, phone_number, role, id } = req.body;
+    const { first_name, last_name, phone_number, role, id, avatar: avatarFromBody } = req.body;
 
-    if (!first_name || !last_name || !email || !id || !address || !password || !phone_number || !role) {
+    if (!first_name || !last_name || !id || !phone_number || !role) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    // Handle upload avatar (priority upload > body)
+    let avatarUrl = avatarFromBody || null;
+    try {
+      const uploadedAvatar = await handleAvatarUpload(req);
+      if (uploadedAvatar) avatarUrl = uploadedAvatar;
+    } catch (uploadError) {
+      return res.status(400).json({ message: uploadError.message });
+    }
+
     const transaction = await sql`
-      INSERT INTO customer(id, first_name, last_name, email, password, address, phone_number, role)
-      VALUES (${id},${first_name},${last_name},${email},${password},${address},${phone_number},${role})
+      INSERT INTO customer(id, first_name, last_name, phone_number, role, avatar)
+      VALUES (${id},${first_name},${last_name},${phone_number},${role}, ${avatarUrl})
       RETURNING *
     `;
 
@@ -57,42 +94,53 @@ export async function createCustomer(req, res) {
   }
 }
 
-// Update profile for user (chỉ cập nhật các trường được cung cấp, dùng COALESCE để giữ nguyên nếu undefined)
+// Update profile for user
 export async function updateCustomer(req, res) {
   try {
-    const { id } = req.params; // lấy id từ URL
-    const { first_name, last_name, address, phone_number, role } = req.body; // lấy các trường từ body (có thể undefined)
+    const { id } = req.params; // get id from URL
+    const { first_name, last_name, phone_number, role, avatar: avatarFromBody } = req.body;
 
-    // Kiểm tra input
+    // Check input
     if (!id) {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    // Kiểm tra xem có ít nhất một trường cần cập nhật không
-    const hasUpdates = first_name !== undefined || last_name !== undefined || address !== undefined || phone_number !== undefined || role !== undefined;
+    //Check if at least one field needs to be updated
+    const hasUpdates = first_name !== undefined || last_name !== undefined || phone_number !== undefined || role !== undefined || avatarFromBody !== undefined;
     if (!hasUpdates) {
       return res.status(400).json({ message: "At least one field must be provided for update" });
     }
 
-    // Thực hiện update với COALESCE để chỉ cập nhật nếu giá trị được cung cấp (không undefined)
+    let avatarUrl = null;
+    try {
+      const uploadedAvatar = await handleAvatarUpload(req);
+      if (uploadedAvatar) {
+        avatarUrl = uploadedAvatar;
+      } else if (avatarFromBody !== undefined) {
+        avatarUrl = avatarFromBody || null;
+      }
+    } catch (uploadError) {
+      return res.status(400).json({ message: uploadError.message });
+    }
+
     const updatedCustomer = await sql`
       UPDATE customer
       SET 
         first_name = COALESCE(${first_name}, first_name),
         last_name = COALESCE(${last_name}, last_name),
-        address = COALESCE(${address}, address),
         phone_number = COALESCE(${phone_number}, phone_number),
-        role = COALESCE(${role}, role)
+        role = COALESCE(${role}, role),
+        avatar = COALESCE(${avatarUrl}, avatar)
       WHERE id = ${id}
       RETURNING *;
     `;
 
-    // Nếu không có bản ghi nào được cập nhật
+    // If no records are updated
     if (updatedCustomer.length === 0) {
       return res.status(404).json({ message: "Customer not found" });
     }
 
-    // Trả về dữ liệu sau khi update
+    // Return data after update
     res.status(200).json(updatedCustomer[0]);
   } catch (error) {
     console.error("Error updating the customer:", error);
