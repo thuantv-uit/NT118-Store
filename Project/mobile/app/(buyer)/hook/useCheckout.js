@@ -51,7 +51,7 @@ export const useCheckout = (cartTotal, customerIdFromProp) => { // Đổi tên p
       ...shipmentData,
       customer_id: currentCustomerId, // Đảm bảo truyền
     };
-    console.log('Sending shipment payload:', payload);
+    // console.log('Sending shipment payload:', payload);
 
     try {
       const response = await axios.post(`${API_BASE_URL}/shipment`, payload);
@@ -81,7 +81,7 @@ export const useCheckout = (cartTotal, customerIdFromProp) => { // Đổi tên p
 
     try {
       const response = await axios.post(`${API_BASE_URL}/payment`, payload);
-      console.log('Payment created:', response.data);
+      // console.log('Payment created:', response.data);
       return { success: true, data: response.data };
     } catch (err) {
       console.error('Error creating payment:', err.response?.data || err.message);
@@ -124,7 +124,7 @@ export const useCheckout = (cartTotal, customerIdFromProp) => { // Đổi tên p
       const paymentResult = await createPayment();
       const paymentId = paymentResult.data.id;
 
-      console.log('Checkout success with IDs:', { shipmentId, paymentId });
+      // console.log('Checkout success with IDs:', { shipmentId, paymentId });
 
       // Navigate với data đầy đủ (giữ nguyên, nhưng shipmentData giờ chỉ có shipment_date và address_id)
       // Lưu ý: Nếu cần full address details ở OrderConfirmScreen, có thể fetch thêm hoặc backend return full info

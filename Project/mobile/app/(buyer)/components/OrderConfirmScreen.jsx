@@ -17,16 +17,30 @@ import { buyerStyles, orderConfirmStyles } from '../styles/BuyerStyles';
 
 const API_BASE_URL = API_URL;
 
-// Hàm helper để tạo order (thêm debug logs và đảm bảo fields là null nếu undefined)
+// Hàm helper để tạo order (sửa: lấy mảng cart_id từ tất cả items)
 const createOrder = async (orderData, customerId) => {
   try {
+    // Loop qua items để lấy tất cả cart.id, unique bằng Set
+    const cartIdsSet = new Set();
+    (orderData.items || []).forEach(item => {
+      if (item.cart?.id) {
+        cartIdsSet.add(item.cart.id);
+      }
+    });
+    const cartIdsArray = Array.from(cartIdsSet); // Chuyển thành mảng
+
+    // console.log("cartIdsArray: ", cartIdsArray);
+
     const payload = {
       order_date: new Date().toISOString(),
       payment_id: orderData.payment?.id || null,
       customer_id: customerId || null,
       shipment_id: orderData.shipment?.id || null,
-      cart_id: orderData.items[0].cart.id || null,
+      cart_id: cartIdsArray.length > 0 ? cartIdsArray : null, // Truyền mảng hoặc null
     };
+
+    // Debug: Uncomment để log payload
+    // console.log("Debug createOrder - payload cart_id (mảng):", payload.cart_id);
 
     const response = await fetch(`${API_BASE_URL}/order`, {
       method: 'POST',
@@ -106,7 +120,7 @@ export default function OrderConfirmScreen() {
   // console.log("Debug OrderConfirm - passedData - items:", passedData.items);
   // console.log("Debug OrderConfirm - passedData - items:", passedData.payment);
   // console.log("Debug OrderConfirm - passedData - shipment:", passedData.shipment);
-  // console.log("Debug OrderConfirm - passedData:", passedData);
+  console.log("Debug OrderConfirm - passedData:", passedData);
   // console.log("Debug OrderConfirm - fallbackCustomerId from user:", fallbackCustomerId);
 
   // Effect để tạo order và orderItems khi component mount

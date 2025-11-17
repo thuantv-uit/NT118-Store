@@ -24,7 +24,7 @@ export default function CartScreen() {
   } = useCart(customerId);
 
   const handleCheckout = () => {
-    console.log('Checkout with cart:', cartItems);
+    // console.log('Checkout with cart:', cartItems);
     // Alert.alert('Thanh toán', 'Chuyển đến màn hình thanh toán!');
     navigation.navigate('(buyer)/components/CheckoutScreen');
   };
