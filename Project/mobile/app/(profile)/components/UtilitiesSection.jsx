@@ -22,9 +22,7 @@ const UtilitiesSection = ({ utilities }) => {
         // Ví dụ: navigation.navigate('Policy');
         break;
       case 'Thanh toán':
-        // Logic cho Thanh toán
-        console.log('Clicked on Thanh toán');
-        // Ví dụ: navigation.navigate('Payment');
+        navigation.navigate('(profile)/components/WalletScreen');
         break;
       case 'Bảo mật':
         // Logic cho Bảo mật
