@@ -240,7 +240,7 @@ export default function OrderConfirmScreen() {
   };
 
   const handleBackToHome = () => {
-    navigation.navigate('Home');
+    navigation.navigate('(home)/index');
   };
 
   return (

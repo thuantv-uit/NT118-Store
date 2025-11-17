@@ -10,10 +10,32 @@ const fetchCartByCustomerId = async (customerId) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    return data;
+    // Validate: Đảm bảo là array, fallback []
+    const cartsArray = Array.isArray(data) ? data : [];
+    console.log(`Debug fetchCart - customerId: ${customerId}, carts:`, cartsArray); // Debug
+    return cartsArray;
   } catch (err) {
     console.error('Error fetching cart:', err);
     throw err;
+  }
+};
+
+// NEW: Helper to fetch orders by userId
+const fetchOrdersByUserId = async (customerId) => {
+  try {
+    const response = await fetch(`${API_URL}/order/user/${customerId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    // Validate: Đảm bảo là array, fallback []
+    const ordersArray = Array.isArray(data) ? data : [];
+    console.log(`Debug fetchOrders - customerId: ${customerId}, orders:`, ordersArray); // Debug
+    return ordersArray;
+  } catch (err) {
+    console.error('Error fetching orders:', err);
+    // Fallback empty array nếu orders fail (không filter)
+    return [];
   }
 };
 
@@ -25,7 +47,6 @@ const fetchProductById = async (productId) => {
       throw new Error(`Product not found: ${productId}`);
     }
     const product = await response.json();
-    // console.log(`Fetched product ${productId}:`, product); // Debug: Check images/image
     return product;
   } catch (err) {
     console.error(`Error fetching product ${productId}:`, err);
@@ -38,7 +59,6 @@ const loadCartWithProducts = async (carts) => {
   const itemsWithProducts = await Promise.all(
     carts.map(async (cart) => {
       const product = await fetchProductById(cart.product_id);
-      // console.log(`Loaded for cart ${cart.id}: cart=`, cart, 'product=', product); // Debug
       return {
         cart,
         product,
@@ -48,7 +68,6 @@ const loadCartWithProducts = async (carts) => {
 
   // Filter items have product valid (price >0)
   const validItems = itemsWithProducts.filter(({ product }) => product && parseFloat(product.price || 0) > 0);
-  // console.log('Final cartItems (with products):', validItems); // Debug array cuối
   return validItems;
 };
 
@@ -89,11 +108,11 @@ const deleteCartItem = async (cartId) => {
 };
 
 export const useCart = (customerId) => {
-  const [cartItems, setCartItems] = useState([]); // Array of { cart, product }
+  const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load carts when mount or customerId thay đổi
+  // Load carts when mount or customerId thay đổi (UPDATED: Filter carts chưa ordered)
   useEffect(() => {
     const loadCart = async () => {
       if (!customerId) {
@@ -105,8 +124,29 @@ export const useCart = (customerId) => {
       try {
         setLoading(true);
         setError(null);
-        const carts = await fetchCartByCustomerId(customerId);
-        const enrichedData = await loadCartWithProducts(carts || []); // Load { cart, product }
+
+        // Fetch parallel: carts và orders
+        const [carts, orders] = await Promise.all([
+          fetchCartByCustomerId(customerId),
+          fetchOrdersByUserId(customerId),
+        ]);
+
+        // Extract all ordered cart_ids (hỗ trợ array hoặc single)
+        const orderedCartIds = new Set();
+        orders.forEach(order => {
+          const cartIds = Array.isArray(order.cart_id) ? order.cart_id : (order.cart_id ? [order.cart_id] : []);
+          cartIds.forEach(id => {
+            if (id) orderedCartIds.add(id);
+          });
+        });
+        console.log(`Debug loadCart - ordered cart_ids:`, Array.from(orderedCartIds)); // Debug
+
+        // Filter carts: Chỉ giữ những chưa ordered
+        const unOrderedCarts = carts.filter(cart => !orderedCartIds.has(cart.id));
+        console.log(`Debug loadCart - filtered carts (un-ordered):`, unOrderedCarts); // Debug
+
+        // Enrich và filter valid
+        const enrichedData = await loadCartWithProducts(unOrderedCarts);
         setCartItems(enrichedData);
       } catch (err) {
         setError(err.message);
@@ -127,7 +167,7 @@ export const useCart = (customerId) => {
     }
 
     try {
-      const updatedItem = await updateCartQuantity(cartId, newQty); // Return { cart, product }
+      const updatedItem = await updateCartQuantity(cartId, newQty);
       setCartItems(prev => prev.map(item => 
         item.cart.id === cartId ? updatedItem : item
       ));
@@ -152,14 +192,23 @@ export const useCart = (customerId) => {
     return sum + (price * item.cart.quantity);
   }, 0);
 
-  // Refetch
+  // Refetch (UPDATED: Sẽ re-filter khi gọi)
   const refetchCart = useCallback(async () => {
     if (!customerId) return;
     try {
       setLoading(true);
       setError(null);
-      const carts = await fetchCartByCustomerId(customerId);
-      const newData = await loadCartWithProducts(carts || []);
+      const [carts, orders] = await Promise.all([
+        fetchCartByCustomerId(customerId),
+        fetchOrdersByUserId(customerId),
+      ]);
+      const orderedCartIds = new Set();
+      orders.forEach(order => {
+        const cartIds = Array.isArray(order.cart_id) ? order.cart_id : (order.cart_id ? [order.cart_id] : []);
+        cartIds.forEach(id => orderedCartIds.add(id));
+      });
+      const unOrderedCarts = carts.filter(cart => !orderedCartIds.has(cart.id));
+      const newData = await loadCartWithProducts(unOrderedCarts);
       setCartItems(newData);
     } catch (err) {
       setError(err.message);

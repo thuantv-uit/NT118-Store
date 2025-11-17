@@ -121,3 +121,28 @@ export async function deleteOrder(req, res) {
     res.status(500).json({ message: "Internal server error" });
   }
 }
+
+// Get order by userID
+export async function getOrdersByUserId(req, res) {
+  try {
+    const { userId } = req.params; // Lấy userId từ URL (e.g., /orders/user/:userId)
+
+    // Kiểm tra input
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    // Thực hiện truy vấn: Lấy tất cả orders của user, sort theo order_date desc (mới nhất trước)
+    const orders = await sql`
+      SELECT * FROM "order" 
+      WHERE customer_id = ${userId} 
+      ORDER BY order_date DESC
+    `;
+
+    // Trả về mảng orders (có thể empty nếu không có)
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error getting orders by user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}

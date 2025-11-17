@@ -118,7 +118,7 @@
 //       const order = await response.json();
 //       Alert.alert("Thành công", `Đơn hàng ${order.id} đã được tạo!`);
       
-//       // Sau thành công, có thể clear cart và navigate về trang chính
+//       // Sau thành công, có thể clear cart và navigate ính
 //       // Ví dụ: router.push('/OrderSuccess');
 //       router.push('/'); // Hoặc trang chính
 //     } catch (err) {

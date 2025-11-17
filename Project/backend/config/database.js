@@ -99,7 +99,7 @@ export async function initDB() {
       id SERIAL PRIMARY KEY,
       order_date TIMESTAMP NOT NULL,
       customer_id VARCHAR(255) NULL REFERENCES customer(id),
-      cart_id INT NULL REFERENCES cart(id),
+      cart_id INT[] NULL,
       payment_id INT NULL REFERENCES payment(id),
       shipment_id INT NULL REFERENCES shipment(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
