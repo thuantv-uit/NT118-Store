@@ -135,6 +135,19 @@ export async function initDB() {
     )`;
     console.log("Database bank_account initialized successfully");
 
+    await sql`CREATE TABLE IF NOT EXISTS wallet_transaction(
+      id SERIAL PRIMARY KEY,
+      wallet_id INT NOT NULL REFERENCES wallet(id) ON DELETE CASCADE,
+      customer_id VARCHAR(255) NOT NULL REFERENCES customer(id) ON DELETE CASCADE,
+      type VARCHAR(50) NOT NULL CHECK (type IN ('deposit', 'withdraw', 'purchase', 'refund', 'adjustment')),
+      amount DECIMAL(10,2) NOT NULL,
+      description TEXT,
+      status VARCHAR(50) NOT NULL DEFAULT 'completed' CHECK (status IN ('pending', 'completed', 'failed')),
+      transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      created_at DATE NOT NULL DEFAULT CURRENT_DATE
+    )`;
+    console.log("Database wallet_transaction initialized successfully");
+
   } catch (error) {
     console.log("Error initializing DB", error);
     process.exit(1); // status code 1 means failure, 0 success

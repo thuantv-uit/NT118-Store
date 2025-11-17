@@ -13,6 +13,7 @@ import wishListRoutes from "./routes/wishListRoutes.js"
 import shippingAddressRouter from './routes/shippingAddressRoute.js';
 import walletRoutes from './routes/walletRoutes.js';
 import bankAccountRoutes from './routes/bankAccountRoutes.js';
+import walletTransactionRoutes from './routes/walletTransactionRoutes.js'
 // import rateLimiter from "./middleware/rateLimiter.js";
 
 dotenv.config();
@@ -41,6 +42,7 @@ app.use("/api/wish_list", wishListRoutes);
 app.use("/api/shipping_addresses", shippingAddressRouter);
 app.use('/api/wallets', walletRoutes);
 app.use('/api/bank_accounts', bankAccountRoutes);
+app.use('/api/wallet_transaction', walletTransactionRoutes);
 
 initDB().then(() => {
     app.listen(PORT, () => {
