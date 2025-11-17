@@ -1,4 +1,3 @@
-// DeliveryScreen.jsx
 import { useUser } from '@clerk/clerk-expo';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';

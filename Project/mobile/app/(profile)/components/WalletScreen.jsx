@@ -1,7 +1,7 @@
 import { useUser } from '@clerk/clerk-expo';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { useCallback, useEffect, useState } from 'react'; // Thêm useCallback cho useFocusEffect
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -121,6 +121,14 @@ const WalletScreen = () => {
     navigation.navigate('(profile)/components/DepositWithdrawScreen', { walletData });
   };
 
+  const handleTransactionHistory = () => {
+    if (!walletData) {
+      Alert.alert('Thông báo', 'Vui lòng tạo ví trước!');
+      return;
+    }
+    navigation.navigate('(profile)/components/TransactionHistoryScreen', { customerId: user.id });
+  };
+
   const handleBack = () => {
     navigation.goBack();
   };
@@ -218,6 +226,15 @@ const WalletScreen = () => {
             >
               <MaterialIcons name="account-balance" size={20} color="#FFF" />
               <Text style={styles.depositWithdrawButtonText}>Nạp/Rút tiền</Text>
+            </TouchableOpacity>
+
+            {/* Button lịch sử giao dịch mới */}
+            <TouchableOpacity
+              style={styles.historyButton}
+              onPress={handleTransactionHistory}
+            >
+              <MaterialIcons name="history" size={20} color="#FFF" />
+              <Text style={styles.historyButtonText}>Lịch sử giao dịch</Text>
             </TouchableOpacity>
 
             {fetchLoading && <ActivityIndicator size="small" color="#EE4D2D" />}
@@ -393,6 +410,22 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   depositWithdrawButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  // Style cho button lịch sử giao dịch
+  historyButton: {
+    backgroundColor: '#6C757D', // Màu xám cho secondary action
+    paddingVertical: 16,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 12,
+  },
+  historyButtonText: {
     color: '#FFF',
     fontSize: 16,
     fontWeight: '700',
