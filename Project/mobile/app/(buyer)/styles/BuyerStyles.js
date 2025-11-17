@@ -178,16 +178,6 @@ export const checkoutStyles = {
     backgroundColor: 'white',
     fontSize: 16,
   },
-  // option: {
-  //   flexDirection: 'row',
-  //   alignItems: 'center',
-  //   padding: 12,
-  //   marginBottom: 8,
-  //   backgroundColor: 'white',
-  //   borderRadius: 8,
-  //   borderWidth: 1,
-  //   borderColor: '#BDAAA8',
-  // },
   option: {
   flexDirection: 'row',
   alignItems: 'center',
@@ -288,9 +278,8 @@ selectedOption: {
     fontSize: 16,
   },
   paymentOptions: [ // Inline array cho options
-    { key: 'card', label: 'Thẻ tín dụng', icon: 'credit-card-outline' },
+    { key: 'wallet', label: 'Thanh toán bằng ví', icon: 'wallet-bifold' },
     { key: 'cash', label: 'Thanh toán khi nhận hàng', icon: 'account-cash-outline' },
-    { key: 'bank', label: 'Chuyển khoản ngân hàng', icon: 'bank-outline' },
   ],
 };
 

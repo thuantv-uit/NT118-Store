@@ -36,26 +36,26 @@ const createOrder = async (orderData, customerId) => {
       body: JSON.stringify(payload),
     });
 
-    console.log("Debug createOrder - response status:", response.status);
+    // console.log("Debug createOrder - response status:", response.status);
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Debug createOrder - full error response:", errorText);
+      // console.error("Debug createOrder - full error response:", errorText);
       throw new Error(`Failed to create order: ${response.status} - ${errorText}`);
     }
 
     const newOrder = await response.json();
-    console.log('Debug createOrder - newOrder created:', newOrder);
+    // console.log('Debug createOrder - newOrder created:', newOrder);
     return newOrder;
   } catch (error) {
-    console.error('Debug createOrder - caught error:', error);
+    // console.error('Debug createOrder - caught error:', error);
     throw new Error(`Lỗi tạo order: ${error.message}`);
   }
 };
 
 // Hàm helper để tạo orderItems (thêm debug logs)
 const createOrderItems = async (orderId, Data) => {
-  console.log("Debug createOrderItems - orderId:", orderId);
-  console.log("Debug createOrderItems - Data length:", Data);
+  // console.log("Debug createOrderItems - orderId:", orderId);
+  // console.log("Debug createOrderItems - Data length:", Data);
   try {
     const createdItems = [];
     for (const [index, item] of (Data || []).entries()) {
@@ -74,10 +74,10 @@ const createOrderItems = async (orderId, Data) => {
         body: JSON.stringify(payload),
       });
 
-      console.log(`Debug createOrderItems - response status cho item ${index}:`, response.status);
+      // console.log(`Debug createOrderItems - response status cho item ${index}:`, response.status);
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`Debug createOrderItems - full error response cho item ${index}:`, errorText);
+        // console.error(`Debug createOrderItems - full error response cho item ${index}:`, errorText);
         throw new Error(`Failed to create order item ${index}: ${response.status} - ${errorText}`);
       }
 
@@ -86,7 +86,7 @@ const createOrderItems = async (orderId, Data) => {
     }
     return createdItems;
   } catch (error) {
-    console.error('Debug createOrderItems - caught error:', error);
+    // console.error('Debug createOrderItems - caught error:', error);
     throw new Error(`Lỗi tạo order items: ${error.message}`);
   }
 };
@@ -104,20 +104,22 @@ export default function OrderConfirmScreen() {
   // const carts = passedData.items.map(item => item.cart.product_id);
   // console.log("Debug OrderConfirm - passedData - items.id:", carts);
   // console.log("Debug OrderConfirm - passedData - items:", passedData.items);
+  // console.log("Debug OrderConfirm - passedData - items:", passedData.payment);
+  // console.log("Debug OrderConfirm - passedData - shipment:", passedData.shipment);
   // console.log("Debug OrderConfirm - passedData:", passedData);
   // console.log("Debug OrderConfirm - fallbackCustomerId from user:", fallbackCustomerId);
 
   // Effect để tạo order và orderItems khi component mount
   useEffect(() => {
-    // if (!passedData) {
-    //   setLoading(false);
-    //   setError('Không tìm thấy dữ liệu đơn hàng!');
-    //   return;
-    // }
+    if (!passedData) {
+      setLoading(false);
+      setError('Không tìm thấy dữ liệu đơn hàng!');
+      return;
+    }
 
     // Validate customerId: Ưu tiên từ passedData, fallback user.id, nếu vẫn undefined thì error
     const currentCustomerId = passedData.customerId || fallbackCustomerId;
-    console.log("Debug OrderConfirm - currentCustomerId:", currentCustomerId);
+    // console.log("Debug OrderConfirm - currentCustomerId:", currentCustomerId);
     if (!currentCustomerId) {
       setLoading(false);
       setError('Không tìm thấy thông tin khách hàng! Vui lòng đăng nhập lại.');
@@ -132,35 +134,40 @@ export default function OrderConfirmScreen() {
     }
     const createFullOrder = async () => {
       try {
-        console.log('Debug OrderConfirm - Bắt đầu tạo full order...');
+        // console.log('Debug OrderConfirm - Bắt đầu tạo full order...');
         setLoading(true);
         setError(null);
 
         // Bước 1: Tạo order - Truyền currentCustomerId
         const newOrder = await createOrder(passedData, currentCustomerId);
-        console.log('Debug OrderConfirm - New order created:', newOrder);
+        // console.log('Debug OrderConfirm - New order created:', newOrder);
 
         // Bước 2: Tạo orderItems với order_id mới
         const newItems = await createOrderItems(newOrder.id, passedData.items);
-        console.log('Debug OrderConfirm - New order items created:', newItems);
+        // console.log('Debug OrderConfirm - New order items created:', newItems);
 
-        // Bước 3: Chuẩn bị dữ liệu hiển thị (bỏ map cart vì order_item không có cart_id)
-        // const fullOrderData = {
-        //   id: newOrder.id,
-        //   date: newOrder.order_date || new Date().toISOString(),
-        //   items: newItems.map(item => ({
-        //     ...item,
-        //     product: passedData.cartItems.find(ci => ci.product.id === item.product_id)?.product,
-        //     // Bỏ map cart vì không cần (quantity/price đã từ order_item)
-        //   })),
-        //   shipment: passedData.shipment || {},
-        //   payment: passedData.payment || {},
-        //   total: passedData.total || 0,
-        // };
+        // Bước 3: Chuẩn bị dữ liệu hiển thị (sửa lỗi find undefined bằng cách kiểm tra passedData.items)
+        const fullOrderData = {
+          id: newOrder.id,
+          date: newOrder.order_date || new Date().toISOString(),
+          items: newItems.map(item => {
+            // Tìm original item từ passedData.items dựa trên product_id (kiểm tra tồn tại trước)
+            const originalItem = passedData.items && passedData.items.length > 0 
+              ? passedData.items.find(orig => orig.product?.id === item.product_id) 
+              : null;
+            return {
+              ...item,
+              product: originalItem?.product || { name: 'Sản phẩm không xác định' }, // Fallback nếu không tìm thấy
+            };
+          }),
+          shipment: passedData.shipment || {},
+          payment: passedData.payment || {},
+          total: passedData.total || 0,
+        };
         // console.log('Debug OrderConfirm - fullOrderData prepared:', fullOrderData);
-        // setOrderData(fullOrderData);
+        setOrderData(fullOrderData);
       } catch (err) {
-        console.error('Debug OrderConfirm - Error creating full order:', err);
+        // console.error('Debug OrderConfirm - Error creating full order:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -266,16 +273,17 @@ export default function OrderConfirmScreen() {
           <View style={orderConfirmStyles.section}>
             <Text style={orderConfirmStyles.title}>Giao hàng đến</Text>
             <Text style={orderConfirmStyles.info}>
-              {shipment.address || 'N/A'}, {shipment.city || 'N/A'}
+              {/* {shipment.address || 'N/A'}, {shipment.city || 'N/A'} */}
+              {shipment.shipment_date || 'N/A'}
             </Text>
           </View>
 
-          {/* Payment Info - Xử lý cả method và payment_method */}
+          {/* Payment Info - Chỉ hỗ trợ 2 phương thức: ví và COD */}
           <View style={orderConfirmStyles.section}>
             <Text style={orderConfirmStyles.title}>Thanh toán</Text>
             <Text style={orderConfirmStyles.info}>
-              Phương thức: {payment.method === 'card' || payment.payment_method === 'card' ? 'Thẻ tín dụng' : 
-                           payment.method === 'cash' || payment.payment_method === 'cash' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản'}
+              Phương thức: {payment.payment_method === 'wallet' ? 'Thanh toán bằng ví' : 
+                           (payment.payment_method === 'cash' ? 'Thanh toán khi nhận hàng' : 'Chưa xác định')}
             </Text>
             <Text style={orderConfirmStyles.info}>Tổng tiền: {total.toLocaleString('vi-VN')} VNĐ</Text>
           </View>
