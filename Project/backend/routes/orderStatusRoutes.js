@@ -3,6 +3,8 @@ import {
   createOrderStatus,
   getOrderStatusById,
   getOrderStatusByOrderId,
+  getOrderStatusBySellerId,
+  getOrderStatusByBuyerId,
   updateOrderStatus,
   deleteOrderStatus
 } from "../controllers/orderStatusController.js";
@@ -17,6 +19,12 @@ router.get("/:id", getOrderStatusById);
 
 // GET /order-status/order/:order_id - Lấy theo order_id
 router.get("/order/:order_id", getOrderStatusByOrderId);
+
+// GET /order-status/seller/:seller_id - Lấy theo seller_id (mới thêm)
+router.get("/seller/:seller_id", getOrderStatusBySellerId);
+
+// GET /order-status/buyer/:buyer_id - Lấy theo buyer_id (mới thêm)
+router.get("/buyer/:buyer_id", getOrderStatusByBuyerId);
 
 // PUT /order-status/:id - Cập nhật status
 router.put("/:id", updateOrderStatus);

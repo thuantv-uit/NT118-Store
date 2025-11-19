@@ -1,6 +1,6 @@
 import { sql } from "../config/database.js";
 
-// Create order_status mới
+// Create order_status
 export async function createOrderStatus(req, res) {
   try {
     const { seller_id, buyer_id, product_id, order_id, status } = req.body;
@@ -92,54 +92,61 @@ export async function getOrderStatusByOrderId(req, res) {
   }
 }
 
-// Update order_status (chủ yếu update status)
-// export async function updateOrderStatus(req, res) {
-//   try {
-//     const { id } = req.params;
-//     const { status, seller_id, buyer_id } = req.body;  // Chỉ update status, cần seller_id hoặc buyer_id để check ownership
+// Get order_status by seller_id (mới thêm: lấy tất cả statuses của một seller)
+export async function getOrderStatusBySellerId(req, res) {
+  try {
+    const { seller_id } = req.params;
 
-//     if (!id || (!status && !seller_id && !buyer_id)) {
-//       return res.status(400).json({ message: "ID and at least one of status, seller_id, or buyer_id are required" });
-//     }
+    if (!seller_id) {
+      return res.status(400).json({ message: "Seller ID is required" });
+    }
 
-//     // Validate status nếu có
-//     if (status) {
-//       const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
-//       if (!validStatuses.includes(status)) {
-//         return res.status(400).json({ message: `Status must be one of: ${validStatuses.join(', ')}` });
-//       }
-//     }
+    const orderStatuses = await sql`
+      SELECT id, seller_id, buyer_id, product_id, order_id, status, created_at, updated_at
+      FROM "order_status"
+      WHERE seller_id = ${seller_id}
+      ORDER BY created_at DESC
+    `;
 
-//     // Check ownership (phải là seller hoặc buyer)
-//     const existingStatus = await sql`
-//       SELECT id, seller_id, buyer_id FROM "order_status" 
-//       WHERE id = ${id} AND (seller_id = ${seller_id} OR buyer_id = ${buyer_id})
-//     `;
+    if (orderStatuses.length === 0) {
+      return res.status(404).json({ message: "No order status found for this seller" });
+    }
 
-//     if (existingStatus.length === 0) {
-//       return res.status(404).json({ message: "Order status not found or access denied" });
-//     }
+    res.status(200).json(orderStatuses);
+  } catch (error) {
+    console.error("Error getting order status by seller_id:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
 
-//     // Update (chỉ status và updated_at)
-//     const updateFields = {};
-//     if (status) updateFields.status = status;
-//     if (seller_id) updateFields.seller_id = seller_id;
-//     if (buyer_id) updateFields.buyer_id = buyer_id;
+// Get order_status by buyer_id (mới thêm: lấy tất cả statuses của một buyer)
+export async function getOrderStatusByBuyerId(req, res) {
+  try {
+    const { buyer_id } = req.params;
 
-//     const updatedOrderStatus = await sql`
-//       UPDATE "order_status"
-//       SET ${sql(updateFields)}, updated_at = CURRENT_TIMESTAMP
-//       WHERE id = ${id}
-//       RETURNING id, seller_id, buyer_id, product_id, order_id, status, created_at, updated_at
-//     `;
+    if (!buyer_id) {
+      return res.status(400).json({ message: "Buyer ID is required" });
+    }
 
-//     res.status(200).json(updatedOrderStatus[0]);
-//   } catch (error) {
-//     console.error("Error updating order status:", error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// }
-// Update order_status (chỉ update status)
+    const orderStatuses = await sql`
+      SELECT id, seller_id, buyer_id, product_id, order_id, status, created_at, updated_at
+      FROM "order_status"
+      WHERE buyer_id = ${buyer_id}
+      ORDER BY created_at DESC
+    `;
+
+    if (orderStatuses.length === 0) {
+      return res.status(404).json({ message: "No order status found for this buyer" });
+    }
+
+    res.status(200).json(orderStatuses);
+  } catch (error) {
+    console.error("Error getting order status by buyer_id:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// Update order_status
 export async function updateOrderStatus(req, res) {
   try {
     const { id } = req.params;
