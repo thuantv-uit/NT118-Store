@@ -293,7 +293,7 @@ export default function ProductDetail() {
       }
 
       const newCartItem = await response.json();
-      console.log('Added to cart:', newCartItem);
+      // console.log('Added to cart:', newCartItem);
       Alert.alert('Thành công', `Đã thêm ${quantity} sản phẩm vào giỏ hàng!`);
       setQuantity(1);
     } catch (err) {

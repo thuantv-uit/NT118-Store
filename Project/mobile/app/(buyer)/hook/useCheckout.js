@@ -30,7 +30,7 @@ export const useCheckout = (cartTotal, customerIdFromProp) => { // Đổi tên p
   // Effect update amount reactive (giữ nguyên)
   useEffect(() => {
     setPaymentData(prev => ({ ...prev, amount: cartTotal }));
-    console.log('Updated payment amount:', cartTotal);
+    // console.log('Updated payment amount:', cartTotal);
   }, [cartTotal]);
 
   const handleShipmentChange = (field, value) => {
@@ -55,7 +55,7 @@ export const useCheckout = (cartTotal, customerIdFromProp) => { // Đổi tên p
 
     try {
       const response = await axios.post(`${API_BASE_URL}/shipment`, payload);
-      console.log('Shipment created:', response.data);
+      // console.log('Shipment created:', response.data);
       return { success: true, data: response.data };
     } catch (err) {
       console.error('Error creating shipment:', err.response?.data || err.message);
@@ -73,7 +73,7 @@ export const useCheckout = (cartTotal, customerIdFromProp) => { // Đổi tên p
       amount: paymentData.amount,
       customer_id: currentCustomerId, // Đảm bảo truyền
     };
-    console.log('Sending payment payload:', payload);
+    // console.log('Sending payment payload:', payload);
 
     if (!payload.payment_date || !payload.payment_method || !payload.amount) {
       throw new Error('Thiếu thông tin thanh toán');

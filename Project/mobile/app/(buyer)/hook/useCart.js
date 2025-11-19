@@ -12,7 +12,7 @@ const fetchCartByCustomerId = async (customerId) => {
     const data = await response.json();
     // Validate: Đảm bảo là array, fallback []
     const cartsArray = Array.isArray(data) ? data : [];
-    console.log(`Debug fetchCart - customerId: ${customerId}, carts:`, cartsArray); // Debug
+    // console.log(`Debug fetchCart - customerId: ${customerId}, carts:`, cartsArray); // Debug
     return cartsArray;
   } catch (err) {
     console.error('Error fetching cart:', err);
@@ -30,7 +30,7 @@ const fetchOrdersByUserId = async (customerId) => {
     const data = await response.json();
     // Validate: Đảm bảo là array, fallback []
     const ordersArray = Array.isArray(data) ? data : [];
-    console.log(`Debug fetchOrders - customerId: ${customerId}, orders:`, ordersArray); // Debug
+    // console.log(`Debug fetchOrders - customerId: ${customerId}, orders:`, ordersArray); // Debug
     return ordersArray;
   } catch (err) {
     console.error('Error fetching orders:', err);
@@ -139,11 +139,11 @@ export const useCart = (customerId) => {
             if (id) orderedCartIds.add(id);
           });
         });
-        console.log(`Debug loadCart - ordered cart_ids:`, Array.from(orderedCartIds)); // Debug
+        // console.log(`Debug loadCart - ordered cart_ids:`, Array.from(orderedCartIds)); // Debug
 
         // Filter carts: Chỉ giữ những chưa ordered
         const unOrderedCarts = carts.filter(cart => !orderedCartIds.has(cart.id));
-        console.log(`Debug loadCart - filtered carts (un-ordered):`, unOrderedCarts); // Debug
+        // console.log(`Debug loadCart - filtered carts (un-ordered):`, unOrderedCarts); // Debug
 
         // Enrich và filter valid
         const enrichedData = await loadCartWithProducts(unOrderedCarts);
