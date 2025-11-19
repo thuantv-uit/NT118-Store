@@ -97,7 +97,7 @@ export async function getAllProducts(req, res) {
 // Create Product
 export async function createProduct(req, res) {
   try {
-    const { SKU, name, description, price, category_id, stock, image: imageFromBody } = req.body;
+    const { SKU, name, description, price, category_id, customer_id, stock, image: imageFromBody } = req.body;
 
     // Validation
     validateProductInputs({ SKU, name, description, price, category_id, stock });
@@ -125,8 +125,8 @@ export async function createProduct(req, res) {
 
     // Insert
     const product = await sql`
-      INSERT INTO product (SKU, name, price, description, category_id, stock, image)
-      VALUES (${SKU}, ${name}, ${price}, ${description}, ${category_id}, ${stock}, ${imageUrl})
+      INSERT INTO product (SKU, name, price, description, category_id, customer_id, stock, image)
+      VALUES (${SKU}, ${name}, ${price}, ${description}, ${category_id}, ${customer_id}, ${stock}, ${imageUrl})
       RETURNING *
     `;
 

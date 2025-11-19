@@ -71,6 +71,7 @@ export async function initDB() {
       price DECIMAL(10,2) NOT NULL,
       stock INT NOT NULL,
       image VARCHAR(255) NOT NULL DEFAULT '',
+      customer_id VARCHAR(255) NULL REFERENCES customer(id),
       category_id INT NULL REFERENCES category(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
@@ -99,7 +100,7 @@ export async function initDB() {
       id SERIAL PRIMARY KEY,
       order_date TIMESTAMP NOT NULL,
       customer_id VARCHAR(255) NULL REFERENCES customer(id),
-      cart_id INT NULL REFERENCES cart(id),
+      cart_id INT[] NULL,
       payment_id INT NULL REFERENCES payment(id),
       shipment_id INT NULL REFERENCES shipment(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
@@ -115,6 +116,18 @@ export async function initDB() {
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
     console.log("Database order_item initialized successfully");
+
+    await sql`CREATE TABLE IF NOT EXISTS "order_status"(
+      id SERIAL PRIMARY KEY,
+      seller_id VARCHAR(255) NOT NULL REFERENCES customer(id),
+      buyer_id VARCHAR(255) NOT NULL REFERENCES customer(id),
+      product_id INT NOT NULL REFERENCES "product"(id),
+      order_id INT NOT NULL REFERENCES "order"(id),
+      status VARCHAR(50) NOT NULL CHECK (status IN ('pending', 'processing', 'shipped', 'delivered', 'cancelled')),
+      created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`;
+    console.log("Database order_status initialized successfully");
 
     await sql`CREATE TABLE IF NOT EXISTS wallet(
       id SERIAL PRIMARY KEY,

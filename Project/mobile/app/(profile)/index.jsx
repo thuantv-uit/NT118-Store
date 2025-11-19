@@ -1,3 +1,4 @@
+import { useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { SafeAreaView, ScrollView } from 'react-native';
 import BottomNav from './components/BottomNav';
@@ -11,14 +12,19 @@ import { styles } from './styles/ProfileStyles';
 
 const ProfileScreen = () => {
   const router = useRouter();
+  const { signOut } = useAuth();
 
   const handleTabPress = (label) => {
     console.log(`Navigate to ${label}`);
   };
 
-  const handleLogout = () => {
-    // Logic đăng xuất (clear storage, navigate to login)
-    router.push('/login');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      router.replace('/(auth)/sign-in');
+    } catch (error) {
+      console.error("Logout failed: ", error);
+    }
   };
 
   return (

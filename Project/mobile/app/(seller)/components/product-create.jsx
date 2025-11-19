@@ -1,6 +1,7 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 // use choose image
+import { useAuth } from "@clerk/clerk-expo";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import {
@@ -43,6 +44,9 @@ export default function SellerProductCreate({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
+  // THÊM: Lấy userId từ Clerk
+  const { userId, isLoaded } = useAuth();
+
   const handleInputChange = (id, value) => {
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
@@ -70,6 +74,12 @@ export default function SellerProductCreate({ navigation }) {
   };
 
   const validateForm = () => {
+    // THÊM: Check userId từ Clerk (phải đăng nhập)
+    if (!isLoaded || !userId) {
+      Alert.alert("Lỗi", "Bạn cần đăng nhập để tạo sản phẩm!");
+      return false;
+    }
+
     const required = ["SKU", "name", "description", "price", "category_id", "stock"];
     for (let field of required) {
       if (!formData[field] || formData[field].trim() === "") {
@@ -84,7 +94,7 @@ export default function SellerProductCreate({ navigation }) {
     return true;
   };
 
-  // SỬA: Funtion create product with FormData to support upload file image
+  // SỬA: Function create product with FormData to support upload file image + customer_id
   const handleCreateProduct = async () => {
     if (!validateForm()) return;
     const baseURL = API_URL;
@@ -99,6 +109,9 @@ export default function SellerProductCreate({ navigation }) {
       formPayload.append("price", parseFloat(formData.price));
       formPayload.append("category_id", parseInt(formData.category_id));
       formPayload.append("stock", parseInt(formData.stock));
+
+      // THÊM: Append customer_id từ Clerk userId
+      formPayload.append("customer_id", userId);
 
       // Add: If any image, append file into FormData
       if (selectedImage) {
@@ -155,6 +168,15 @@ export default function SellerProductCreate({ navigation }) {
     console.log("Lưu nháp:", formData, "Image URI:", selectedImage);
     Alert.alert("Nháp", "Đã lưu nháp!");
   };
+
+  // THÊM: Loading state cho Clerk (nếu chưa load xong)
+  if (!isLoaded) {
+    return (
+      <SellerScreenLayout title="Tạo sản phẩm mới" subtitle="Đang tải...">
+        <ActivityIndicator size="large" color="#BE123C" style={{ alignSelf: "center", marginTop: hp("20%") }} />
+      </SellerScreenLayout>
+    );
+  }
 
   return (
     <SellerScreenLayout title="Tạo sản phẩm mới" subtitle="Hoàn tất thông tin để lên kệ">

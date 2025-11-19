@@ -3,13 +3,12 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { API_URL } from '../../../constants/api';
@@ -17,16 +16,30 @@ import { buyerStyles, orderConfirmStyles } from '../styles/BuyerStyles';
 
 const API_BASE_URL = API_URL;
 
-// Hàm helper để tạo order (thêm debug logs và đảm bảo fields là null nếu undefined)
+// Hàm helper để tạo order (sửa: lấy mảng cart_id từ tất cả items)
 const createOrder = async (orderData, customerId) => {
   try {
+    // Loop qua items để lấy tất cả cart.id, unique bằng Set
+    const cartIdsSet = new Set();
+    (orderData.items || []).forEach(item => {
+      if (item.cart?.id) {
+        cartIdsSet.add(item.cart.id);
+      }
+    });
+    const cartIdsArray = Array.from(cartIdsSet); // Chuyển thành mảng
+
+    // console.log("cartIdsArray: ", cartIdsArray);
+
     const payload = {
       order_date: new Date().toISOString(),
       payment_id: orderData.payment?.id || null,
       customer_id: customerId || null,
       shipment_id: orderData.shipment?.id || null,
-      cart_id: orderData.items[0].cart.id || null,
+      cart_id: cartIdsArray.length > 0 ? cartIdsArray : null, // Truyền mảng hoặc null
     };
+
+    // Debug: Uncomment để log payload
+    // console.log("Debug createOrder - payload cart_id (mảng):", payload.cart_id);
 
     const response = await fetch(`${API_BASE_URL}/order`, {
       method: 'POST',
@@ -91,6 +104,66 @@ const createOrderItems = async (orderId, Data) => {
   }
 };
 
+// Hàm helper để tạo order_status cho từng product trong order
+const createOrderStatus = async (orderId, items, buyerId) => {
+  // console.log("Debug createOrderStatus - orderId:", orderId);
+  // console.log("Debug createOrderStatus - items length:", items?.length);
+  // console.log("Debug createOrderStatus - buyerId:", buyerId);
+  try {
+    const createdStatuses = [];
+    
+    // Trích xuất tất cả product_id và seller_id để debug/log
+    const allProductIds = [];
+    const allSellerIds = [];
+    (items || []).forEach((item, index) => {
+      if (item.product?.id) allProductIds.push(item.product.id);
+      if (item.product?.customer_id) allSellerIds.push(item.product.customer_id);
+      // console.log(`Debug createOrderStatus - Item ${index}: product_id=${item.product?.id}, seller_id=${item.product?.customer_id}`);
+    });
+    // console.log("Debug createOrderStatus - All product_ids:", allProductIds);
+    // console.log("Debug createOrderStatus - All seller_ids:", allSellerIds);
+
+    for (const [index, item] of (items || []).entries()) {
+      // Kiểm tra các trường cần thiết
+      if (!item.product?.id || !item.product?.customer_id) {  // Sửa: dùng customer_id thay vì seller_id
+        console.warn(`Debug createOrderStatus - Thiếu product_id hoặc seller_id (customer_id) cho item ${index}`);
+        continue; // Bỏ qua nếu thiếu
+      }
+
+      const payload = {
+        seller_id: item.product.customer_id,  // Sửa: dùng customer_id làm seller_id
+        buyer_id: buyerId,
+        product_id: item.product.id,
+        order_id: orderId,
+        status: 'pending', // Status mặc định cho order mới
+      };
+
+      const response = await fetch(`${API_BASE_URL}/order_status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      // console.log(`Debug createOrderStatus - response status cho item ${index}:`, response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        // console.error(`Debug createOrderStatus - full error response cho item ${index}:`, errorText);
+        throw new Error(`Failed to create order status ${index}: ${response.status} - ${errorText}`);
+      }
+
+      const newStatus = await response.json();
+      createdStatuses.push(newStatus);
+    }
+    // console.log('Debug createOrderStatus - createdStatuses:', createdStatuses);
+    return createdStatuses;
+  } catch (error) {
+    // console.error('Debug createOrderStatus - caught error:', error);
+    throw new Error(`Lỗi tạo order status: ${error.message}`);
+  }
+};
+
 export default function OrderConfirmScreen() {
   const route = useRoute();
   const navigation = useNavigation();
@@ -100,6 +173,7 @@ export default function OrderConfirmScreen() {
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const currentCustomerId = passedData?.customerId || fallbackCustomerId;
 
   // const carts = passedData.items.map(item => item.cart.product_id);
   // console.log("Debug OrderConfirm - passedData - items.id:", carts);
@@ -146,7 +220,11 @@ export default function OrderConfirmScreen() {
         const newItems = await createOrderItems(newOrder.id, passedData.items);
         // console.log('Debug OrderConfirm - New order items created:', newItems);
 
-        // Bước 3: Chuẩn bị dữ liệu hiển thị (sửa lỗi find undefined bằng cách kiểm tra passedData.items)
+        // Bước 3: Tạo order_status cho từng product (mới thêm)
+        const newStatuses = await createOrderStatus(newOrder.id, passedData.items, currentCustomerId);
+        // console.log('Debug OrderConfirm - New order statuses created:', newStatuses);
+
+        // Bước 4: Chuẩn bị dữ liệu hiển thị (sửa lỗi find undefined bằng cách kiểm tra passedData.items)
         const fullOrderData = {
           id: newOrder.id,
           date: newOrder.order_date || new Date().toISOString(),
@@ -222,11 +300,20 @@ export default function OrderConfirmScreen() {
   const { id, date, items, shipment, payment, total } = orderData;
 
   const handleTrackOrder = () => {
-    Alert.alert('Theo dõi', 'Chuyển đến màn hình theo dõi đơn hàng!');
+    console.log("currentCustomerId: ", currentCustomerId);
+    if (!currentCustomerId || !id) {
+      Alert.alert('Lỗi', 'Không thể theo dõi vì thiếu thông tin người dùng. Vui lòng đăng nhập lại.');
+      return;
+    }
+    // Truyền buyerId (currentCustomerId) sang OrderTrackingScreen
+    navigation.navigate('(buyer)/components/OrderTrackingScreen', { 
+      buyerId: currentCustomerId,
+      orderId: id
+    });
   };
 
   const handleBackToHome = () => {
-    navigation.navigate('Home');
+    navigation.navigate('(home)/index');
   };
 
   return (

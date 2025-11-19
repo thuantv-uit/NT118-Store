@@ -60,52 +60,6 @@ export async function getWalletByCustomerId(req, res) {
 }
 
 // Update wallet balance (cộng/trừ amount)
-// export async function updateWalletBalance(req, res) {
-//   try {
-//     const { id } = req.params;
-//     const { customer_id, amount } = req.body;  // amount >0 cộng, <0 trừ
-//     // console.log("walletId: ", id);
-//     // console.log("amount: ", amount);
-//     // console.log("customerId: ", customer_id);
-
-//     if (!id || !customer_id || amount === undefined) {
-//       return res.status(400).json({ message: "ID, customer_id, and amount are required" });
-//     }
-
-//     // Check ownership
-//     const existingWallet = await sql`
-//       SELECT balance FROM wallet WHERE id = ${id} AND customer_id = ${customer_id}
-//     `;
-
-//     if (existingWallet.length === 0) {
-//       return res.status(404).json({ message: "Wallet not found or not owned by customer" });
-//     }
-
-//     // console.log("balance: ", existingWallet[0].balance);
-//     // console.log("amount: ", parseFloat(amount));
-
-//     // Update balance
-//     const currentBalance = parseFloat(existingWallet[0].balance);
-//     const newBalance = currentBalance + parseFloat(amount);
-//     if (newBalance < 0) {
-//       return res.status(400).json({ message: "Insufficient balance" });
-//     }
-
-//     // console.log("newBalance: ", newBalance);
-
-//     const updatedWallet = await sql`
-//       UPDATE wallet
-//       SET balance = ${newBalance}, updated_at = CURRENT_TIMESTAMP
-//       WHERE id = ${id} AND customer_id = ${customer_id}
-//       RETURNING id, customer_id, balance, created_at, updated_at
-//     `;
-
-//     res.status(200).json(updatedWallet[0]);
-//   } catch (error) {
-//     console.error("Error updating wallet:", error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// }
 export async function updateWalletBalance(req, res) {
   try {
     const { id } = req.params;

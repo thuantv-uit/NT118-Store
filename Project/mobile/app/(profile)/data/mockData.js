@@ -6,7 +6,7 @@ export const mockUser = {
 };
 
 export const mockOrdersTabs = [
-  { icon: 'bag-handle-outline', label: 'Đơn hàng bán', color: '#FF6B9D' },
+  { icon: 'bag-handle-outline', label: 'Đơn hàng mua', color: '#FF6B9D' },
   { icon: 'star-outline', label: 'Đang giao', color: '#FF6B9D' },
   { icon: 'time-outline', label: 'Lịch sử', color: '#FF6B9D' },
 ];
