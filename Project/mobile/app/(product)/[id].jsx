@@ -23,6 +23,13 @@ import NavigationBar from "../../components/ui/NavigationBar";
 // import ProductAction from "../../components/ui/ProductActionModal";
 import ProductActionModal from "../../components/ui/ProductActionModal";
 
+//database
+import { useLocalSearchParams } from "expo-router";
+import { ActivityIndicator } from "react-native";
+
+
+
+
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -30,6 +37,45 @@ export default function ProductDetail() {
     const [selectedColor, setSelectedColor] = useState(0);
     const [selectedSize, setSelectedSize] = useState("M");
     const [modalMode, setModalMode] = useState(null); // "cart" | "buy" | null
+
+    // Lấy id từ tham số URL
+    const { id } = useLocalSearchParams();
+    const [product, setProduct] = useState(null);
+    const [loading, setLoading] = useState(true);
+    if (loading || !product) {
+    return (
+        <View style={{flex:1, justifyContent:'center', alignItems:'center'}}>
+            <ActivityIndicator size="large" color={colors.hmee07} />
+        </View>
+    );
+}
+
+
+    useEffect(() => {
+        fetchProduct();
+    }, [id]);
+
+    const fetchProduct = async () => {
+        try {
+            const res = await fetch(`${API_URL}/products/${id}`);
+            const json = await res.json();
+            if (json.success) {
+                setProduct(json.product);
+            }
+        } catch (err) {
+            console.log("Fetch product error:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                <ActivityIndicator size="large" color={colors.hmee07} />
+            </View>
+        );
+    }
 
 
     const colorsList = [
@@ -50,21 +96,21 @@ export default function ProductDetail() {
         { id: "r2", user: "H.M****", stars: 4, text: "Màu giống hình, đường may ok." },
         { id: "r3", user: "T.P****", stars: 4, text: "Tỉ lệ giá/ chất lượng ổn." },
     ];
-    const product = {
-        id: 1,
-        name: "Váy trắng dáng dài",
-        price: "30,000",
-        oldPrice: "40,000",
-        stock: 111,
-        image: require("../../assets/images/products/sanpham1.png"),
-        colors: [
-            { id: 1, image: require("../../assets/images/products/color/color1.png") },
-            { id: 2, image: require("../../assets/images/products/color/color2.png") },
-            { id: 3, image: require("../../assets/images/products/color/color3.png") },
-            // { id: 4, image: require("../../assets/images/products/color/color4.png") },
-        ],
-        sizes: ["S", "M", "L", "XL", "XXL", "Freesize"],
-    };
+    // const product = {
+    //     id: 1,
+    //     name: "Váy trắng dáng dài",
+    //     price: "30,000",
+    //     oldPrice: "40,000",
+    //     stock: 111,
+    //     image: require("../../assets/images/products/sanpham1.png"),
+    //     colors: [
+    //         { id: 1, image: require("../../assets/images/products/color/color1.png") },
+    //         { id: 2, image: require("../../assets/images/products/color/color2.png") },
+    //         { id: 3, image: require("../../assets/images/products/color/color3.png") },
+    //         // { id: 4, image: require("../../assets/images/products/color/color4.png") },
+    //     ],
+    //     sizes: ["S", "M", "L", "XL", "XXL", "Freesize"],
+    // };
 
 
     return (
@@ -92,13 +138,19 @@ export default function ProductDetail() {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Product Image */}
-                <Image
+                {/* anh tu du lieu tinh */}
+                {/* <Image
                     source={require("@/assets/images/products/sanpham1.png")}
                     style={styles.productImage}
                     resizeMode="cover"
                     marginTop={hpA()}
+                /> */}
+                {/* anh san pham tu database */}
+                <Image
+                    source={{ uri: product.images?.find(i => i.is_cover)?.url }}
+                    style={styles.productImage}
                 />
+
 
                 {/* Product Info */}
                 <View style={styles.infoSection}>
@@ -109,55 +161,16 @@ export default function ProductDetail() {
                         />
                         {/* <Icon name="cart" size={wpA(22)} color={colors.black} /> */}
                     </TouchableOpacity>
-                    <Text style={styles.price}>đ30,000</Text>
+                    {/* Product Name & Price */}
+                    {/* <Text style={styles.price}>đ30,000</Text>
                     <Text style={styles.name}>
                         Áo sơ mi kiểu nữ cổ V phối ren | Nina Shirt - B.Y Tea Clothing
-                    </Text>
+                    </Text> */}
+                    <Text style={styles.price}>đ{product.price.toLocaleString("vi-VN")}</Text>
+                    <Text style={styles.name}>{product.name}</Text>
+
                     <View style={{ position: "absolute", height: hpA(0.7), width: wpA(412), backgroundColor: colors.black, marginTop: hpA(100), marginBottom: hpA(2) }}></View>
 
-                    {/* Color */}
-                    {/* <Text style={styles.sectionTitle}>Màu sắc</Text>
-                    <View style={styles.colorRow}>
-                        {colorsList.map((item, index) => (
-                            <TouchableOpacity
-                                key={index}
-                                onPress={() => setSelectedColor(index)}
-                                style={[
-                                    styles.colorBox,
-                                    selectedColor === index && styles.colorBoxActive,
-                                ]}
-                            >
-                                <Image
-                                    source={item}
-                                    style={styles.colorImage}
-                                    resizeMode="cover"
-                                />
-                            </TouchableOpacity>
-                        ))}
-                    </View> */}
-
-                    {/* Size */}
-                    {/* <View style={styles.sizeRow}>
-                        {sizes.map((size) => (
-                            <TouchableOpacity
-                                key={size}
-                                onPress={() => setSelectedSize(size)}
-                                style={[
-                                    styles.sizeBox,
-                                    selectedSize === size && styles.sizeBoxActive,
-                                ]}
-                            >
-                                <Text
-                                    style={[
-                                        styles.sizeText,
-                                        selectedSize === size && styles.sizeTextActive,
-                                    ]}
-                                >
-                                    {size}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View> */}
                     {/* Color */}
                     <Text style={styles.sectionTitle}>Màu sắc&Kích Thước</Text>
                     <View style={styles.colorRow}>
@@ -280,14 +293,18 @@ export default function ProductDetail() {
                     <View style={styles.block}>
                         <Text style={styles.sectionTitle}>Chi tiết sản phẩm</Text>
                         <View style={{ marginTop: hpA(8), gap: hpA(6) }}>
-                            <SpecRow label="Danh mục" value="Áo nữ > Áo đầm" />
+                            {/* <SpecRow label="Danh mục" value="Áo nữ > Áo đầm" />
                             <SpecRow label="Chất liệu" value="Cotton" />
                             <SpecRow label="Kiểu dáng" value="Trơn" />
                             <SpecRow label="Phong cách" value="Hàn quốc" />
                             <SpecRow label="Kích cỡ" value="S - L" />
                             <SpecRow label="Xuất xứ" value="Việt Nam" />
                             <SpecRow label="Cổ áo" value="Cổ vuông" />
-                            <SpecRow label="Tay áo" value="Không tay" />
+                            <SpecRow label="Tay áo" value="Không tay" /> */}
+                            <SpecRow label="Danh mục" value={product.category} />
+                            <SpecRow label="Chất liệu" value={product.material} />
+                            <SpecRow label="Phong cách" value={product.style} />
+                            <SpecRow label="Xuất xứ" value={product.origin} />
                         </View>
                     </View>
 
@@ -296,11 +313,13 @@ export default function ProductDetail() {
                     {/* Description */}
                     <View style={styles.block}>
                         <Text style={styles.sectionTitle}>Mô tả sản phẩm</Text>
-                        <Text style={styles.desc}>
+                        {/* <Text style={styles.desc}>
                             Form nữ tính, chất vải mát, đường may chắc chắn. Hướng tới phong cách
                             tối giản dễ phối. Vui lòng xem bảng size trước khi đặt. Sản phẩm có thể
                             chênh lệch 1-2cm do đo thủ công.
-                        </Text>
+                        </Text> */}
+                        <Text style={styles.desc}>{product.description}</Text>
+
                     </View>
 
                     <View style={styles.divider} />

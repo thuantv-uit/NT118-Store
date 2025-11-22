@@ -1,7 +1,6 @@
 // NT118-Store/Project/mobile/app/(seller)/sellerCreateProduct.jsx
 import React, { useState } from "react";
 import { Alert, ScrollView, View, Text, StyleSheet, Pressable, ActivityIndicator, Modal } from "react-native";
-// import SellerScreenLayout from "@/components/layout/SellerScreenLayout";
 import SellerScreenLayout from "./components/SellerScreenLayout";
 
 import { useLocalSearchParams } from "expo-router";

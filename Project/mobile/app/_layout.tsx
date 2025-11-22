@@ -12,7 +12,7 @@ import Test from "./(auth)/resetPassword";
 import Test2 from "./(welcome)/test";
 import FunctionalIconsPreview from "./(welcome)/FunctionalIconsPreview";
 import Home from "./(root)/homeScreen";
-import ProductDetail from "./(product)/productDetail";
+import ProductDetail from "./(product)/[id]";
 import ProductCreate from "./(seller)/product-create";
 import SellerCreateProduct from "./(seller)/sellercreateproduct";
 import SelectCategory from "./(seller)/select-category";

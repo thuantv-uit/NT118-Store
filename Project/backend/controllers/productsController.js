@@ -1,94 +1,61 @@
 import { sql } from "../config/database.js";
+import { streamUpload } from "../config/cloudinaryProvider.js";
 
-// Get for Product
-export async function getProductById(req, res) {
-  try {
-    const productId = req.params;
-    // productId sẽ trả về dữ liệu dạng mảng { id: '54321' }
-    // console.log("productId:",productId);
-    const id = productId.id
-    // vậy nên phải lấy id từ mảng đó ra chứ không được sử dụng trực tiếp
-    // console.log("productId:",id);
+// ========== CONFIG ==========
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const VALID_IMAGE_MIMES = ["image/jpeg", "image/png", "image/gif"];
 
-    // Kiểm tra xem productId có được cung cấp không
-    if (!id) {
-      return res.status(400).json({ message: "product ID is required" });
+// Validate core required fields
+function validateProductInputs(data, isUpdate = false) {
+  const { SKU, name, description, price, category_id, stock } = data;
+
+  if (!isUpdate) {
+    if (!SKU || !name || !description || price === undefined || !category_id || stock === undefined) {
+      throw new Error("Missing required fields");
     }
+  }
 
-    // Thực hiện truy vấn
-    const products = await sql`
-  SELECT 
-    p.*,
-    c.name AS category_name,
-    COALESCE(
-      json_agg(
-        json_build_object(
-          'url', pm.url,
-          'public_id', pm.public_id,
-          'type', pm.type,
-          'is_cover', pm.is_cover
-        )
-      ) FILTER (WHERE pm.id IS NOT NULL),
-      '[]'
-    ) AS imageUrls,
-    COALESCE(
-      json_agg(
-        json_build_object(
-          'name', pa.name,
-          'value', pa.value
-        )
-      ) FILTER (WHERE pa.id IS NOT NULL),
-      '[]'
-    ) AS attributes
-  FROM product p
-  LEFT JOIN category c ON p.category_id = c.id
-  LEFT JOIN product_media pm ON pm.product_id = p.id
-  LEFT JOIN product_attribute pa ON pa.product_id = p.id
-  WHERE p.id = ${id}
-  GROUP BY p.id, c.name
-`;
+  if (price !== undefined && (isNaN(price) || price <= 0)) {
+    throw new Error("Price must be a positive number");
+  }
 
+  if (stock !== undefined && (isNaN(stock) || stock < 0)) {
+    throw new Error("Stock must be a non-negative integer");
+  }
 
-    // Kiểm tra xem có bản ghi nào được tìm thấy không
-    if (products.length === 0) {
-      return res.status(404).json({ message: "product not found" });
-    }
-
-    // Trả về bản ghi đầu tiên (vì id thường là duy nhất)
-    res.status(200).json(products[0]);
-  } catch (error) {
-    console.error("Error getting the product:", error);
-    res.status(500).json({ message: "Internal server error" });
+  if (category_id !== undefined && (isNaN(category_id) || category_id <= 0)) {
+    throw new Error("category_id must be a valid positive integer");
   }
 }
 
+// ========== IMAGE UPLOAD ==========
+async function handleImageUpload(req) {
+  if (!req.file) return null;
 
-// Get all Products
-// export async function getAllProducts(req, res) {
-//   try {
-//     // Thực hiện truy vấn lấy tất cả products, join với category để lấy tên
-//     const products = await sql`
-//       SELECT p.*, c.name as category_name
-//       FROM product p
-//       JOIN category c ON p.category_id = c.id
-//       ORDER BY p.id DESC  -- Sắp xếp theo ID mới nhất trước (tùy chọn)
-//     `;
+  if (req.file.size > MAX_FILE_SIZE) throw new Error("File too large (>5MB)");
+  if (!VALID_IMAGE_MIMES.includes(req.file.mimetype)) throw new Error("Invalid image type");
 
-//     // Trả về mảng products
-//     res.status(200).json(products);
-//   } catch (error) {
-//     console.error("Error getting all products:", error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// }
+  const result = await streamUpload(req.file.buffer, "product_images");
+  delete req.file.buffer;
+  return result.secure_url;
+}
 
-// Get all Products (có ảnh, category, attribute)
-export async function getAllProducts(req, res) {
+// ======================================================================
+//  🔵 GET ONE PRODUCT — FULL INFORMATION (IMAGE + CATEGORY + ATTRIBUTES)
+// ======================================================================
+export async function getProductById(req, res) {
   try {
-    const products = await sql`
+    const { id } = req.params;
+
+    if (!id || isNaN(id)) {
+      return res.status(400).json({ message: "Invalid Product ID" });
+    }
+
+    const rows = await sql`
       SELECT 
         p.*,
         c.name AS category_name,
+
         COALESCE(
           json_agg(
             json_build_object(
@@ -99,7 +66,8 @@ export async function getAllProducts(req, res) {
             )
           ) FILTER (WHERE pm.id IS NOT NULL),
           '[]'
-        ) AS imageUrls,
+        ) AS images,
+
         COALESCE(
           json_agg(
             json_build_object(
@@ -109,6 +77,60 @@ export async function getAllProducts(req, res) {
           ) FILTER (WHERE pa.id IS NOT NULL),
           '[]'
         ) AS attributes
+
+      FROM product p
+      LEFT JOIN category c ON p.category_id = c.id
+      LEFT JOIN product_media pm ON pm.product_id = p.id
+      LEFT JOIN product_attribute pa ON pa.product_id = p.id
+      WHERE p.id = ${id}
+      GROUP BY p.id, c.name
+    `;
+
+    if (rows.length === 0) return res.status(404).json({ message: "Product not found" });
+
+    res.status(200).json({
+      success: true,
+      product: rows[0]
+    });
+
+  } catch (error) {
+    console.error("getProductById error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// ======================================================================
+//  🔵 GET ALL PRODUCTS — FULL INFORMATION (IMAGE + CATEGORY + ATTRIBUTES)
+// ======================================================================
+export async function getAllProducts(req, res) {
+  try {
+    const rows = await sql`
+      SELECT 
+        p.*,
+        c.name AS category_name,
+
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'url', pm.url,
+              'public_id', pm.public_id,
+              'type', pm.type,
+              'is_cover', pm.is_cover
+            )
+          ) FILTER (WHERE pm.id IS NOT NULL),
+          '[]'
+        ) AS images,
+
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'name', pa.name,
+              'value', pa.value
+            )
+          ) FILTER (WHERE pa.id IS NOT NULL),
+          '[]'
+        ) AS attributes
+
       FROM product p
       LEFT JOIN category c ON p.category_id = c.id
       LEFT JOIN product_media pm ON pm.product_id = p.id
@@ -117,183 +139,131 @@ export async function getAllProducts(req, res) {
       ORDER BY p.id DESC
     `;
 
-    res.status(200).json(products);
+    res.status(200).json({
+      success: true,
+      products: rows
+    });
+
   } catch (error) {
-    console.error("Error getting all products:", error);
+    console.error("getAllProducts error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }
 
-
+// ======================================================================
+//  🔵 CREATE PRODUCT — supports images + attributes
+// ======================================================================
 export async function createProduct(req, res) {
   try {
-    const { SKU, name, description, price, category_id, stock } = req.body;
+    const { SKU, name, description, price, category_id, stock, attributes, images } = req.body;
 
-    // Validation
-    if (!SKU || !name || !description || !price || !category_id || !stock) {
-      return res.status(400).json({ message: "All fields (SKU, name, description, price, category_id, stock) are required" });
-    }
-    if (typeof price !== 'number' || price <= 0) {
-      return res.status(400).json({ message: "Price must be a positive number" });
-    }
-    if (typeof stock !== 'number' || stock < 0) {
-      return res.status(400).json({ message: "Stock must be a non-negative integer" });
-    }
-    if (typeof category_id !== 'number' || category_id <= 0) {
-      return res.status(400).json({ message: "category_id must be a positive integer" });
-    }
+    validateProductInputs({ SKU, name, description, price, category_id, stock });
 
-    // Check category_id exist
-    const existingCategory = await sql`SELECT id FROM category WHERE id = ${category_id}`;
-    if (existingCategory.length === 0) {
-      return res.status(404).json({ message: "Category not found" });
-    }
+    // ensure category exists
+    const cat = await sql`SELECT id FROM category WHERE id = ${category_id}`;
+    if (cat.length === 0) return res.status(404).json({ message: "Category not found" });
 
-    // Check SKU unique
-    const existingProduct = await sql`SELECT SKU FROM product WHERE SKU = ${SKU}`;
-    if (existingProduct.length > 0) {
-      return res.status(409).json({ message: "SKU already exists" });
-    }
+    // ensure SKU unique
+    const existing = await sql`SELECT id FROM product WHERE SKU = ${SKU}`;
+    if (existing.length > 0) return res.status(409).json({ message: "SKU already exists" });
 
-    const product = await sql`
-      INSERT INTO product(SKU, name, price, description, category_id, stock)
-      VALUES (${SKU}, ${name}, ${price}, ${description}, ${category_id}, ${stock})
+    // image upload or body fallback
+    let uploadedImage = images?.[0] || null;
+    const uploadFromFile = await handleImageUpload(req);
+    if (uploadFromFile) uploadedImage = uploadFromFile;
+
+    const inserted = await sql`
+      INSERT INTO product (SKU, name, description, price, category_id, stock, image)
+      VALUES (${SKU}, ${name}, ${description}, ${price}, ${category_id}, ${stock}, ${uploadedImage})
       RETURNING *
     `;
 
-    const created = product[0];
-    //luu attributes nếu có
+    const product = inserted[0];
 
-    // If attributes provided, save them into product_attribute table
-    // Accept either: attributes = { key: value, ... } or attributes = [{ key, value }, ...]
-    const attrs = req.body.attributes;
-    if (attrs) {
-      try {
-        if (Array.isArray(attrs)) {
-          for (const item of attrs) {
-            const key = item.key ?? item.name ?? null;
-            const value = item.value ?? item.val ?? '';
-            if (key) {
-              await sql`
-                INSERT INTO product_attribute(product_id, name, value)
-                VALUES (${created.id}, ${key}, ${value})
-              `;
-            }
-          }
-        } else if (typeof attrs === 'object') {
-          for (const [k, v] of Object.entries(attrs)) {
-            // store label/key and value
-            await sql`
-              INSERT INTO product_attribute(product_id, name, value)
-              VALUES (${created.id}, ${k}, ${v})
-            `;
-          }
-        }
-      } catch (attrErr) {
-        console.error('Error saving product attributes:', attrErr);
-        // continue without failing product creation
+    // Save attributes
+    if (Array.isArray(attributes)) {
+      for (const att of attributes) {
+        await sql`
+          INSERT INTO product_attribute(product_id, name, value)
+          VALUES (${product.id}, ${att.name}, ${att.value});
+        `;
       }
     }
 
-    // If imageUrls provided (array of urls or {url, public_id, resource_type}), save into product_media
-    const imageUrls = req.body.imageUrls;
-    if (imageUrls && Array.isArray(imageUrls)) {
-      try {
-        for (const u of imageUrls) {
-          if (!u) continue;
-          if (typeof u === 'string') {
-            await sql`
-              INSERT INTO product_media (product_id, url)
-              VALUES (${created.id}, ${u})
-            `;
-          } else if (typeof u === 'object' && u.url) {
-            await sql`
-              INSERT INTO product_media (product_id, url, public_id, type)
-              VALUES (${created.id}, ${u.url}, ${u.public_id || null}, ${u.resource_type || u.type || null})
-            `;
-          }
-        }
-      } catch (mediaErr) {
-        console.error('Error saving product media:', mediaErr);
+    // Save image URLs if provided
+    if (Array.isArray(images)) {
+      for (const img of images) {
+        await sql`
+          INSERT INTO product_media (product_id, url, public_id, type, is_cover)
+          VALUES (
+            ${product.id},
+            ${img.url},
+            ${img.public_id || null},
+            ${img.type || null},
+            ${img.is_cover || false}
+          );
+        `;
       }
     }
 
-    // Return created product (attributes saved separately)
-    res.status(201).json(created);
+    res.status(201).json({ success: true, product });
+
   } catch (error) {
-    console.error("Error creating the product:", error.message || error);
-    // Handle specific errors if need (example: unique violation)
-    if (error.code === '23505') {  // Postgres unique violation
-      return res.status(409).json({ message: "SKU already exists" });
-    }
+    console.error("createProduct error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }
 
-// Update for prodduct
+// ======================================================================
+//  🔵 UPDATE PRODUCT
+// ======================================================================
 export async function updateProduct(req, res) {
   try {
-    const { id } = req.params; // lấy id từ URL
-    const { SKU, description, price, stock } = req.body; // lấy data từ body
+    const { id } = req.params;
+    const { SKU, name, description, price, category_id, stock } = req.body;
 
-    // Kiểm tra input
-    if (!id) {
-      return res.status(400).json({ message: "Payment ID is required" });
-    }
+    validateProductInputs(req.body, true);
 
-    // Thực hiện update
-    const updatedProduct = await sql`
-      UPDATE product
-      SET 
-        SKU = ${SKU},
-        description = ${description},
-        price = ${price},
-        stock = ${stock}
+    const updated = await sql`
+      UPDATE product SET
+        SKU = COALESCE(${SKU}, SKU),
+        name = COALESCE(${name}, name),
+        description = COALESCE(${description}, description),
+        price = COALESCE(${price}, price),
+        category_id = COALESCE(${category_id}, category_id),
+        stock = COALESCE(${stock}, stock)
       WHERE id = ${id}
-      RETURNING *;
+      RETURNING *
     `;
 
-    // Nếu không có bản ghi nào được cập nhật
-    if (updatedProduct.length === 0) {
-      return res.status(404).json({ message: "Product not found" });
-    }
+    if (updated.length === 0) return res.status(404).json({ message: "Product not found" });
 
-    // Trả về dữ liệu sau khi update
-    res.status(200).json(updatedProduct[0]);
+    res.status(200).json({ success: true, product: updated[0] });
+
   } catch (error) {
-    console.error("Error updating the product:", error);
+    console.error("updateProduct error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }
 
-// Delete product by ID
+// ======================================================================
+//  🔵 DELETE
+// ======================================================================
 export async function deleteProduct(req, res) {
   try {
-    const { id } = req.params; // Lấy id từ URL
+    const { id } = req.params;
 
-    // Kiểm tra input
-    if (!id) {
-      return res.status(400).json({ message: "Product ID is required" });
-    }
-
-    // Xóa order
-    const deletedProduct = await sql`
+    const deleted = await sql`
       DELETE FROM product WHERE id = ${id}
-      RETURNING *;
+      RETURNING *
     `;
 
-    // Nếu không có bản ghi nào bị xóa
-    if (deletedProduct.length === 0) {
-      return res.status(404).json({ message: "product not found" });
-    }
+    if (deleted.length === 0) return res.status(404).json({ message: "Product not found" });
 
-    // Trả về payment đã bị xóa
-    res.status(200).json({
-      message: "product deleted successfully",
-      product: deletedProduct[0]
-    });
+    res.status(200).json({ success: true, deleted: deleted[0] });
+
   } catch (error) {
-    console.error("Error deleting the product:", error);
+    console.error("deleteProduct error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }
