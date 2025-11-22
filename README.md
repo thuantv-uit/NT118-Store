@@ -1,4 +1,4 @@
-# Project Name
+# Siny Daily
 
 ## Basic Workflow Principles
 To ensure a consistent and collaborative development process, contributors should follow these fundamental principles when working on the project:
