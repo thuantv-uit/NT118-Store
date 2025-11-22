@@ -1,8 +1,4 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-// import Ionicons from "@expo/vector-icons/Ionicons";
-// import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-
-
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -23,26 +19,36 @@ const HIGHLIGHTS = [
 
 export default function SellerDashboard() {
   const router = useRouter();
-  const navigateToOrders = () => router.push("/seller/orders");
+  const navigateToOrders = () => router.push("(seller)/(orders)");
 
   return (
     <SellerScreenLayout title="Bảng điều khiển" subtitle="Tổng quan hiệu suất">
       <View style={styles.statGrid}>
-        {STAT_CARDS.map(({ id, iconType: Icon, icon, label, value }) => (
-          <LinearGradient
-            key={id}
-            colors={["#FFE5EA", "#FAD4D6"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.statCard}
-          >
-            <View style={styles.statIconWrap}>
-              <Icon name={icon} size={hp("2.6%")} color="#BE123C" />
-            </View>
-            <Text style={styles.statLabel}>{label}</Text>
-            <Text style={styles.statValue}>{value}</Text>
-          </LinearGradient>
-        ))}
+        {STAT_CARDS.map(({ id, iconType: Icon, icon, label, value }) => {
+          const isOrdersCard = id === "orders";
+          return (
+            <Pressable
+              key={id}
+              onPress={isOrdersCard ? navigateToOrders : undefined}
+              style={({ pressed }) => [styles.statCardPressable, pressed && styles.statCardPressed]}
+              accessibilityRole={isOrdersCard ? "button" : undefined}
+              accessibilityLabel={isOrdersCard ? "Xem đơn hàng mới" : undefined}
+            >
+              <LinearGradient
+                colors={["#FFE5EA", "#FAD4D6"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.statCard}
+              >
+                <View style={styles.statIconWrap}>
+                  <Icon name={icon} size={hp("2.6%")} color="#BE123C" />
+                </View>
+                <Text style={styles.statLabel}>{label}</Text>
+                <Text style={styles.statValue}>{value}</Text>
+              </LinearGradient>
+            </Pressable>
+          );
+        })}
       </View>
 
       <LinearGradient colors={["#FFE9EC", "#FFE2F2"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.chartCard}>
@@ -110,12 +116,17 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: hp("2.5%"),
   },
-  statCard: {
+  statCardPressable: {
     width: "48%",
+    marginBottom: hp("1.8%"),
+  },
+  statCardPressed: {
+    opacity: 0.85,
+  },
+  statCard: {
     borderRadius: 18,
     paddingVertical: hp("2%"),
     paddingHorizontal: wp("4%"),
-    marginBottom: hp("1.8%"),
   },
   statIconWrap: {
     width: wp("10%"),

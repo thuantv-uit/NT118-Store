@@ -1,11 +1,9 @@
 name: Node.js CI
-
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -20,27 +18,26 @@ jobs:
       id: filter
       with:
         filters: |
-          backend: 'Project/backend/**'
-          mobile: 'Project/mobile/**'
-
+          backend: 'backend/**'
+          mobile: 'mobile/**'
   build-backend:
     needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./Project/backend
+        working-directory: ./backend
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
     steps:
     - uses: actions/checkout@v4
     - name: Verify Backend Directory
-      run: ls -la # Debug: In danh sách file trong Project/backend
+      run: ls -la # Debug: In danh sách file trong backend
     - name: Check for package-lock.json
       run: |
         if [ ! -f package-lock.json ]; then
-          echo "Error: package-lock.json not found in Project/backend"
+          echo "Error: package-lock.json not found in backend"
           exit 1
         fi
     - name: Use Node.js ${{ matrix.node-version }} for Backend
@@ -48,7 +45,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: Project/backend/package-lock.json
+        cache-dependency-path: backend/package-lock.json
     - name: Install Dependencies for Backend
       run: npm install
     - name: Run Backend Server for 2 Minutes
@@ -85,25 +82,24 @@ jobs:
         kill $SERVER_PID
         echo "Server ran successfully for 2 minutes"
         cat server.log # In log để debug
-
   build-mobile:
     needs: changes
     if: ${{ needs.changes.outputs.mobile == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./Project/mobile
+        working-directory: ./mobile
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
     steps:
     - uses: actions/checkout@v4
     - name: Verify Mobile Directory
-      run: ls -la # Debug: In danh sách file trong Project/mobile
+      run: ls -la # Debug: In danh sách file trong mobile
     - name: Check for package-lock.json
       run: |
         if [ ! -f package-lock.json ]; then
-          echo "Error: package-lock.json not found in Project/mobile"
+          echo "Error: package-lock.json not found in mobile"
           exit 1
         fi
     - name: Use Node.js ${{ matrix.node-version }} for Mobile
@@ -111,7 +107,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: Project/mobile/package-lock.json
+        cache-dependency-path: mobile/package-lock.json
     - name: Install Dependencies for Mobile
       run: npm install
     - name: Run ESLint Check
