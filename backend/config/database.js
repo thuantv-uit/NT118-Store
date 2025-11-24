@@ -161,6 +161,28 @@ export async function initDB() {
     )`;
     console.log("Database wallet_transaction initialized successfully");
 
+    await sql`CREATE TABLE IF NOT EXISTS conversations(
+      id SERIAL PRIMARY KEY,
+      buyer_id VARCHAR(255) NOT NULL REFERENCES customer(id) ON DELETE CASCADE,
+      seller_id VARCHAR(255) NOT NULL REFERENCES customer(id) ON DELETE CASCADE,
+      order_id INT NULL REFERENCES "order"(id) ON DELETE SET NULL,  -- Liên kết với đơn hàng (tùy chọn)
+      title VARCHAR(255) NULL,  -- Tiêu đề cuộc trò chuyện (ví dụ: "Chat về đơn hàng #123")
+      created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`;
+    console.log("Database conversations initialized successfully");
+
+    await sql`CREATE TABLE IF NOT EXISTS messages(
+      id SERIAL PRIMARY KEY,
+      conversation_id INT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+      sender_id VARCHAR(255) NOT NULL REFERENCES customer(id) ON DELETE CASCADE,
+      message_text TEXT NOT NULL,
+      is_read BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`;
+    console.log("Database messages initialized successfully");
+
   } catch (error) {
     console.log("Error initializing DB", error);
     process.exit(1); // status code 1 means failure, 0 success

@@ -1,5 +1,8 @@
 import express from "express";
 import dotenv from "dotenv"
+import http from "http";
+import { Server } from "socket.io";
+import cors from "cors";
 import { initDB } from "./config/database.js";
 import customerRoutes from "./routes/customersRoute.js";
 import shipmentRoutes from "./routes/shipmentsRoute.js"
@@ -15,11 +18,38 @@ import walletRoutes from './routes/walletRoutes.js';
 import bankAccountRoutes from './routes/bankAccountRoutes.js';
 import walletTransactionRoutes from './routes/walletTransactionRoutes.js'
 import orderStatusRoutes from './routes/orderStatusRoutes.js'
+import chatRoute from './routes/chatRoutes.js'
 // import rateLimiter from "./middleware/rateLimiter.js";
 
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+
+// Tạo Socket.io instance
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Thay bằng domain frontend của bạn (ví dụ: "http://localhost:3000") để bảo mật hơn
+    methods: ["GET", "POST"]
+  }
+});
+
+global.io = io;
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  // Join room dựa trên conversation_id (client emit 'join_conversation' với conversation_id)
+  socket.on("join_conversation", (conversation_id) => {
+    socket.join(`conversation_${conversation_id}`);
+    console.log(`User ${socket.id} joined conversation ${conversation_id}`);
+  });
+
+  // Handle disconnect
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
 
 // Middleware
 // app.use(rateLimiter)
@@ -45,6 +75,7 @@ app.use('/api/wallets', walletRoutes);
 app.use('/api/bank_accounts', bankAccountRoutes);
 app.use('/api/wallet_transaction', walletTransactionRoutes);
 app.use('/api/order_status', orderStatusRoutes);
+app.use('/api/chat', chatRoute);
 
 initDB().then(() => {
     app.listen(PORT, () => {
