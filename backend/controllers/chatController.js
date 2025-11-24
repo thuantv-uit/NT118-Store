@@ -54,14 +54,14 @@ export async function createConversation(req, res) {
   }
 }
 
-// Lấy danh sách hội thoại của user - Bỏ order_id
+// Lấy danh sách hội thoại của user (cập nhật: dùng req.query cho GET chuẩn)
 export async function getConversationsByUser(req, res) {
   try {
-    const { user_id } = req.body; // Lấy user_id từ body
+    const { user_id } = req.query; // Đổi từ req.body sang req.query cho GET
     const { limit = 20, offset = 0 } = req.query;
 
     if (!user_id) {
-      return res.status(400).json({ message: "User ID là bắt buộc (thêm vào body)" });
+      return res.status(400).json({ message: "User ID là bắt buộc (thêm vào query params)" });
     }
 
     // Check user tồn tại và có role phù hợp
@@ -70,7 +70,7 @@ export async function getConversationsByUser(req, res) {
       return res.status(403).json({ message: "User không có quyền xem hội thoại" });
     }
 
-    // Lấy hội thoại nơi user là buyer hoặc seller (bỏ order_id)
+    // Lấy hội thoại nơi user là buyer hoặc seller
     const conversations = await sql`
       SELECT c.id, c.title, c.updated_at,
              CASE 
