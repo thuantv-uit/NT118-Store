@@ -211,7 +211,7 @@ export default function CheckoutScreen() {
                   Chưa có địa chỉ nào. Vui lòng thêm địa chỉ trong tài khoản của bạn!
                 </Text>
                 <TouchableOpacity 
-                  onPress={() => navigation.navigate('Profile', { screen: 'Addresses' })} // Giả định có screen quản lý địa chỉ
+                  onPress={() => navigation.navigate('(profile)/components/DeliveryScreen', { screen: 'Addresses' })} // Giả định có screen quản lý địa chỉ
                   style={[checkoutStyles.emptyButton, { marginTop: 10 }]}
                 >
                   <Text style={checkoutStyles.emptyButtonText}>Quản lý địa chỉ</Text>
