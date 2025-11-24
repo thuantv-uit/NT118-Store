@@ -1,9 +1,9 @@
 import { sql } from "../config/database.js";
 
-// Tạo hội thoại mới (nếu chưa tồn tại giữa buyer và seller)
+// Tạo hội thoại mới (nếu chưa tồn tại giữa buyer và seller) - Bỏ order_id
 export async function createConversation(req, res) {
   try {
-    const { buyer_id, seller_id, order_id, title, user_id } = req.body; // Lấy user_id từ body
+    const { buyer_id, seller_id, title, user_id } = req.body; // Lấy user_id từ body
 
     if (!user_id) {
       return res.status(400).json({ message: "User ID là bắt buộc (thêm vào body)" });
@@ -19,12 +19,11 @@ export async function createConversation(req, res) {
       return res.status(403).json({ message: "User không có quyền tạo hội thoại (phải là buyer hoặc seller)" });
     }
 
-    // Check nếu hội thoại đã tồn tại giữa 2 người (và order_id nếu có)
+    // Check nếu hội thoại đã tồn tại giữa 2 người (bỏ order_id)
     let existingConv = await sql`
       SELECT id FROM conversations 
       WHERE ((buyer_id = ${buyer_id} AND seller_id = ${seller_id}) 
       OR (buyer_id = ${seller_id} AND seller_id = ${buyer_id}))
-      ${order_id ? sql`AND (order_id = ${order_id} OR order_id IS NULL)` : sql``}
     `;
 
     if (existingConv.length > 0) {
@@ -43,9 +42,9 @@ export async function createConversation(req, res) {
     }
 
     const newConv = await sql`
-      INSERT INTO conversations (buyer_id, seller_id, order_id, title)
-      VALUES (${normalizedBuyer}, ${normalizedSeller}, ${order_id || null}, ${title || null})
-      RETURNING id, buyer_id, seller_id, order_id, title, created_at, updated_at
+      INSERT INTO conversations (buyer_id, seller_id, title)
+      VALUES (${normalizedBuyer}, ${normalizedSeller}, ${title || null})
+      RETURNING id, buyer_id, seller_id, title, created_at, updated_at
     `;
 
     res.status(201).json(newConv[0]);
@@ -55,7 +54,7 @@ export async function createConversation(req, res) {
   }
 }
 
-// Lấy danh sách hội thoại của user
+// Lấy danh sách hội thoại của user - Bỏ order_id
 export async function getConversationsByUser(req, res) {
   try {
     const { user_id } = req.body; // Lấy user_id từ body
@@ -71,9 +70,9 @@ export async function getConversationsByUser(req, res) {
       return res.status(403).json({ message: "User không có quyền xem hội thoại" });
     }
 
-    // Lấy hội thoại nơi user là buyer hoặc seller
+    // Lấy hội thoại nơi user là buyer hoặc seller (bỏ order_id)
     const conversations = await sql`
-      SELECT c.id, c.title, c.order_id, c.updated_at,
+      SELECT c.id, c.title, c.updated_at,
              CASE 
                WHEN c.buyer_id = ${user_id} THEN c.seller_id 
                ELSE c.buyer_id 
@@ -93,15 +92,15 @@ export async function getConversationsByUser(req, res) {
   }
 }
 
-// Lấy tin nhắn trong một hội thoại
+// Lấy tin nhắn trong một hội thoại (cập nhật: dùng req.query.user_id cho GET)
 export async function getMessagesByConversation(req, res) {
   try {
     const { id } = req.params; // conversation_id
-    const { user_id } = req.body; // Lấy user_id từ body
+    const { user_id } = req.query; // Đổi từ req.body sang req.query cho GET chuẩn
     const { limit = 50, offset = 0 } = req.query;
 
     if (!user_id) {
-      return res.status(400).json({ message: "User ID là bắt buộc (thêm vào body)" });
+      return res.status(400).json({ message: "User ID là bắt buộc (thêm vào query params)" });
     }
 
     // Check quyền truy cập: user phải là buyer hoặc seller của hội thoại
@@ -136,7 +135,7 @@ export async function getMessagesByConversation(req, res) {
   }
 }
 
-// Gửi tin nhắn mới
+// Gửi tin nhắn mới (không thay đổi)
 export async function sendMessage(req, res) {
   try {
     const { conversation_id, message_text, user_id } = req.body; // Lấy user_id từ body (làm sender_id)

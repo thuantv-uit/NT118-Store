@@ -165,7 +165,6 @@ export async function initDB() {
       id SERIAL PRIMARY KEY,
       buyer_id VARCHAR(255) NOT NULL REFERENCES customer(id) ON DELETE CASCADE,
       seller_id VARCHAR(255) NOT NULL REFERENCES customer(id) ON DELETE CASCADE,
-      order_id INT NULL REFERENCES "order"(id) ON DELETE SET NULL,  -- Liên kết với đơn hàng (tùy chọn)
       title VARCHAR(255) NULL,  -- Tiêu đề cuộc trò chuyện (ví dụ: "Chat về đơn hàng #123")
       created_at DATE NOT NULL DEFAULT CURRENT_DATE,
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
