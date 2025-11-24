@@ -1,7 +1,6 @@
 import { useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { SafeAreaView, ScrollView } from 'react-native';
-import BottomNav from './components/BottomNav';
 import ExpensesSection from './components/ExpensesSection';
 import Header from './components/Header';
 import LogoutButton from './components/LogoutButton';
@@ -36,7 +35,7 @@ const ProfileScreen = () => {
         <ExpensesSection expenses={mockExpenses} />
         <LogoutButton onPress={handleLogout} />
       </ScrollView>
-      <BottomNav />
+      {/* <BottomNav /> */}
     </SafeAreaView>
   );
 };

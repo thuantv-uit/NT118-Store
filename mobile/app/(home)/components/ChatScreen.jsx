@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import io from 'socket.io-client';
-import { API_URL } from '../../../constants/api'; // http://192.168.1.254:5001/api
+import { API_URL } from '../../../constants/api';
 
 const ChatScreen = () => {
   const params = useLocalSearchParams();
@@ -41,8 +41,7 @@ const ChatScreen = () => {
       return;
     }
 
-    // Setup Socket.io (server URL: http://192.168.1.254:5001)
-    socketRef.current = io(API_URL.replace('/api', ''));  // http://192.168.1.254:5001
+    socketRef.current = io(API_URL.replace('/api', ''));
     socketRef.current.emit('join_room', `conversation_${conversationId}`);
 
     socketRef.current.on('new_message', (newMsg) => {
