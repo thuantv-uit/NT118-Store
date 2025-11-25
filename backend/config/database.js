@@ -121,8 +121,10 @@ export async function initDB() {
       id SERIAL PRIMARY KEY,
       seller_id VARCHAR(255) NOT NULL REFERENCES customer(id),
       buyer_id VARCHAR(255) NOT NULL REFERENCES customer(id),
+      shipper_id VARCHAR(255) NOT NULL REFERENCES customer(id),
       product_id INT NOT NULL REFERENCES "product"(id),
       order_id INT NOT NULL REFERENCES "order"(id),
+      current_location VARCHAR(500) DEFAULT NULL,
       status VARCHAR(50) NOT NULL CHECK (status IN ('pending', 'processing', 'shipped', 'delivered', 'cancelled')),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE,
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -160,6 +162,27 @@ export async function initDB() {
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
     console.log("Database wallet_transaction initialized successfully");
+
+    await sql`CREATE TABLE IF NOT EXISTS conversations(
+      id SERIAL PRIMARY KEY,
+      buyer_id VARCHAR(255) NOT NULL REFERENCES customer(id) ON DELETE CASCADE,
+      seller_id VARCHAR(255) NOT NULL REFERENCES customer(id) ON DELETE CASCADE,
+      title VARCHAR(255) NULL,  -- Tiêu đề cuộc trò chuyện (ví dụ: "Chat về đơn hàng #123")
+      created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`;
+    console.log("Database conversations initialized successfully");
+
+    await sql`CREATE TABLE IF NOT EXISTS messages(
+      id SERIAL PRIMARY KEY,
+      conversation_id INT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+      sender_id VARCHAR(255) NOT NULL REFERENCES customer(id) ON DELETE CASCADE,
+      message_text TEXT NOT NULL,
+      is_read BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`;
+    console.log("Database messages initialized successfully");
 
   } catch (error) {
     console.log("Error initializing DB", error);

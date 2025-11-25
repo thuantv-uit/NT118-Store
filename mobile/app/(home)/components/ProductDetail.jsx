@@ -128,6 +128,41 @@ const detailStyles = StyleSheet.create({
     textAlign: 'center',
     marginHorizontal: 12,
   },
+  // Styles cho seller section (giữ nguyên)
+  sellerContainer: {
+    backgroundColor: '#F8F4F3',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  sellerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6D4C41',
+    marginBottom: 8,
+  },
+  sellerInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  sellerAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  sellerName: { fontSize: 14, fontWeight: '500', color: '#5B453F' },
+  sellerEmail: { fontSize: 12, color: '#8D6E63' },
+  sellerContact: {
+    backgroundColor: '#FF8A65',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+  },
+  sellerContactText: { color: '#fff', fontSize: 12, fontWeight: '500' },
 });
 
 const API_BASE_URL = API_URL;
@@ -137,10 +172,11 @@ export default function ProductDetail() {
   const navigation = useNavigation();
   const { id } = route.params || {};
   const [product, setProduct] = useState(null);
+  const [seller, setSeller] = useState(null); // State cho seller
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Mock detail
+  // Mock detail (giữ nguyên)
   const details = {
     sizes: ['S', 'M', 'L', 'XL'],
     colors: ['Trắng', 'Đen', 'Xanh'],
@@ -150,7 +186,7 @@ export default function ProductDetail() {
   const [selectedColor, setSelectedColor] = useState('Trắng');
   const [quantity, setQuantity] = useState(1);
 
-  // Get user from Clerk
+  // Get user from Clerk (giữ nguyên)
   const { user, isSignedIn } = useUser();
   const customerId = user?.id;
 
@@ -170,14 +206,27 @@ export default function ProductDetail() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setProduct({
+        const productData = {
           ...data,
           name: data.name || 'Sản phẩm không tên',
           description: data.description || 'Không có mô tả.',
-        });
+        };
+        setProduct(productData);
+
+        // Fetch seller info nếu có customer_id (người bán)
+        if (productData.customer_id) {
+          const sellerResponse = await fetch(`${API_BASE_URL}/customers/${productData.customer_id}`);
+          if (sellerResponse.ok) {
+            const sellerData = await sellerResponse.json();
+            setSeller(sellerData); // Dữ liệu như { first_name, last_name, avatar, ... }
+          } else {
+            // console.warn('Không thể fetch seller info:', sellerResponse.status);
+            setSeller(null);
+          }
+        }
       } catch (err) {
         setError(err.message);
-        console.error('Error fetching product:', err);
+        // console.error('Error fetching product:', err);
       } finally {
         setLoading(false);
       }
@@ -186,11 +235,10 @@ export default function ProductDetail() {
     fetchProduct();
   }, [id]);
 
-  // Funtion check customer exsit
+  // Các function khác giữ nguyên (checkCustomerExists, renderSelector, handleRetry, updateQuantity, handleAddToCart)
   const checkCustomerExists = async () => {
     if (!customerId) {
       Alert.alert('Lỗi', 'Vui lòng đăng nhập để tiếp tục!');
-      // Cant navigate from sign in if need
       return false;
     }
 
@@ -220,7 +268,7 @@ export default function ProductDetail() {
       }
       return true;
     } catch (err) {
-      console.error('Error checking customer:', err);
+      // console.error('Error checking customer:', err);
       Alert.alert('Lỗi', 'Không thể kiểm tra hồ sơ. Vui lòng thử lại!');
       return false;
     }
@@ -255,13 +303,11 @@ export default function ProductDetail() {
     setError(null);
   };
 
-  // Funtion update quantity
   const updateQuantity = (newQty) => {
-    if (newQty < 1) newQty = 1; // Don't allow quantity < 1
+    if (newQty < 1) newQty = 1;
     setQuantity(newQty);
   };
 
-  // Function add into cart (call check customer priority)
   const handleAddToCart = async () => {
     const customerExists = await checkCustomerExists();
     if (!customerExists) {
@@ -293,12 +339,65 @@ export default function ProductDetail() {
       }
 
       const newCartItem = await response.json();
-      // console.log('Added to cart:', newCartItem);
       Alert.alert('Thành công', `Đã thêm ${quantity} sản phẩm vào giỏ hàng!`);
       setQuantity(1);
     } catch (err) {
-      console.error('Error adding to cart:', err);
+      // console.error('Error adding to cart:', err);
       Alert.alert('Lỗi', 'Không thể thêm vào giỏ hàng!');
+    }
+  };
+
+    const handleContactSeller = async () => {
+    // console.log("buyer_id: ", customerId);
+    // console.log("seller_id: ", seller.id);
+    // console.log("Full request body: ", {
+    //   buyer_id: customerId,
+    //   seller_id: seller.id,
+    //   user_id: customerId,
+    //   title: `Chat với ${seller.first_name} về sản phẩm`,
+    // });
+    // console.log("API URL: ", `${API_BASE_URL}/chat`);
+
+    if (!customerId) {
+      Alert.alert('Lỗi', 'Vui lòng đăng nhập để liên hệ!');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          buyer_id: customerId,
+          seller_id: seller.id,
+          user_id: customerId,
+          title: `Chat với ${seller.first_name} về sản phẩm`,
+        }),
+      });
+
+      // Log chi tiết response
+      // console.log("Response status: ", response.status);
+      // console.log("Response ok: ", response.ok);
+
+      // Đọc response as TEXT trước để debug (không parse json ngay)
+      const responseText = await response.text();
+      // console.log("Response body (text): ", responseText.substring(0, 500));  // Log 500 ký tự đầu để tránh dài
+
+      if (!response.ok) {
+        throw new Error(`Server error ${response.status}: ${responseText.substring(0, 200)}`);
+      }
+
+      // Chỉ parse json nếu ok
+      const convData = JSON.parse(responseText);
+      // console.log("Parsed convData: ", convData);
+
+      navigation.navigate('(home)/components/ChatScreen', { 
+        conversationId: convData.id, 
+        sellerName: `${(seller.first_name || '').trim()} ${(seller.last_name || '')}` 
+      });
+    } catch (err) {
+      // console.error('Error creating conversation:', err);
+      Alert.alert('Lỗi', `Không thể tạo cuộc trò chuyện! Chi tiết: ${err.message}`);
     }
   };
 
@@ -349,6 +448,35 @@ export default function ProductDetail() {
             <Text style={{ fontSize: 14, color: 'gray', marginBottom: 16 }}>
               Danh mục: {product.category_name}
             </Text>
+          )}
+
+          {/* Section seller: Hiển thị first_name + last_name + avatar */}
+          {seller && (
+            <View style={detailStyles.sellerContainer}>
+              <Text style={detailStyles.sellerTitle}>Người bán</Text>
+              <View style={detailStyles.sellerInfo}>
+                {seller.avatar ? (
+                  <Image 
+                    source={{ uri: seller.avatar }} 
+                    style={detailStyles.sellerAvatar} 
+                  />
+                ) : (
+                  <View style={[detailStyles.sellerAvatar, { backgroundColor: '#E5C9C4' }]} />
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text style={detailStyles.sellerName}>
+                    {`${(seller.first_name || '').trim()} ${(seller.last_name || '')}` || 'Người bán ẩn danh'}
+                  </Text>
+                  {/* Nếu cần thêm email hoặc phone, uncomment bên dưới */}
+                  {/* <Text style={detailStyles.sellerEmail}>{seller.email || seller.phone_number || 'Không có thông tin liên hệ'}</Text> */}
+                </View>
+              </View>
+              <TouchableOpacity 
+            style={detailStyles.sellerContact}
+            onPress={handleContactSeller} >
+            <Text style={detailStyles.sellerContactText}>Liên hệ ngay</Text>
+          </TouchableOpacity>
+            </View>
           )}
 
           <View style={detailStyles.section}>

@@ -47,6 +47,11 @@ const Header = ({ user }) => {
     }
   };
 
+  // Function mới: Xử lý go back về trang trước (thường là home)
+  const handleGoBack = () => {
+    router.back();  // Quay lại trang trước
+  };
+
   const handleAvatarPress = () => {
     router.push('/(profile)/components/updateProfile');
   };
@@ -75,6 +80,11 @@ const Header = ({ user }) => {
 
   return (
     <View style={styles.header}>
+      {/* Thêm button back ở đầu header, bên trái */}
+      <TouchableOpacity onPress={handleGoBack} style={styles.backButtonContainer}>
+        <Icon name="arrow-back" size={24} color="#6D4C41" />
+      </TouchableOpacity>
+
       <View style={styles.userInfoLeft}>
         <TouchableOpacity onPress={handleAvatarPress}>
           <View style={styles.avatarContainer}>

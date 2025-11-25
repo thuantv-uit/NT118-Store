@@ -1,4 +1,3 @@
-// OrderTrackingScreen.jsx - Cập nhật: Bỏ call API order, fetch product từ product_id trong statuses
 import { useUser } from '@clerk/clerk-expo';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
@@ -176,28 +175,29 @@ export default function OrderTrackingScreen() {
     const step = statusSteps[status.status] || { label: status.status, icon: 'help-outline', color: '#999' };
     const product = status.product || { name: 'Sản phẩm không xác định', price: 0 };
     return (
-      <View style={{ padding: 16, backgroundColor: '#FFF', marginBottom: 8, borderRadius: 8, flexDirection: 'row', alignItems: 'center' }}>
-        <View style={{
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          backgroundColor: step.color,
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginRight: 12,
-        }}>
-          <Icon name={step.icon} size={20} color="#FFF" />
+      <TouchableOpacity
+        onPress={() => navigation.navigate('(buyer)/components/OrderDetailScreen', { statusId: status.id })}
+        activeOpacity={0.7}
+      >
+        <View style={{ padding: 16, backgroundColor: '#FFF', marginBottom: 8, borderRadius: 8, flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: step.color,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginRight: 12,
+          }}>
+            <Icon name={step.icon} size={20} color="#FFF" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: step.color }}>{step.label}</Text>
+            <Text style={{ fontSize: 14, marginTop: 4 }}>Sản phẩm: {product.name}</Text>
+            <Text style={{ fontSize: 14, color: '#00A651', marginTop: 2 }}>Giá: {parseFloat(product.price || 0).toLocaleString('vi-VN')} VNĐ</Text>
+          </View>
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 16, fontWeight: 'bold', color: step.color }}>{step.label}</Text>
-          <Text style={{ fontSize: 14, marginTop: 4 }}>Sản phẩm: {product.name}</Text>
-          <Text style={{ fontSize: 14, color: '#00A651', marginTop: 2 }}>Giá: {parseFloat(product.price || 0).toLocaleString('vi-VN')} VNĐ</Text>
-          <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>Đơn hàng #{status.order_id} - Sản phẩm ID: {status.product_id}</Text>
-          <Text style={{ fontSize: 12, color: '#999', marginTop: 2 }}>
-            Seller: {status.seller_id.slice(0, 8)}... | Cập nhật: {new Date(status.updated_at).toLocaleString('vi-VN')}
-          </Text>
-        </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
