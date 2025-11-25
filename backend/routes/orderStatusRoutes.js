@@ -6,7 +6,8 @@ import {
   getOrderStatusBySellerId,
   getOrderStatusByBuyerId,
   updateOrderStatus,
-  deleteOrderStatus
+  deleteOrderStatus,
+  getOrderStatusByShipperId
 } from "../controllers/orderStatusController.js";
 
 const router = express.Router();
@@ -26,8 +27,14 @@ router.get("/seller/:seller_id", getOrderStatusBySellerId);
 // GET /order-status/buyer/:buyer_id - Lấy theo buyer_id (mới thêm)
 router.get("/buyer/:buyer_id", getOrderStatusByBuyerId);
 
-// PUT /order-status/:id - Cập nhật status
+// GET /order-status/buyer/:buyer_id - Lấy theo buyer_id (mới thêm)
+router.get("/shipper/:shipper_id", getOrderStatusByShipperId);
+
+// PUT /order-status/:id - Cập nhật status (và location nếu gửi)
 router.put("/:id", updateOrderStatus);
+
+// PUT /order-status/:id/location - Route mới: Cập nhật vị trí hiện tại (dành cho người giao hàng)
+router.put("/:id/location", updateOrderStatus);  // Reuse controller, chỉ cần gửi current_location trong body
 
 // DELETE /order-status/:id - Xóa
 router.delete("/:id", deleteOrderStatus);

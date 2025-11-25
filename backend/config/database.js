@@ -121,8 +121,10 @@ export async function initDB() {
       id SERIAL PRIMARY KEY,
       seller_id VARCHAR(255) NOT NULL REFERENCES customer(id),
       buyer_id VARCHAR(255) NOT NULL REFERENCES customer(id),
+      shipper_id VARCHAR(255) NOT NULL REFERENCES customer(id),
       product_id INT NOT NULL REFERENCES "product"(id),
       order_id INT NOT NULL REFERENCES "order"(id),
+      current_location VARCHAR(500) DEFAULT NULL,
       status VARCHAR(50) NOT NULL CHECK (status IN ('pending', 'processing', 'shipped', 'delivered', 'cancelled')),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE,
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
