@@ -48,7 +48,13 @@ export default function SellerProductCreate({ navigation }) {
   const { userId, isLoaded } = useAuth();
 
   const handleInputChange = (id, value) => {
-    setFormData((prev) => ({ ...prev, [id]: value }));
+    setFormData((prev) => {
+      let numericValue = Number(value);
+      if (numericValue > 2147483646) {
+        numericValue = 2147483646;
+      }
+      return { ...prev, [id]: numericValue.toString() };
+    })
   };
 
   // Add: Function choose and handle image from gallery/camera
@@ -87,6 +93,7 @@ export default function SellerProductCreate({ navigation }) {
         return false;
       }
     }
+
     if (parseFloat(formData.price) <= 0 || parseInt(formData.stock) < 0 || parseInt(formData.category_id) <= 0) {
       Alert.alert("Lỗi", "Giá phải > 0, tồn kho >= 0, category_id > 0!");
       return false;
@@ -101,6 +108,10 @@ export default function SellerProductCreate({ navigation }) {
 
     setLoading(true);
     try {
+      let stock_int = parseInt(formData.stock)
+      if (stock_int > Number.MAX_SAFE_INTEGER) {
+        stock_int = 2147483646;
+      }
       // Create FormData for multipart/form-data
       const formPayload = new FormData();
       formPayload.append("SKU", formData.SKU);
@@ -108,7 +119,8 @@ export default function SellerProductCreate({ navigation }) {
       formPayload.append("description", formData.description);
       formPayload.append("price", parseFloat(formData.price));
       formPayload.append("category_id", parseInt(formData.category_id));
-      formPayload.append("stock", parseInt(formData.stock));
+      console.log("stock int la: ", stock_int);
+      formPayload.append("stock", stock_int);
 
       // THÊM: Append customer_id từ Clerk userId
       formPayload.append("customer_id", userId);
