@@ -1,10 +1,12 @@
 import { useUser } from '@clerk/clerk-expo';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient'; // Thêm import cho gradient button
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  FlatList,
   Image,
   SafeAreaView,
   ScrollView,
@@ -16,8 +18,8 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { API_URL } from '../../../constants/api';
 
-const { width } = Dimensions.get('window');
-const IMAGE_HEIGHT = width * 0.7;
+const { width, height } = Dimensions.get('window');
+const IMAGE_HEIGHT = height * 0.45;
 
 const detailStyles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#FFF6F5' },
@@ -26,59 +28,153 @@ const detailStyles = StyleSheet.create({
     top: 50,
     left: 16,
     zIndex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
-    padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 25,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   backButton: { fontSize: 24, color: '#6D4C41' },
-  image: {
+  imagesContainer: {
+    height: IMAGE_HEIGHT,
+    position: 'relative',
+  },
+  imageItem: {
     width: width,
     height: IMAGE_HEIGHT,
-    resizeMode: 'cover',
+    resizeMode: 'contain',
+  },
+  // SỬA: Thêm dots indicator cho images
+  dotsContainer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  activeDot: {
+    backgroundColor: '#FF8A65',
   },
   content: {
-    padding: 16,
+    padding: 20,
     backgroundColor: '#fff',
-    marginTop: -20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    marginTop: -25,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     flex: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  name: { fontSize: 20, fontWeight: '700', color: '#5B453F', marginBottom: 4 },
-  price: { fontSize: 18, fontWeight: '700', color: '#E64A19', marginBottom: 16 },
+  name: { fontSize: 24, fontWeight: 'bold', color: '#5B453F', marginBottom: 8, lineHeight: 28 },
+  priceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  price: { fontSize: 22, fontWeight: 'bold', color: '#E64A19', marginRight: 8 },
+  priceBadge: {
+    backgroundColor: '#FF8A65',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  priceBadgeText: { fontSize: 12, color: '#fff', fontWeight: '600' },
+  category: { fontSize: 14, color: 'gray', marginBottom: 16 },
   section: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
-  sectionTitle: { fontSize: 16, fontWeight: '600', color: '#6D4C41', marginBottom: 12 },
+  sectionTitle: { 
+    fontSize: 18, 
+    fontWeight: '600', 
+    color: '#6D4C41', 
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0EDE8',
+    paddingBottom: 8,
+  },
   row: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   selectorItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 25,
     borderWidth: 1,
     borderColor: '#E5C9C4',
-    marginRight: 8,
-    marginBottom: 8,
+    marginRight: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  selectorText: { fontSize: 14, color: '#6D4C41' },
+  selectorText: { fontSize: 14, color: '#6D4C41', fontWeight: '500' },
   activeSelector: {
     backgroundColor: '#FF8A65',
     borderColor: '#FF8A65',
+    shadowColor: '#FF8A65',
+    shadowOpacity: 0.2,
   },
-  activeText: { color: '#fff' },
-  description: { fontSize: 14, color: '#8D6E63', lineHeight: 20 },
-  addButton: {
-    backgroundColor: '#FF8A65',
-    paddingVertical: 16,
+  activeText: { color: '#fff', fontWeight: '600' },
+  description: { 
+    fontSize: 14, 
+    color: '#8D6E63', 
+    lineHeight: 22,
+    textAlign: 'justify',
+  },
+  // SỬA: Format description sections
+  descSection: {
+    marginBottom: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    backgroundColor: '#F8F4F3',
     borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF8A65',
   },
-  addText: { fontSize: 16, fontWeight: '700', color: '#fff' },
+  descTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6D4C41',
+    marginBottom: 4,
+  },
+  descText: { fontSize: 13, color: '#8D6E63', lineHeight: 20 },
+  addButton: {
+    marginTop: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  addGradient: {
+    paddingVertical: 18,
+    borderRadius: 16,
+    alignItems: 'center',
+    width: '100%',
+  },
+  addText: { fontSize: 18, fontWeight: 'bold', color: '#fff' },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -103,66 +199,87 @@ const detailStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F5F5F5',
-    borderRadius: 20,
-    paddingHorizontal: 8,
+    borderRadius: 25,
+    paddingHorizontal: 12,
     marginTop: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   qtyButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#FF8A65',
     justifyContent: 'center',
     alignItems: 'center',
   },
   qtyText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#fff',
   },
   qtyNumber: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: '#5B453F',
-    minWidth: 30,
+    minWidth: 40,
     textAlign: 'center',
-    marginHorizontal: 12,
+    marginHorizontal: 16,
   },
-  // Styles cho seller section (giữ nguyên)
+  stockInfo: {
+    fontSize: 14,
+    color: '#4CAF50',
+    marginBottom: 20,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  // Styles cho seller section (cải thiện)
   sellerContainer: {
     backgroundColor: '#F8F4F3',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 16,
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   sellerTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#6D4C41',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   sellerInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 8,
   },
   sellerAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 16,
   },
-  sellerName: { fontSize: 14, fontWeight: '500', color: '#5B453F' },
-  sellerEmail: { fontSize: 12, color: '#8D6E63' },
+  sellerName: { fontSize: 16, fontWeight: '600', color: '#5B453F' },
   sellerContact: {
     backgroundColor: '#FF8A65',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
     alignSelf: 'flex-start',
-    marginTop: 4,
+    marginTop: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  sellerContactText: { color: '#fff', fontSize: 12, fontWeight: '500' },
+  sellerContactText: { color: '#fff', fontSize: 14, fontWeight: '600' },
 });
 
 const API_BASE_URL = API_URL;
@@ -176,15 +293,16 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Mock detail (giữ nguyên)
-  const details = {
-    sizes: ['S', 'M', 'L', 'XL'],
-    colors: ['Trắng', 'Đen', 'Xanh'],
-  };
-
-  const [selectedSize, setSelectedSize] = useState('M');
-  const [selectedColor, setSelectedColor] = useState('Trắng');
+  // SỬA: Dynamic details từ variants
+  const [availableSizes, setAvailableSizes] = useState([]);
+  const [availableColors, setAvailableColors] = useState([]);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
+  const [currentPrice, setCurrentPrice] = useState(0);
+  const [currentStock, setCurrentStock] = useState(0);
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0); // Cho dots indicator
 
   // Get user from Clerk (giữ nguyên)
   const { user, isSignedIn } = useUser();
@@ -213,6 +331,16 @@ export default function ProductDetail() {
         };
         setProduct(productData);
 
+        // SỬA: Extract unique sizes/colors từ variants
+        if (productData.variants && productData.variants.length > 0) {
+          const sizes = [...new Set(productData.variants.map(v => v.size))];
+          const colors = [...new Set(productData.variants.map(v => v.color))];
+          setAvailableSizes(sizes);
+          setAvailableColors(colors);
+          setSelectedSize(sizes[0] || '');
+          setSelectedColor(colors[0] || '');
+        }
+
         // Fetch seller info nếu có customer_id (người bán)
         if (productData.customer_id) {
           const sellerResponse = await fetch(`${API_BASE_URL}/customers/${productData.customer_id}`);
@@ -235,7 +363,29 @@ export default function ProductDetail() {
     fetchProduct();
   }, [id]);
 
-  // Các function khác giữ nguyên (checkCustomerExists, renderSelector, handleRetry, updateQuantity, handleAddToCart)
+  // SỬA: Update selected variant khi thay đổi size/color
+  useEffect(() => {
+    if (product && product.variants && selectedSize && selectedColor) {
+      const matchingVariant = product.variants.find(v => v.size === selectedSize && v.color === selectedColor);
+      if (matchingVariant) {
+        setSelectedVariant(matchingVariant);
+        setCurrentPrice(matchingVariant.price);
+        setCurrentStock(matchingVariant.stock);
+      } else {
+        setSelectedVariant(null);
+        setCurrentPrice(0);
+        setCurrentStock(0);
+      }
+    }
+  }, [selectedSize, selectedColor, product]);
+
+  // SỬA: Callback cho image index change (dots indicator)
+  const onImageScroll = (event) => {
+    const index = Math.round(event.nativeEvent.contentOffset.x / width);
+    setCurrentImageIndex(index);
+  };
+
+  // Các function khác giữ nguyên (checkCustomerExists, renderSelector, handleRetry, updateQuantity, handleAddToCart, handleContactSeller)
   const checkCustomerExists = async () => {
     if (!customerId) {
       Alert.alert('Lỗi', 'Vui lòng đăng nhập để tiếp tục!');
@@ -305,12 +455,21 @@ export default function ProductDetail() {
 
   const updateQuantity = (newQty) => {
     if (newQty < 1) newQty = 1;
+    if (selectedVariant && newQty > selectedVariant.stock) {
+      Alert.alert('Cảnh báo', `Chỉ còn ${selectedVariant.stock} sản phẩm!`);
+      newQty = selectedVariant.stock;
+    }
     setQuantity(newQty);
   };
 
   const handleAddToCart = async () => {
     const customerExists = await checkCustomerExists();
     if (!customerExists) {
+      return;
+    }
+
+    if (!selectedVariant) {
+      Alert.alert('Lỗi', 'Vui lòng chọn kích cỡ và màu sắc!');
       return;
     }
 
@@ -331,6 +490,8 @@ export default function ProductDetail() {
           product_id: product.id,
           size: selectedSize,
           color: selectedColor,
+          // Thêm variant_id nếu backend cần
+          variant_id: selectedVariant.id,
         }),
       });
 
@@ -347,17 +508,7 @@ export default function ProductDetail() {
     }
   };
 
-    const handleContactSeller = async () => {
-    // console.log("buyer_id: ", customerId);
-    // console.log("seller_id: ", seller.id);
-    // console.log("Full request body: ", {
-    //   buyer_id: customerId,
-    //   seller_id: seller.id,
-    //   user_id: customerId,
-    //   title: `Chat với ${seller.first_name} về sản phẩm`,
-    // });
-    // console.log("API URL: ", `${API_BASE_URL}/chat`);
-
+  const handleContactSeller = async () => {
     if (!customerId) {
       Alert.alert('Lỗi', 'Vui lòng đăng nhập để liên hệ!');
       return;
@@ -375,21 +526,13 @@ export default function ProductDetail() {
         }),
       });
 
-      // Log chi tiết response
-      // console.log("Response status: ", response.status);
-      // console.log("Response ok: ", response.ok);
-
-      // Đọc response as TEXT trước để debug (không parse json ngay)
       const responseText = await response.text();
-      // console.log("Response body (text): ", responseText.substring(0, 500));  // Log 500 ký tự đầu để tránh dài
 
       if (!response.ok) {
         throw new Error(`Server error ${response.status}: ${responseText.substring(0, 200)}`);
       }
 
-      // Chỉ parse json nếu ok
       const convData = JSON.parse(responseText);
-      // console.log("Parsed convData: ", convData);
 
       navigation.navigate('(home)/components/ChatScreen', { 
         conversationId: convData.id, 
@@ -399,6 +542,17 @@ export default function ProductDetail() {
       // console.error('Error creating conversation:', err);
       Alert.alert('Lỗi', `Không thể tạo cuộc trò chuyện! Chi tiết: ${err.message}`);
     }
+  };
+
+  // SỬA: Format description sections từ \n\n
+  const formattedDescription = () => {
+    if (!product.description) return null;
+    return product.description.split('\n\n').map((sec, i) => (
+      <View key={i} style={detailStyles.descSection}>
+        <Text style={detailStyles.descTitle}>Phần {i + 1}</Text>
+        <Text style={detailStyles.descText}>{sec}</Text>
+      </View>
+    ));
   };
 
   if (loading) {
@@ -435,22 +589,61 @@ export default function ProductDetail() {
       </TouchableOpacity>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Image 
-          source={{ uri: product.image || 'https://via.placeholder.com/300' }} 
-          style={detailStyles.image} 
-        />
+        {/* SỬA: FlatList horizontal cho multiple images + dots */}
+        <View style={detailStyles.imagesContainer}>
+          <FlatList
+            data={product.images || []}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => (
+              <Image 
+                source={{ uri: item || 'https://via.placeholder.com/300' }} 
+                style={detailStyles.imageItem} 
+              />
+            )}
+            ListEmptyComponent={
+              <Image 
+                source={{ uri: 'https://via.placeholder.com/300' }} 
+                style={detailStyles.imageItem} 
+              />
+            }
+            onScroll={onImageScroll}
+            scrollEventThrottle={16}
+          />
+          {/* Dots indicator */}
+          <View style={detailStyles.dotsContainer}>
+            {(product.images || []).map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  detailStyles.dot,
+                  index === currentImageIndex && detailStyles.activeDot,
+                ]}
+              />
+            ))}
+          </View>
+        </View>
 
         <View style={detailStyles.content}>
           <Text style={detailStyles.name}>{product.name}</Text>
-          <Text style={detailStyles.price}>{(product.price || 0).toLocaleString()}₫</Text>
+          <View style={detailStyles.priceContainer}>
+            <Text style={detailStyles.price}>{(currentPrice || 0).toLocaleString()}₫</Text>
+            {selectedVariant && (
+              <View style={detailStyles.priceBadge}>
+                <Text style={detailStyles.priceBadgeText}>Đã chọn</Text>
+              </View>
+            )}
+          </View>
 
           {product.category_name && (
-            <Text style={{ fontSize: 14, color: 'gray', marginBottom: 16 }}>
+            <Text style={detailStyles.category}>
               Danh mục: {product.category_name}
             </Text>
           )}
 
-          {/* Section seller: Hiển thị first_name + last_name + avatar */}
+          {/* Section seller: Cải thiện */}
           {seller && (
             <View style={detailStyles.sellerContainer}>
               <Text style={detailStyles.sellerTitle}>Người bán</Text>
@@ -461,33 +654,39 @@ export default function ProductDetail() {
                     style={detailStyles.sellerAvatar} 
                   />
                 ) : (
-                  <View style={[detailStyles.sellerAvatar, { backgroundColor: '#E5C9C4' }]} />
+                  <View style={[detailStyles.sellerAvatar, { backgroundColor: '#E5C9C4', justifyContent: 'center', alignItems: 'center' }]}>
+                    <Icon name="person" size={24} color="#8D6E63" />
+                  </View>
                 )}
                 <View style={{ flex: 1 }}>
                   <Text style={detailStyles.sellerName}>
                     {`${(seller.first_name || '').trim()} ${(seller.last_name || '')}` || 'Người bán ẩn danh'}
                   </Text>
-                  {/* Nếu cần thêm email hoặc phone, uncomment bên dưới */}
-                  {/* <Text style={detailStyles.sellerEmail}>{seller.email || seller.phone_number || 'Không có thông tin liên hệ'}</Text> */}
                 </View>
               </View>
               <TouchableOpacity 
-            style={detailStyles.sellerContact}
-            onPress={handleContactSeller} >
-            <Text style={detailStyles.sellerContactText}>Liên hệ ngay</Text>
-          </TouchableOpacity>
+                style={detailStyles.sellerContact}
+                onPress={handleContactSeller}
+              >
+                <Text style={detailStyles.sellerContactText}>Liên hệ ngay</Text>
+              </TouchableOpacity>
             </View>
           )}
 
-          <View style={detailStyles.section}>
-            <Text style={detailStyles.sectionTitle}>Kích cỡ</Text>
-            {renderSelector(details.sizes, setSelectedSize, selectedSize)}
-          </View>
+          {/* SỬA: Sections cho size/color từ variants */}
+          {availableSizes.length > 0 && (
+            <View style={detailStyles.section}>
+              <Text style={detailStyles.sectionTitle}>Kích cỡ</Text>
+              {renderSelector(availableSizes, setSelectedSize, selectedSize)}
+            </View>
+          )}
 
-          <View style={detailStyles.section}>
-            <Text style={detailStyles.sectionTitle}>Màu sắc</Text>
-            {renderSelector(details.colors, setSelectedColor, selectedColor)}
-          </View>
+          {availableColors.length > 0 && (
+            <View style={detailStyles.section}>
+              <Text style={detailStyles.sectionTitle}>Màu sắc</Text>
+              {renderSelector(availableColors, setSelectedColor, selectedColor)}
+            </View>
+          )}
 
           <View style={detailStyles.section}>
             <Text style={detailStyles.sectionTitle}>Số lượng</Text>
@@ -510,23 +709,31 @@ export default function ProductDetail() {
 
           <View style={detailStyles.section}>
             <Text style={detailStyles.sectionTitle}>Mô tả</Text>
-            <Text style={detailStyles.description}>
-              {product.description}
-            </Text>
+            {formattedDescription()}
           </View>
 
-          {product.stock !== undefined && (
-            <Text style={{ fontSize: 12, color: 'green', marginBottom: 20 }}>
-              Còn lại: {product.stock} sản phẩm
+          {currentStock > 0 && (
+            <Text style={detailStyles.stockInfo}>
+              Còn lại: {currentStock} sản phẩm
             </Text>
           )}
 
-          <TouchableOpacity 
+          {/* SỬA: Gradient button */}
+          <LinearGradient
+            colors={['#FF8A65', '#FF7043']}
             style={detailStyles.addButton}
-            onPress={handleAddToCart}
           >
-            <Text style={detailStyles.addText}>Thêm vào giỏ hàng</Text>
-          </TouchableOpacity>
+            <TouchableOpacity 
+              style={detailStyles.addGradient}
+              onPress={handleAddToCart}
+              disabled={!selectedVariant || currentStock === 0}
+              activeOpacity={0.8}
+            >
+              <Text style={detailStyles.addText}>
+                {selectedVariant ? `Thêm vào giỏ hàng (${currentStock > 0 ? 'Có sẵn' : 'Hết hàng'})` : 'Chọn size & color'}
+              </Text>
+            </TouchableOpacity>
+          </LinearGradient>
         </View>
       </ScrollView>
     </SafeAreaView>

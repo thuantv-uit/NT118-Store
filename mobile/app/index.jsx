@@ -6,6 +6,6 @@ export default function Index() {
   const { isSignedIn } = useAuth()
 
   return isSignedIn 
-  ?  <Redirect href="/(shipper)"/>
+  ?  <Redirect href="/(home)"/>
     : <Redirect href="/(auth)/sign-in"/>
 }

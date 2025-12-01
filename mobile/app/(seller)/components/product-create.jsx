@@ -1,4 +1,4 @@
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 // use choose image
 import { useAuth } from "@clerk/clerk-expo";
@@ -9,6 +9,7 @@ import {
   Alert,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -22,44 +23,100 @@ import { API_URL } from "../../../constants/api";
 import SellerScreenLayout from "./SellerScreenLayout";
 
 const BASIC_FIELDS = [
+  { id: "SKU", label: "Mã SKU", placeholder: "Nhập mã kho", value: "" },
   { id: "name", label: "Tên sản phẩm", placeholder: "Ví dụ: Ly gốm Artisan A08", value: "" },
-  { id: "description", label: "Mô tả", placeholder: "Mô tả chi tiết sản phẩm", value: "" },
   { id: "category_id", label: "Danh mục (ID)", placeholder: "Nhập ID danh mục (số)", value: "", keyboardType: "numeric" },
-  { id: "price", label: "Giá bán", placeholder: "Nhập giá bán (đ)", value: "", keyboardType: "numeric" },
 ];
 
-const INVENTORY_FIELDS = [
-  { id: "SKU", label: "Mã SKU", placeholder: "Nhập mã kho", value: "" },
-  { id: "stock", label: "Tồn kho", placeholder: "Số lượng hiện có", value: "", keyboardType: "numeric" },
-  { id: "warehouse", label: "Kho xuất hàng", placeholder: "Kho chính - TP.HCM", value: "" },
+const DESCRIPTION_SECTIONS = [
+  { id: "features", label: "Tính năng nổi bật", placeholder: "Liệt kê các tính năng chính của sản phẩm...", value: "", multiline: true, lines: 3 },
+  { id: "origin", label: "Thông tin xuất xứ", placeholder: "Nguồn gốc, chất liệu, nhà sản xuất...", value: "", multiline: true, lines: 3 },
+  { id: "usage", label: "Hướng dẫn sử dụng", placeholder: "Cách sử dụng, bảo quản sản phẩm...", value: "", multiline: true, lines: 3 },
+  { id: "industry_info", label: "Thông tin đặc trưng của ngành hàng", placeholder: "Đặc điểm nổi bật của loại sản phẩm này...", value: "", multiline: true, lines: 3 },
 ];
+
+const VARIANT_FIELDS = [
+  { id: "size", label: "Kích thước", placeholder: "Ví dụ: M", value: "" },
+  { id: "color", label: "Màu sắc", placeholder: "Ví dụ: Đỏ", value: "" },
+  { id: "price", label: "Giá bán", placeholder: "Nhập giá (đ)", value: "", keyboardType: "numeric" },
+  { id: "stock", label: "Tồn kho", placeholder: "Số lượng hiện có", value: "", keyboardType: "numeric" },
+  { id: "weight", label: "Cân nặng (gram)", placeholder: "Ví dụ: 250", value: "", keyboardType: "numeric" },
+  { id: "dimensions", label: "Kích thước vận chuyển", placeholder: "Ví dụ: 10x20x30 cm", value: "" },
+];
+
+const SHIPPING_OPTIONS = ["GHTK", "GHN", "Viettel Post", "J&T Express"]; // Ví dụ methods
+
+const MAX_IMAGES = 5;
+const MAX_VARIANTS = 10; // Giới hạn để tránh UI lộn xộn
 
 export default function SellerProductCreate({ navigation }) {
   const [formData, setFormData] = useState(
-    [...BASIC_FIELDS, ...INVENTORY_FIELDS].reduce((acc, field) => {
-      acc[field.id] = field.value;
-      return acc;
-    }, {})
+    { ...BASIC_FIELDS.reduce((acc, field) => { acc[field.id] = field.value; return acc; }, {}),
+      ...DESCRIPTION_SECTIONS.reduce((acc, field) => { acc[field.id] = field.value; return acc; }, {}) }
   );
+  const [shippingData, setShippingData] = useState({
+    method: SHIPPING_OPTIONS[0],
+    processing_time: "1-2",
+    shipping_fee: "",
+  });
+  const [variants, setVariants] = useState([{ id: Date.now(), ...Object.fromEntries(VARIANT_FIELDS.map(f => [f.id, ""])) }]); // Mặc định 1 variant rỗng
+  const [images, setImages] = useState([]); // Array URIs cho preview
   const [loading, setLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
 
   // THÊM: Lấy userId từ Clerk
   const { userId, isLoaded } = useAuth();
 
+  // SỬA: handleInputChange - Chỉ convert number cho numeric fields, string cho text
   const handleInputChange = (id, value) => {
-    setFormData((prev) => {
+    const isNumeric = ["price", "stock", "weight", "category_id"].includes(id);
+    let processedValue = value;
+    if (isNumeric) {
       let numericValue = Number(value);
       if (numericValue > 2147483646) {
         numericValue = 2147483646;
       }
-      return { ...prev, [id]: numericValue.toString() };
-    })
+      processedValue = numericValue.toString();
+    }
+    // Cho description sections và text khác, giữ nguyên string
+    setFormData((prev) => ({ ...prev, [id]: processedValue }));
   };
 
-  // Add: Function choose and handle image from gallery/camera
-  const pickImage = async () => {
-    // Require access (if need platform)
+  // THÊM: Update field trong variant cụ thể (tương tự, handle numeric)
+  const handleVariantChange = (variantId, fieldId, value) => {
+    setVariants((prev) =>
+      prev.map((v) =>
+        v.id === variantId
+          ? { ...v, [fieldId]: ["price", "stock", "weight"].includes(fieldId) ? Number(value).toString() : value }
+          : v
+      )
+    );
+  };
+
+  // THÊM: Update shipping
+  const handleShippingChange = (fieldId, value) => {
+    setShippingData((prev) => ({ ...prev, [fieldId]: value }));
+  };
+
+  // THÊM: Thêm variant mới
+  const addVariant = () => {
+    if (variants.length >= MAX_VARIANTS) {
+      Alert.alert("Lỗi", `Tối đa ${MAX_VARIANTS} biến thể!`);
+      return;
+    }
+    setVariants((prev) => [...prev, { id: Date.now(), ...Object.fromEntries(VARIANT_FIELDS.map(f => [f.id, ""])) }]);
+  };
+
+  // THÊM: Xóa variant
+  const removeVariant = (variantId) => {
+    if (variants.length <= 1) {
+      Alert.alert("Lỗi", "Phải có ít nhất 1 biến thể!");
+      return;
+    }
+    setVariants((prev) => prev.filter((v) => v.id !== variantId));
+  };
+
+  // THÊM: Chọn multiple images
+  const pickImages = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert("Lỗi", "Cần quyền truy cập thư viện ảnh để chọn ảnh!");
@@ -68,81 +125,146 @@ export default function SellerProductCreate({ navigation }) {
 
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
       allowsEditing: true,
-      aspect: [1, 1], // Square aspect ratio for product images
-      quality: 0.8, // Image quality to reduce size
+      aspect: [1, 1],
+      quality: 0.8,
     });
 
-    if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri); // Save URI to preview
-      Alert.alert("Thành công", "Đã chọn ảnh! Sẽ được upload khi đăng sản phẩm.");
+    if (!result.canceled && result.assets.length > 0) {
+      const newImages = result.assets.map(asset => asset.uri);
+      const total = images.length + newImages.length;
+      if (total > MAX_IMAGES) {
+        Alert.alert("Lỗi", `Tối đa ${MAX_IMAGES} ảnh! Đã chọn ${total} ảnh.`);
+        return;
+      }
+      setImages((prev) => [...prev, ...newImages]);
+      Alert.alert("Thành công", `Đã chọn ${newImages.length} ảnh!`);
     }
   };
 
+  // THÊM: Xóa image cụ thể
+  const removeImage = (index) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const validateForm = () => {
-    // THÊM: Check userId từ Clerk (phải đăng nhập)
+    // THÊM: Check userId từ Clerk
     if (!isLoaded || !userId) {
       Alert.alert("Lỗi", "Bạn cần đăng nhập để tạo sản phẩm!");
       return false;
     }
 
-    const required = ["SKU", "name", "description", "price", "category_id", "stock"];
-    for (let field of required) {
+    const requiredBasic = ["SKU", "name", "category_id"];
+    for (let field of requiredBasic) {
       if (!formData[field] || formData[field].trim() === "") {
         Alert.alert("Lỗi", `${BASIC_FIELDS.find(f => f.id === field)?.label || field} là bắt buộc!`);
         return false;
       }
     }
 
-    if (parseFloat(formData.price) <= 0 || parseInt(formData.stock) < 0 || parseInt(formData.category_id) <= 0) {
-      Alert.alert("Lỗi", "Giá phải > 0, tồn kho >= 0, category_id > 0!");
+    if (parseInt(formData.category_id) <= 0) {
+      Alert.alert("Lỗi", "category_id phải > 0!");
       return false;
     }
+
+    // THÊM: Validate description sections (ít nhất 1 không rỗng, nhưng optional)
+    const hasDescription = DESCRIPTION_SECTIONS.some(sec => formData[sec.id].trim() !== "");
+    if (!hasDescription) {
+      Alert.alert("Cảnh báo", "Nên thêm mô tả để sản phẩm hấp dẫn hơn!");
+      // Không return false, chỉ warn
+    }
+
+    // THÊM: Validate variants (ít nhất 1, size/color required, price>0, stock>=0, weight>=0)
+    if (variants.length === 0) {
+      Alert.alert("Lỗi", "Phải có ít nhất 1 biến thể sản phẩm!");
+      return false;
+    }
+    for (let i = 0; i < variants.length; i++) {
+      const v = variants[i];
+      if (!v.size || !v.color) {
+        Alert.alert("Lỗi", `Biến thể ${i + 1}: Kích thước và màu sắc là bắt buộc!`);
+        return false;
+      }
+      if (parseFloat(v.price) <= 0 || parseInt(v.stock) < 0 || parseFloat(v.weight) < 0) {
+        Alert.alert("Lỗi", `Biến thể ${i + 1}: Giá > 0, tồn kho >= 0, cân nặng >= 0!`);
+        return false;
+      }
+      if (!v.dimensions || v.dimensions.trim() === "") {
+        Alert.alert("Lỗi", `Biến thể ${i + 1}: Kích thước vận chuyển là bắt buộc!`);
+        return false;
+      }
+    }
+
+    // Check unique size+color (case-insensitive)
+    const uniqueKeys = variants.map(v => `${v.size.toLowerCase()}-${v.color.toLowerCase()}`);
+    const duplicates = uniqueKeys.filter((k, idx) => uniqueKeys.indexOf(k) !== idx);
+    if (duplicates.length > 0) {
+      Alert.alert("Lỗi", `Biến thể trùng lặp: ${duplicates.join(', ')} (size-color)!`);
+      return false;
+    }
+
+    // THÊM: Validate shipping (optional, nhưng fee numeric nếu có)
+    if (shippingData.shipping_fee && (isNaN(parseFloat(shippingData.shipping_fee)) || parseFloat(shippingData.shipping_fee) < 0)) {
+      Alert.alert("Lỗi", "Phí vận chuyển phải là số >= 0!");
+      return false;
+    }
+
     return true;
   };
 
-  // SỬA: Function create product with FormData to support upload file image + customer_id
+  // CẬP NHẬT: Create product với merged description, shipping JSON, variants (JSON), multiple images
   const handleCreateProduct = async () => {
     if (!validateForm()) return;
     const baseURL = API_URL;
 
     setLoading(true);
     try {
-      let stock_int = parseInt(formData.stock)
-      if (stock_int > Number.MAX_SAFE_INTEGER) {
-        stock_int = 2147483646;
-      }
-      // Create FormData for multipart/form-data
+      // Merge description sections
+      const description = DESCRIPTION_SECTIONS.map(sec => formData[sec.id].trim()).filter(Boolean).join("\n\n");
+
+      // Parse variants với numeric conversion
+      const parsedVariants = variants.map(v => ({
+        size: v.size,
+        color: v.color,
+        price: parseFloat(v.price),
+        stock: parseInt(v.stock),
+        weight: parseFloat(v.weight),
+        dimensions: v.dimensions,
+      }));
+
+      // Shipping as JSON (backend có thể xử lý sau)
+      const shipping = {
+        method: shippingData.method,
+        processing_time: shippingData.processing_time,
+        shipping_fee: parseFloat(shippingData.shipping_fee) || 0,
+      };
+
+      // Create FormData
       const formPayload = new FormData();
       formPayload.append("SKU", formData.SKU);
       formPayload.append("name", formData.name);
-      formPayload.append("description", formData.description);
-      formPayload.append("price", parseFloat(formData.price));
+      formPayload.append("description", description);
       formPayload.append("category_id", parseInt(formData.category_id));
-      console.log("stock int la: ", stock_int);
-      formPayload.append("stock", stock_int);
-
-      // THÊM: Append customer_id từ Clerk userId
       formPayload.append("customer_id", userId);
+      formPayload.append("variants", JSON.stringify(parsedVariants)); // JSON string cho variants
+      formPayload.append("shipping", JSON.stringify(shipping)); // JSON cho shipping
 
-      // Add: If any image, append file into FormData
-      if (selectedImage) {
-        const imageUri = selectedImage;
-        const fileName = imageUri.split('/').pop(); // Name file from URI
-        const fileType = fileName.includes('.png') ? 'image/png' : 'image/jpeg';
-
-        formPayload.append("image", { // Field name matches backend (req.file)
+      // Append multiple images
+      images.forEach((imageUri, index) => {
+        const fileName = `product_${Date.now()}_${index}.jpg`; // Generic name
+        formPayload.append("images", { // Field name: 'images' (array)
           uri: imageUri,
-          type: fileType,
+          type: 'image/jpeg',
           name: fileName,
-        }); // Type assertion because FormData append need object specifically
-      }
+        });
+      });
 
       const response = await fetch(`${baseURL}/product`, {
         method: "POST",
-        body: formPayload, // using FormData instead of JSON
+        body: formPayload,
         headers: {
-          "Content-Type": "multipart/form-data", // Headers for multipart
+          "Content-Type": "multipart/form-data",
         },
       });
 
@@ -152,17 +274,12 @@ export default function SellerProductCreate({ navigation }) {
         Alert.alert("Thành công", "Sản phẩm đã được tạo!", [
           { text: "OK", onPress: () => {
             navigation?.navigate("ProductList");
-            // Clear form and image after success
-            setFormData({
-              SKU: "",
-              name: "",
-              description: "",
-              price: "",
-              category_id: "",
-              stock: "",
-              warehouse: formData.warehouse,
-            });
-            setSelectedImage(null);
+            // Clear form
+            setFormData({ ...BASIC_FIELDS.reduce((acc, field) => { acc[field.id] = ""; return acc; }, {}),
+                          ...DESCRIPTION_SECTIONS.reduce((acc, field) => { acc[field.id] = ""; return acc; }, {}) });
+            setShippingData({ method: SHIPPING_OPTIONS[0], processing_time: "1-2", shipping_fee: "" });
+            setVariants([{ id: Date.now(), ...Object.fromEntries(VARIANT_FIELDS.map(f => [f.id, ""])) }]);
+            setImages([]);
           }},
         ]);
       } else {
@@ -177,11 +294,13 @@ export default function SellerProductCreate({ navigation }) {
   };
 
   const handleSaveDraft = () => {
-    console.log("Lưu nháp:", formData, "Image URI:", selectedImage);
+    // Merge description for log
+    const description = DESCRIPTION_SECTIONS.map(sec => formData[sec.id].trim()).filter(Boolean).join("\n\n");
+    console.log("Lưu nháp:", { formData: { ...formData, description }, shippingData, variants, images: images.length });
     Alert.alert("Nháp", "Đã lưu nháp!");
   };
 
-  // THÊM: Loading state cho Clerk (nếu chưa load xong)
+  // THÊM: Loading state cho Clerk
   if (!isLoaded) {
     return (
       <SellerScreenLayout title="Tạo sản phẩm mới" subtitle="Đang tải...">
@@ -192,130 +311,196 @@ export default function SellerProductCreate({ navigation }) {
 
   return (
     <SellerScreenLayout title="Tạo sản phẩm mới" subtitle="Hoàn tất thông tin để lên kệ">
-      {/* Add: Session preview image after choose */}
-      {selectedImage && (
-        <View style={styles.imagePreview}>
-          <Image source={{ uri: selectedImage }} style={styles.previewImage} />
-          <Pressable style={styles.removeImageButton} onPress={() => setSelectedImage(null)}>
-            <Ionicons name="close-circle" size={20} color="#FF0000" />
-          </Pressable>
-        </View>
-      )}
-
-      {/* Upload card with onPress to pickImage */}
-      <LinearGradient
-        colors={["#FFE5EA", "#FAD4D6"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.uploadCard}
-      >
-        <View style={styles.uploadIcon}>
-          <Ionicons name="cloud-upload-outline" size={hp("3%")} color="#BE123C" />
-        </View>
-        <View style={styles.uploadTexts}>
-          <Text style={styles.uploadTitle}>Thêm hình ảnh sản phẩm</Text>
-          <Text style={styles.uploadSubtitle}>Ảnh sắc nét giúp tăng tỷ lệ chuyển đổi.</Text>
-        </View>
-        <Pressable
-          style={({ pressed }) => [
-            styles.uploadButton,
-            pressed && styles.uploadButtonPressed,
-          ]}
-          onPress={pickImage} // Add: call pickImage when press
-          disabled={loading} // Disable when loading
-        >
-          <Text style={styles.uploadButtonText}>Tải lên</Text>
-        </Pressable>
-      </LinearGradient>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Thông tin cơ bản</Text>
-        {BASIC_FIELDS.map((item) => (
-          <View key={item.id} style={styles.inputShell}>
-            <Text style={styles.inputLabel}>{item.label}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={item.placeholder}
-              value={formData[item.id]}
-              onChangeText={(value) => handleInputChange(item.id, value)}
-              keyboardType={item.keyboardType}
-              multiline={item.id === "description"}
-              numberOfLines={item.id === "description" ? 3 : 1}
-            />
+      <ScrollView style={styles.scrollContainer}>
+        {/* THÊM: Preview multiple images */}
+        {images.length > 0 && (
+          <View style={styles.imagesPreview}>
+            <Text style={styles.sectionTitle}>Ảnh đã chọn ({images.length}/{MAX_IMAGES})</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {images.map((uri, index) => (
+                <View key={index} style={styles.imageItem}>
+                  <Image source={{ uri }} style={styles.previewImage} />
+                  <Pressable style={styles.removeImageButton} onPress={() => removeImage(index)}>
+                    <Ionicons name="close-circle" size={20} color="#FF0000" />
+                  </Pressable>
+                </View>
+              ))}
+            </ScrollView>
           </View>
-        ))}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Kho & giá</Text>
-        {INVENTORY_FIELDS.map((item) => (
-          <View key={item.id} style={styles.inputShell}>
-            <Text style={styles.inputLabel}>{item.label}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={item.placeholder}
-              value={formData[item.id]}
-              onChangeText={(value) => handleInputChange(item.id, value)}
-              keyboardType={item.keyboardType}
-            />
-          </View>
-        ))}
-      </View>
-
-      <LinearGradient
-        colors={["#FFEAF1", "#FDE2E4"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.shippingCard}
-      >
-        <MaterialCommunityIcons name="truck-delivery-outline" size={hp("3%")} color="#BE123C" />
-        <View style={styles.shippingTexts}>
-          <Text style={styles.shippingTitle}>Thiết lập vận chuyển</Text>
-          <Text style={styles.shippingSubtitle}>
-            Chọn đơn vị vận chuyển, thời gian xử lý và phí áp dụng.
-          </Text>
-        </View>
-      </LinearGradient>
-
-      <Pressable
-        style={({ pressed }) => [
-          styles.publishButton,
-          pressed && styles.publishButtonPressed,
-        ]}
-        onPress={handleCreateProduct}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#FFF" />
-        ) : (
-          <Text style={styles.publishButtonText}>Đăng sản phẩm</Text>
         )}
-      </Pressable>
-      <Pressable
-        style={({ pressed }) => [
-          styles.draftButton,
-          pressed && styles.draftButtonPressed,
-        ]}
-        onPress={handleSaveDraft}
-        disabled={loading}
-      >
-        <Text style={styles.draftButtonText}>Lưu nháp</Text>
-      </Pressable>
+
+        {/* Upload card for multiple images */}
+        <LinearGradient
+          colors={["#FFE5EA", "#FAD4D6"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.uploadCard}
+        >
+          <View style={styles.uploadIcon}>
+            <Ionicons name="cloud-upload-outline" size={hp("3%")} color="#BE123C" />
+          </View>
+          <View style={styles.uploadTexts}>
+            <Text style={styles.uploadTitle}>Thêm hình ảnh sản phẩm (tối đa {MAX_IMAGES})</Text>
+            <Text style={styles.uploadSubtitle}>Chọn nhiều ảnh để hiển thị chi tiết.</Text>
+          </View>
+          <Pressable
+            style={({ pressed }) => [styles.uploadButton, pressed && styles.uploadButtonPressed]}
+            onPress={pickImages}
+            disabled={loading || images.length >= MAX_IMAGES}
+          >
+            <Text style={styles.uploadButtonText}>Tải lên</Text>
+          </Pressable>
+        </LinearGradient>
+
+        {/* THÊM: Section Variants */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Biến thể sản phẩm</Text>
+            <Pressable style={styles.addVariantButton} onPress={addVariant} disabled={variants.length >= MAX_VARIANTS}>
+              <Ionicons name="add-circle" size={24} color="#BE123C" />
+              <Text style={styles.addVariantText}>Thêm</Text>
+            </Pressable>
+          </View>
+          {variants.map((variant, index) => (
+            <View key={variant.id} style={styles.variantContainer}>
+              <View style={styles.variantHeader}>
+                <Text style={styles.variantTitle}>Biến thể {index + 1}</Text>
+                {variants.length > 1 && (
+                  <Pressable onPress={() => removeVariant(variant.id)} style={styles.removeVariantButton}>
+                    <Ionicons name="trash-outline" size={20} color="#FF0000" />
+                  </Pressable>
+                )}
+              </View>
+              {VARIANT_FIELDS.map((item) => (
+                <View key={item.id} style={styles.inputShell}>
+                  <Text style={styles.inputLabel}>{item.label}</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={item.placeholder}
+                    value={variant[item.id]}
+                    onChangeText={(value) => handleVariantChange(variant.id, item.id, value)}
+                    keyboardType={item.keyboardType}
+                    multiline={item.id === "dimensions"}
+                    numberOfLines={item.id === "dimensions" ? 2 : 1}
+                  />
+                </View>
+              ))}
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Thông tin cơ bản</Text>
+          {BASIC_FIELDS.map((item) => (
+            <View key={item.id} style={styles.inputShell}>
+              <Text style={styles.inputLabel}>{item.label}</Text>
+              <TextInput
+                style={styles.input}
+                placeholder={item.placeholder}
+                value={formData[item.id]}
+                onChangeText={(value) => handleInputChange(item.id, value)}
+                keyboardType={item.keyboardType}
+              />
+            </View>
+          ))}
+        </View>
+
+        {/* THÊM: Section Mô tả chi tiết (4 phần, multiline lớn hơn) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Mô tả sản phẩm</Text>
+          {DESCRIPTION_SECTIONS.map((item) => (
+            <View key={item.id} style={styles.inputShell}>
+              <Text style={styles.inputLabel}>{item.label}</Text>
+              <TextInput
+                style={[styles.input, styles.multilineInput]}
+                placeholder={item.placeholder}
+                value={formData[item.id]}
+                onChangeText={(value) => handleInputChange(item.id, value)} // Giữ string
+                multiline={item.multiline}
+                numberOfLines={item.lines}
+                textAlignVertical="top"
+              />
+            </View>
+          ))}
+        </View>
+
+        {/* THÊM: Section Thiết lập vận chuyển */}
+        {/* <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Thiết lập vận chuyển</Text>
+          <View style={styles.inputShell}>
+            <Text style={styles.inputLabel}>Đơn vị vận chuyển</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={shippingData.method}
+                onValueChange={(value) => handleShippingChange("method", value)}
+                style={styles.picker}
+              >
+                {SHIPPING_OPTIONS.map(option => (
+                  <Picker.Item key={option} label={option} value={option} />
+                ))}
+              </Picker>
+            </View>
+          </View>
+          <View style={styles.inputShell}>
+            <Text style={styles.inputLabel}>Thời gian xử lý (ngày)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ví dụ: 1-2"
+              value={shippingData.processing_time}
+              onChangeText={(value) => handleShippingChange("processing_time", value)}
+            />
+          </View>
+          <View style={styles.inputShell}>
+            <Text style={styles.inputLabel}>Phí vận chuyển cơ bản (đ)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ví dụ: 30000"
+              value={shippingData.shipping_fee}
+              onChangeText={(value) => handleShippingChange("shipping_fee", value)}
+              keyboardType="numeric"
+            />
+          </View>
+        </View> */}
+
+        <Pressable
+          style={({ pressed }) => [styles.publishButton, pressed && styles.publishButtonPressed]}
+          onPress={handleCreateProduct}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.publishButtonText}>Đăng sản phẩm</Text>
+          )}
+        </Pressable>
+        <Pressable
+          style={({ pressed }) => [styles.draftButton, pressed && styles.draftButtonPressed]}
+          onPress={handleSaveDraft}
+          disabled={loading}
+        >
+          <Text style={styles.draftButtonText}>Lưu nháp</Text>
+        </Pressable>
+      </ScrollView>
     </SellerScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  // THÊM: Styles cho preview ảnh
-  imagePreview: {
-    width: wp("90%"),
-    height: hp("25%"),
-    alignSelf: "center",
+  scrollContainer: {
+    flex: 1,
+    paddingBottom: hp("10%"),
+  },
+  // THÊM: Styles cho multiple images preview
+  imagesPreview: {
     marginBottom: hp("2%"),
+  },
+  imageItem: {
+    width: wp("25%"),
+    height: wp("25%"),
+    marginRight: wp("2%"),
     position: "relative",
-    borderRadius: 16,
+    borderRadius: 8,
     overflow: "hidden",
-    backgroundColor: "#F0F0F0",
   },
   previewImage: {
     width: "100%",
@@ -324,11 +509,69 @@ const styles = StyleSheet.create({
   },
   removeImageButton: {
     position: "absolute",
-    top: 5,
-    right: 5,
+    top: 2,
+    right: 2,
     backgroundColor: "rgba(255,255,255,0.8)",
-    borderRadius: 20,
+    borderRadius: 10,
     padding: 2,
+  },
+  // THÊM: Styles cho variants section
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: hp("1.5%"),
+  },
+  addVariantButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(190, 18, 60, 0.1)",
+    paddingHorizontal: wp("3%"),
+    paddingVertical: hp("0.5%"),
+    borderRadius: 20,
+  },
+  addVariantText: {
+    marginLeft: wp("1%"),
+    color: "#BE123C",
+    fontWeight: "600",
+    fontSize: hp("1.6%"),
+  },
+  variantContainer: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: 16,
+    padding: wp("4%"),
+    marginBottom: hp("2%"),
+    borderWidth: 1,
+    borderColor: "rgba(190, 18, 60, 0.1)",
+  },
+  variantHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: hp("1%"),
+  },
+  variantTitle: {
+    fontSize: hp("2%"),
+    fontWeight: "700",
+    color: "#BE123C",
+  },
+  removeVariantButton: {
+    padding: 5,
+  },
+  // THÊM: Styles cho multiline description (lớn hơn)
+  multilineInput: {
+    minHeight: hp("8%"), // Lớn hơn để dễ nhập
+    maxHeight: hp("15%"),
+  },
+  // THÊM: Styles cho shipping picker
+  pickerContainer: {
+    backgroundColor: "#FFF",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(204,120,97,0.2)",
+  },
+  picker: {
+    height: hp("6%"),
   },
 
   uploadCard: {
@@ -389,21 +632,6 @@ const styles = StyleSheet.create({
     fontSize: hp("1.8%"),
     color: "#000",
     padding: 0,
-  },
-  shippingCard: {
-    borderRadius: 20,
-    paddingVertical: hp("1.8%"),
-    paddingHorizontal: wp("4%"),
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: hp("2.6%"),
-  },
-  shippingTexts: { marginLeft: wp("3%"), flex: 1 },
-  shippingTitle: { fontSize: hp("2%"), fontWeight: "700", color: "#7F1D1D" },
-  shippingSubtitle: {
-    fontSize: hp("1.7%"),
-    color: "#4B5563",
-    marginTop: hp("0.2%"),
   },
   publishButton: {
     backgroundColor: "#CC7861",
