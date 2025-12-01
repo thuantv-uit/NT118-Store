@@ -1,4 +1,3 @@
-// shipper/index.js - Shipper screen với check role và load orders
 import { useUser } from '@clerk/clerk-expo';
 import { useNavigation } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
@@ -13,8 +12,10 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { API_URL } from '../../constants/api';
+import OrderDetailModal from './components/OrderDetailModal';
 import OrderItem from './components/OrderItem';
 import UpdateLocationModal from './components/UpdateLocationModal';
+import UpdateStatusModal from './components/UpdateStatusModal';
 import { shipperStyles } from './styles/shipperStyles';
 
 const API_BASE_URL = API_URL;
@@ -26,7 +27,7 @@ const fetchShipperOrders = async (shipperId) => {
       throw new Error(`Failed to fetch shipper orders: ${response.status}`);
     }
     const data = await response.json();
-    return Array.isArray(data) ? data : [data];
+    return Array.isArray(data) ? data.filter(Boolean) : [data].filter(Boolean);
   } catch (error) {
     console.error('Error fetching shipper orders:', error);
     throw error;
@@ -47,17 +48,105 @@ const fetchUserRole = async (userId) => {
   }
 };
 
+const fetchBuyerInfo = async (buyerId) => {
+  if (!buyerId) return null;
+  try {
+    const response = await fetch(`${API_BASE_URL}/customers/${buyerId}`);
+    if (!response.ok) {
+      console.warn(`Failed to fetch buyer ${buyerId}: ${response.status}`);
+      return null;
+    }
+    const data = await response.json();
+    const buyerInfo = {
+      firstname: data.first_name || data.firstname || undefined,
+      lastname: data.last_name || data.lastname || undefined,
+      phone: data.phone_number || data.phone || undefined,
+      email: data.email || undefined,
+      avatar: data.avatar || data.avatar_url || undefined,
+    };
+    return buyerInfo;
+  } catch (error) {
+    console.error('Error fetching buyer info:', error);
+    return null;
+  }
+};
+
+const fetchProductInfo = async (productId) => {
+  if (!productId) return null;
+  try {
+    const response = await fetch(`${API_BASE_URL}/product/${productId}`);
+    if (!response.ok) {
+      console.warn(`Failed to fetch product ${productId}: ${response.status}`);
+      return null;
+    }
+    const data = await response.json();
+    const productInfo = {
+      name: data.name || data.product_name || undefined,
+      image: data.image || data.image_url || undefined,
+      price: data.price || undefined,
+    };
+    return productInfo;
+  } catch (error) {
+    console.error('Error fetching product info:', error);
+    return null;
+  }
+};
+
+const fetchOrderInfo = async (orderId) => {
+  if (!orderId) return null;
+  try {
+    const response = await fetch(`${API_BASE_URL}/order/${orderId}`);
+    if (!response.ok) {
+      console.warn(`Failed to fetch order ${orderId}: ${response.status}`);
+      return null;
+    }
+    const data = await response.json();
+    const orderInfo = {
+      shipment_id: data.shipment_id || undefined,
+    };
+    return orderInfo;
+  } catch (error) {
+    console.error('Error fetching order info:', error);
+    return null;
+  }
+};
+
+const fetchShipmentInfo = async (shipmentId) => {
+  if (!shipmentId) return null;
+  try {
+    const response = await fetch(`${API_BASE_URL}/shipment/${shipmentId}`);
+    if (!response.ok) {
+      console.warn(`Failed to fetch shipment ${shipmentId}: ${response.status}`);
+      return null;
+    }
+    const data = await response.json();
+    const shipmentInfo = {
+      address: data.address || undefined,
+      city: data.city || undefined,
+      state: data.state || undefined,
+      country: data.country || undefined,
+    };
+    return shipmentInfo;
+  } catch (error) {
+    console.error('Error fetching shipment info:', error);
+    return null;
+  }
+};
+
 export default function ShipperScreen() {
   const navigation = useNavigation();
   const { user, isLoaded } = useUser();
   const shipperId = user?.id;
 
   const [orders, setOrders] = useState([]);
+  const [enrichedOrders, setEnrichedOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
     if (!isLoaded) {
@@ -107,22 +196,67 @@ export default function ShipperScreen() {
       setLoading(true);
       setError(null);
       const shipperOrders = await fetchShipperOrders(shipperId);
-      setOrders(shipperOrders);
+      
+      // Enrich orders with buyerInfo, productInfo, orderInfo, và shipmentInfo nếu có shipment_id
+      const enriched = await Promise.all(
+        shipperOrders.map(async (order) => {
+          if (!order) return null;
+          const [buyerInfo, productInfo, orderInfo] = await Promise.all([
+            fetchBuyerInfo(order.buyer_id),
+            fetchProductInfo(order.product_id),
+            fetchOrderInfo(order.order_id)
+          ]);
+          let shipmentInfo = null;
+          if (orderInfo?.shipment_id) {
+            shipmentInfo = await fetchShipmentInfo(orderInfo.shipment_id);
+          }
+          return { ...order, buyerInfo, productInfo, orderInfo, shipmentInfo };
+        })
+      );
+      const validEnriched = enriched.filter(Boolean);
+      setOrders(shipperOrders.filter(Boolean));
+      setEnrichedOrders(validEnriched);
     } catch (err) {
       setError(err.message);
+      console.error('Error loading orders:', err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleUpdateLocation = (order) => {
-    if (userRole !== 'shipper') return;
+    if (userRole !== 'shipper' || !order) {
+      console.warn('handleUpdateLocation: Invalid order or role');
+      return;
+    }
     if (!order.id) {
       console.error("ERROR: orderStatusId is undefined! Check API response structure.");
       return;
     }
     setSelectedOrder(order);
-    setShowModal(true);
+    setShowLocationModal(true);
+  };
+
+  const handleUpdateStatus = (order) => {
+    if (userRole !== 'shipper' || !order) {
+      console.warn('handleUpdateStatus: Invalid order or role');
+      return;
+    }
+    if (!order.id) {
+      console.error("ERROR: orderStatusId is undefined!");
+      return;
+    }
+    setSelectedOrder(order);
+    setShowStatusModal(true);
+  };
+
+  const handlePressDetail = (order) => {
+    if (!order) {
+      console.warn('handlePressDetail: Invalid order');
+      return;
+    }
+    setSelectedOrder(order);
+    setShowDetailModal(true);
   };
 
   const handleRefresh = () => {
@@ -182,19 +316,22 @@ export default function ShipperScreen() {
         </View>
 
         <FlatList
-          data={orders}
+          data={enrichedOrders}
           renderItem={({ item }) => (
             <OrderItem
               order={item}
-              onUpdateLocation={() => handleUpdateLocation(item)}
+              onPressDetail={handlePressDetail}
+              onUpdateLocation={handleUpdateLocation}
+              onUpdateStatus={handleUpdateStatus}
+              buyerInfo={item?.buyerInfo}
             />
           )}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item?.id?.toString() || Math.random().toString()}
           style={shipperStyles.list}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
             <View style={shipperStyles.headerSection}>
-              <Text style={shipperStyles.headerSectionText}>Danh sách đơn hàng ({orders.length})</Text>
+              <Text style={shipperStyles.headerSectionText}>Danh sách đơn hàng ({enrichedOrders.length})</Text>
             </View>
           }
           ListEmptyComponent={
@@ -211,13 +348,37 @@ export default function ShipperScreen() {
         </TouchableOpacity>
 
         <UpdateLocationModal
-          visible={showModal}
+          visible={showLocationModal}
           orderStatusId={selectedOrder?.id}
           shipperId={shipperId}
           onClose={() => {
-            setShowModal(false);
+            setShowLocationModal(false);
             setSelectedOrder(null);
             handleRefresh();
+          }}
+        />
+
+        <UpdateStatusModal
+          visible={showStatusModal}
+          order={selectedOrder}
+          shipperId={shipperId}
+          onClose={() => {
+            setShowStatusModal(false);
+            setSelectedOrder(null);
+            handleRefresh();
+          }}
+        />
+
+        <OrderDetailModal
+          visible={showDetailModal}
+          order={selectedOrder}
+          buyerInfo={selectedOrder?.buyerInfo}
+          productInfo={selectedOrder?.productInfo}
+          orderInfo={selectedOrder?.orderInfo}
+          shipmentInfo={selectedOrder?.shipmentInfo}
+          onClose={() => {
+            setShowDetailModal(false);
+            setSelectedOrder(null);
           }}
         />
       </View>

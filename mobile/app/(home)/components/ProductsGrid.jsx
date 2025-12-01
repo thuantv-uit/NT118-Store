@@ -28,11 +28,14 @@ export default function ProductsGrid() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      // Fallback nếu data có vấn đề text
+      // Fallback nếu data có vấn đề
       setProducts((data || []).map(p => ({
         ...p,
         name: p.name || 'Sản phẩm không tên',
         category_name: p.category_name || '',
+        // SỬA: Giá thấp nhất từ variants, hình ảnh đầu tiên từ images
+        minPrice: p.variants && p.variants.length > 0 ? Math.min(...p.variants.map(v => v.price)) : 0,
+        firstImage: p.images && p.images.length > 0 ? p.images[0] : 'https://via.placeholder.com/150'
       })));
     } catch (err) {
       setError(err.message);
@@ -56,7 +59,7 @@ export default function ProductsGrid() {
       onPress={() => navigation.navigate('(home)/components/ProductDetail', { id: item.id })}
     >
       <Image 
-        source={{ uri: item.image || 'https://via.placeholder.com/150' }} 
+        source={{ uri: item.firstImage }} 
         style={styles.productImage}
       />
       <View style={styles.productMeta}>
@@ -69,7 +72,7 @@ export default function ProductsGrid() {
           </Text>
         )}
         <Text style={styles.productPrice}>
-          {(item.price || 0).toLocaleString()}₫
+          {(item.minPrice || 0).toLocaleString()}₫
         </Text>
       </View>
     </TouchableOpacity>

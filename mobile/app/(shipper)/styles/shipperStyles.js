@@ -1,4 +1,3 @@
-// shipper/styles/shipperStyles.js - Styles cho shipper UI
 import { StyleSheet } from 'react-native';
 
 export const shipperStyles = StyleSheet.create({
@@ -78,6 +77,8 @@ export const shipperStyles = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
     backgroundColor: '#4A90E2',
+    margin: 8,
+    borderRadius: 8,
   },
   refreshButtonText: {
     marginLeft: 8,
@@ -89,21 +90,37 @@ export const shipperStyles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFF',
     padding: 16,
+    marginHorizontal: 8,
     marginBottom: 8,
-    borderRadius: 8,
-    elevation: 2,
+    borderRadius: 12,
+    elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowRadius: 4,
   },
-  statusIcon: {
+  orderAvatarContainer: {
+    marginRight: 12,
+  },
+  buyerAvatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+  },
+  statusIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  orderHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   orderInfo: {
     flex: 1,
@@ -111,30 +128,42 @@ export const shipperStyles = StyleSheet.create({
   orderStatus: {
     fontSize: 16,
     fontWeight: 'bold',
+    marginLeft: 8,
   },
   orderBuyer: {
     fontSize: 14,
+    color: '#333',
+    marginTop: 2,
+    fontWeight: '600',
+  },
+  orderPhone: {
+    fontSize: 12,
     color: '#666',
-    marginTop: 4,
+    marginTop: 2,
   },
   orderLocation: {
     fontSize: 14,
     color: '#00A651',
-    marginTop: 2,
+    marginTop: 4,
+    fontStyle: 'italic',
   },
-  updateButton: {
+  orderActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#4A90E2',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
   },
-  updateButtonText: {
-    marginLeft: 4,
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: 'bold',
+  actionButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  locationButton: {
+    backgroundColor: '#4A90E2',
+  },
+  statusButton: {
+    backgroundColor: '#FF6B00',
   },
   modalOverlay: {
     flex: 1,
@@ -146,8 +175,9 @@ export const shipperStyles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderRadius: 12,
     padding: 20,
-    width: '85%',
+    width: '90%',
     maxWidth: 400,
+    maxHeight: '80%',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -159,6 +189,11 @@ export const shipperStyles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 16,
   },
   locationInput: {
     borderWidth: 1,
@@ -183,5 +218,82 @@ export const shipperStyles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  // Styles mới cho UpdateStatusModal
+  statusOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  statusOptionSelected: {
+    backgroundColor: '#4A90E2',
+  },
+  statusOptionDisabled: {
+    opacity: 0.5,
+  },
+  statusOptionText: {
+    marginLeft: 12,
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+  },
+  // Styles mới cho OrderDetailModal
+  detailScroll: {
+    flex: 1,
+  },
+  detailSection: {
+    marginBottom: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE',
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 12,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    marginRight: 12,
+  },
+  detailAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  detailInfo: {
+    flex: 1,
+  },
+  detailName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  detailPhone: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  detailEmail: {
+    fontSize: 14,
+    color: '#999',
+    marginTop: 2,
+  },
+  detailAddress: {
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 20,
+  },
+  detailItem: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
   },
 });

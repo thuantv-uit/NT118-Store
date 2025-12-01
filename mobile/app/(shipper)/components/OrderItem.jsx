@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { shipperStyles } from '../styles/shipperStyles';
 
@@ -10,29 +10,60 @@ const statusSteps = {
   cancelled: { label: 'Đã hủy', icon: 'close-circle-outline', color: '#FF4D4F' },
 };
 
-export default function OrderItem({ order, onUpdateLocation }) {
+export default function OrderItem({ order, onPressDetail, onUpdateLocation, onUpdateStatus, buyerInfo }) {
+  if (!order) {
+    console.warn('OrderItem: Received null order, skipping render');
+    return null;
+  }
+
   const step = statusSteps[order.status] || { label: order.status, icon: 'help-outline', color: '#999' };
 
-  const handlePressUpdate = () => {
+  const handlePressDetail = () => {
+    onPressDetail(order);
+  };
+
+  const handlePressUpdateLocation = () => {
     onUpdateLocation(order);
   };
 
+  const handlePressUpdateStatus = () => {
+    onUpdateStatus(order);
+  };
+
+  const displayName = buyerInfo ? `${buyerInfo.firstname || ''} ${buyerInfo.lastname || ''}`.trim() || `Buyer: ${order.buyer_id?.slice(0, 8)}...` : `Buyer: ${order.buyer_id?.slice(0, 8)}...`;
+
   return (
-    <View style={shipperStyles.orderItem}>
-      <View style={[shipperStyles.statusIcon, { backgroundColor: step.color }]}>
-        <Icon name={step.icon} size={20} color="#FFF" />
+    <TouchableOpacity onPress={handlePressDetail} activeOpacity={0.7} style={shipperStyles.orderItem}>
+      <View style={shipperStyles.orderAvatarContainer}>
+        {buyerInfo?.avatar ? (
+          <Image source={{ uri: buyerInfo.avatar }} style={shipperStyles.buyerAvatar} />
+        ) : (
+          <View style={[shipperStyles.buyerAvatar, { backgroundColor: '#E0E0E0' }]}>
+            <Icon name="person-outline" size={24} color="#999" />
+          </View>
+        )}
       </View>
       <View style={shipperStyles.orderInfo}>
-        <Text style={[shipperStyles.orderStatus, { color: step.color }]}>{step.label}</Text>
-        <Text style={shipperStyles.orderBuyer}>Buyer: {order.buyer_id.slice(0, 8)}...</Text>
-        {order.current_location && (
+        <View style={shipperStyles.orderHeader}>
+          <View style={[shipperStyles.statusIcon, { backgroundColor: step.color }]}>
+            <Icon name={step.icon} size={20} color="#FFF" />
+          </View>
+          <Text style={[shipperStyles.orderStatus, { color: step.color }]}>{step.label}</Text>
+        </View>
+        <Text style={shipperStyles.orderBuyer}>{displayName}</Text>
+        {buyerInfo?.phone && <Text style={shipperStyles.orderPhone}>SĐT: {buyerInfo.phone}</Text>}
+        {order?.current_location && (
           <Text style={shipperStyles.orderLocation}>Vị trí: {order.current_location}</Text>
         )}
       </View>
-      <TouchableOpacity onPress={handlePressUpdate} style={shipperStyles.updateButton}>
-        <Icon name="location" size={16} color="#FFF" />
-        <Text style={shipperStyles.updateButtonText}>Cập nhật</Text>
-      </TouchableOpacity>
-    </View>
+      <View style={shipperStyles.orderActions}>
+        <TouchableOpacity onPress={handlePressUpdateLocation} style={[shipperStyles.actionButton, shipperStyles.locationButton]}>
+          <Icon name="location" size={16} color="#FFF" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handlePressUpdateStatus} style={[shipperStyles.actionButton, shipperStyles.statusButton]}>
+          <Icon name="refresh" size={16} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
   );
 }

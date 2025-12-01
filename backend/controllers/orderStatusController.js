@@ -187,65 +187,6 @@ export async function getOrderStatusByShipperId(req, res) {
   }
 }
 
-// Update order_status (bây giờ hỗ trợ cả status và current_location)
-// export async function updateOrderStatus(req, res) {
-//   try {
-//     const { id } = req.params;
-//     const { status, current_location, seller_id, buyer_id } = req.body;  // Thêm current_location
-
-//     if (!id) {
-//       return res.status(400).json({ message: "ID is required" });
-//     }
-
-//     // Check ownership: Phải cung cấp ít nhất một seller_id hoặc buyer_id
-//     if (!seller_id && !buyer_id) {
-//       return res.status(400).json({ message: "At least one of seller_id or buyer_id is required for ownership check" });
-//     }
-
-//     // Validate status nếu có
-//     if (status) {
-//       const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
-//       if (!validStatuses.includes(status)) {
-//         return res.status(400).json({ message: `Status must be one of: ${validStatuses.join(', ')}` });
-//       }
-//     }
-
-//     // Validate current_location nếu có (không quá dài)
-//     if (current_location && current_location.length > 500) {
-//       return res.status(400).json({ message: "Current location must be under 500 characters" });
-//     }
-
-//     const existingStatus = await sql`
-//       SELECT id, seller_id, buyer_id FROM "order_status" 
-//       WHERE id = ${id} AND (seller_id = ${seller_id} OR buyer_id = ${buyer_id})
-//     `;
-
-//     if (existingStatus.length === 0) {
-//       return res.status(404).json({ message: "Order status not found or access denied" });
-//     }
-
-//     // Sử dụng COALESCE cho status và current_location (luôn update updated_at)
-//     const updatedOrderStatus = await sql`
-//       UPDATE "order_status"
-//       SET 
-//         status = COALESCE(${status}, status),
-//         current_location = COALESCE(${current_location}, current_location),
-//         updated_at = CURRENT_TIMESTAMP
-//       WHERE id = ${id}
-//       RETURNING id, seller_id, buyer_id, product_id, order_id, status, current_location, created_at, updated_at
-//     `;
-
-//     if (updatedOrderStatus.length === 0) {
-//       return res.status(404).json({ message: "Order status not found" });
-//     }
-
-//     res.status(200).json(updatedOrderStatus[0]);
-//   } catch (error) {
-//     console.error("Error updating order status:", error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// }
-
 // Update order_status (shipper_id hoặc seller_id mới được cập nhật)
 export async function updateOrderStatus(req, res) {
   try {
@@ -300,8 +241,6 @@ export async function updateOrderStatus(req, res) {
     res.status(500).json({ message: "Internal server error" });
   }
 }
-
-
 
 // Delete order_status by ID (check ownership)
 export async function deleteOrderStatus(req, res) {
