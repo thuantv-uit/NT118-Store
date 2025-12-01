@@ -4,14 +4,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { API_URL } from '../../../constants/api';
@@ -26,6 +26,68 @@ const STATUS_MAP = {
   shipped: { text: 'Đang Giao', color: '#87CEEB', bgColor: '#E3F2FD' },
   delivered: { text: 'Đã Giao', color: '#32CD32', bgColor: '#D4EDDA' },
   cancelled: { text: 'Đã Hủy', color: '#FF4500', bgColor: '#F8D7DA' },
+};
+
+// Hàm fetch thông tin user (buyer/seller/shipper)
+const fetchUserInfo = async (userId) => {
+  if (!userId) return null;
+  try {
+    const response = await fetch(`${API_BASE}/customers/${userId}`);
+    if (!response.ok) {
+      console.warn(`Failed to fetch user ${userId}: ${response.status}`);
+      return null;
+    }
+    const data = await response.json();
+    return {
+      first_name: data.first_name || data.firstname || undefined,
+      last_name: data.last_name || data.lastname || undefined,
+      phone: data.phone_number || data.phone || undefined,
+      // Thêm avatar nếu cần: avatar: data.avatar || data.avatar_url || undefined,
+    };
+  } catch (error) {
+    console.error('Error fetching user info:', error);
+    return null;
+  }
+};
+
+// Hàm fetch thông tin product (name, price, và variants để lấy color/size nếu có)
+const fetchProductInfo = async (productId) => {
+  if (!productId) return null;
+  try {
+    const response = await fetch(`${API_BASE}/product/${productId}`);
+    if (!response.ok) {
+      console.warn(`Failed to fetch product ${productId}: ${response.status}`);
+      return null;
+    }
+    const data = await response.json();
+    // console.log("data product: ", data); // Giữ để debug nếu cần
+
+    // Xử lý variants để lấy price fallback nếu root price null, và color/size mặc định
+    let productPrice = data.price;
+    let defaultColor = null;
+    let defaultSize = null;
+    if (data.variants && Array.isArray(data.variants) && data.variants.length > 0) {
+      const firstVariant = data.variants[0];
+      if (data.price === null && firstVariant && firstVariant.price) {
+        productPrice = firstVariant.price; // Fallback: lấy price variant đầu tiên
+      }
+      defaultColor = firstVariant.color;
+      defaultSize = firstVariant.size;
+    }
+
+    const productInfo = {
+      name: data.name || data.product_name || undefined,
+      price: productPrice, // Thêm price
+      // image: data.images?.[0] || data.image || data.image_url || undefined, // Nếu cần hiển thị image
+      variants: data.variants || undefined, // Để dùng nếu cần chi tiết hơn
+      defaultColor: defaultColor,
+      defaultSize: defaultSize,
+    };
+    return productInfo;
+  } catch (error) {
+    console.error('Error fetching product info:', error);
+    return null;
+  }
 };
 
 export default function OrderDetail() {
@@ -55,7 +117,25 @@ export default function OrderDetail() {
       setLoading(true);
       const response = await fetch(`${API_BASE}/order_status/${id}`);
       if (!response.ok) throw new Error('Lỗi tải chi tiết');
-      const data = await response.json();
+      let data = await response.json();
+
+      // Enrich data: Fetch buyer, seller, shipper, product info
+      const [buyerInfo, sellerInfo, shipperInfo, productInfo] = await Promise.all([
+        fetchUserInfo(data.buyer_id),
+        fetchUserInfo(data.seller_id),
+        data.shipper_id ? fetchUserInfo(data.shipper_id) : null,
+        fetchProductInfo(data.product_id),
+      ]);
+
+      // Gộp enriched info vào order
+      data = {
+        ...data,
+        buyerInfo,
+        sellerInfo,
+        shipperInfo,
+        productInfo,
+      };
+
       setOrder(data);
       setNewStatus(data.status);
     } catch (error) {
@@ -81,7 +161,7 @@ export default function OrderDetail() {
       if (!response.ok) throw new Error('Lỗi cập nhật');
       Alert.alert('Thành công', 'Cập nhật trạng thái đơn hàng thành công');
       setModalVisible(false);
-      loadOrderDetail(); // Reload chi tiết
+      loadOrderDetail(); // Reload chi tiết (sẽ re-enrich)
     } catch (error) {
       console.error('Lỗi update status:', error);
       Alert.alert('Lỗi', 'Không thể cập nhật trạng thái');
@@ -90,6 +170,22 @@ export default function OrderDetail() {
 
   const openUpdateModal = () => {
     setModalVisible(true);
+  };
+
+  // Helper để hiển thị tên user
+  const getUserDisplayName = (userInfo, fallbackId) => {
+    if (userInfo && userInfo.first_name && userInfo.last_name) {
+      return `${userInfo.first_name} ${userInfo.last_name}`.trim();
+    }
+    return fallbackId || 'N/A';
+  };
+
+  // Helper để hiển thị shipper (với fallback nếu chưa assign)
+  const getShipperDisplay = () => {
+    if (order.shipper_id && order.shipperInfo) {
+      return getUserDisplayName(order.shipperInfo, order.shipper_id);
+    }
+    return 'Chưa assign người giao hàng';
   };
 
   if (loading || !order) {
@@ -113,11 +209,43 @@ export default function OrderDetail() {
           </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Sản Phẩm:</Text>
-            <Text style={styles.detailValue}>{order.product_id} (Chi tiết sản phẩm)</Text>
+            <Text style={styles.detailValue}>{order.productInfo?.name || order.product_id || 'N/A'}</Text>
           </View>
+          {order.productInfo?.price && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Giá Sản Phẩm:</Text>
+              <Text style={styles.detailValue}>{order.productInfo.price.toLocaleString()} VND</Text>
+            </View>
+          )}
+          {order.quantity && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Số Lượng:</Text>
+              <Text style={styles.detailValue}>{order.quantity}</Text>
+            </View>
+          )}
+          {(order.color || order.productInfo?.defaultColor) && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Màu Sắc:</Text>
+              <Text style={styles.detailValue}>{order.color || order.productInfo?.defaultColor || 'N/A'}</Text>
+            </View>
+          )}
+          {(order.size || order.productInfo?.defaultSize) && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Kích Cỡ:</Text>
+              <Text style={styles.detailValue}>{order.size || order.productInfo?.defaultSize || 'N/A'}</Text>
+            </View>
+          )}
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Khách Hàng:</Text>
-            <Text style={styles.detailValue}>{order.buyer_id}</Text>
+            <Text style={styles.detailValue}>{getUserDisplayName(order.buyerInfo, order.buyer_id)}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Người bán:</Text>
+            <Text style={styles.detailValue}>{getUserDisplayName(order.sellerInfo, order.seller_id)}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Người Giao Hàng:</Text>
+            <Text style={styles.detailValue}>{getShipperDisplay()}</Text>
           </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Trạng Thái:</Text>
@@ -135,13 +263,9 @@ export default function OrderDetail() {
             <Text style={styles.detailLabel}>Ngày Cập Nhật:</Text>
             <Text style={styles.detailValue}>{new Date(order.updated_at).toLocaleDateString('vi-VN')}</Text>
           </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Seller ID:</Text>
-            <Text style={styles.detailValue}>{order.seller_id}</Text>
-          </View>
         </View>
 
-        <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+        <TouchableOpacity
           style={styles.updateButton}
           onPress={openUpdateModal}
           activeOpacity={0.7}
@@ -156,7 +280,7 @@ export default function OrderDetail() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Cập Nhật Trạng Thái</Text>
-              <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+              <TouchableOpacity
                 onPress={() => setModalVisible(false)}
                 style={styles.closeBtn}
                 activeOpacity={0.7}
@@ -166,7 +290,7 @@ export default function OrderDetail() {
             </View>
             <Text style={styles.modalOrderId}>Đơn hàng: #{order.order_id}</Text>
             <Text style={styles.modalLabel}>Chọn trạng thái mới:</Text>
-            <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+            <TouchableOpacity
               style={styles.statusOption}
               onPress={() => setNewStatus('pending')}
               activeOpacity={0.8}
@@ -174,7 +298,7 @@ export default function OrderDetail() {
               <View style={[styles.statusCircle, newStatus === 'pending' && styles.statusCircleSelected]} />
               <Text style={styles.statusOptionText}>Chờ Xử Lý</Text>
             </TouchableOpacity>
-            <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+            <TouchableOpacity
               style={styles.statusOption}
               onPress={() => setNewStatus('processing')}
               activeOpacity={0.8}
@@ -182,7 +306,7 @@ export default function OrderDetail() {
               <View style={[styles.statusCircle, newStatus === 'processing' && styles.statusCircleSelected]} />
               <Text style={styles.statusOptionText}>Đang Xử Lý</Text>
             </TouchableOpacity>
-            <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+            <TouchableOpacity
               style={styles.statusOption}
               onPress={() => setNewStatus('shipped')}
               activeOpacity={0.8}
@@ -190,7 +314,7 @@ export default function OrderDetail() {
               <View style={[styles.statusCircle, newStatus === 'shipped' && styles.statusCircleSelected]} />
               <Text style={styles.statusOptionText}>Đang Giao</Text>
             </TouchableOpacity>
-            <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+            <TouchableOpacity
               style={styles.statusOption}
               onPress={() => setNewStatus('delivered')}
               activeOpacity={0.8}
@@ -198,7 +322,7 @@ export default function OrderDetail() {
               <View style={[styles.statusCircle, newStatus === 'delivered' && styles.statusCircleSelected]} />
               <Text style={styles.statusOptionText}>Đã Giao</Text>
             </TouchableOpacity>
-            <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+            <TouchableOpacity
               style={styles.statusOption}
               onPress={() => setNewStatus('cancelled')}
               activeOpacity={0.8}
@@ -206,7 +330,7 @@ export default function OrderDetail() {
               <View style={[styles.statusCircle, newStatus === 'cancelled' && styles.statusCircleSelected]} />
               <Text style={styles.statusOptionText}>Đã Hủy</Text>
             </TouchableOpacity>
-            <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+            <TouchableOpacity
               style={styles.saveBtn}
               onPress={() => updateStatus(newStatus)}
               activeOpacity={0.7}
