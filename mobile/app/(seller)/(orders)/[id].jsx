@@ -1,4 +1,3 @@
-// File: app/(seller)/order/[id].jsx (OrderDetail - Chi Tiết Đơn Hàng)
 import { useUser } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -90,6 +89,55 @@ const fetchProductInfo = async (productId) => {
   }
 };
 
+// THÊM: Hàm fetch quantity từ chain: order_status → order → cart
+const fetchOrderQuantity = async (orderStatusId) => {
+  try {
+    // Bước 1: Fetch order_status để lấy order_id
+    const statusResponse = await fetch(`${API_BASE}/order_status/${orderStatusId}`);
+    if (!statusResponse.ok) {
+      console.warn(`Failed to fetch order status ${orderStatusId}: ${statusResponse.status}`);
+      return null;
+    }
+    const statusData = await statusResponse.json();
+    const orderId = statusData.order_id;
+    if (!orderId) {
+      console.warn('No order_id found in status data');
+      return null;
+    }
+
+    // Bước 2: Fetch order để lấy cart_id
+    const orderResponse = await fetch(`${API_BASE}/order/${orderId}`);
+    if (!orderResponse.ok) {
+      console.warn(`Failed to fetch order ${orderId}: ${orderResponse.status}`);
+      return null;
+    }
+    const orderData = await orderResponse.json();
+    const cartId = orderData.cart_id; // Giả định field cart_id tồn tại trong order
+    if (!cartId) {
+      console.warn('No cart_id found in order data');
+      return null;
+    }
+
+    // Bước 3: Fetch cart để lấy quantity
+    const cartResponse = await fetch(`${API_BASE}/cart/detail/${cartId}`);
+    if (!cartResponse.ok) {
+      console.warn(`Failed to fetch cart ${cartId}: ${cartResponse.status}`);
+      return null;
+    }
+    const cartData = await cartResponse.json();
+    const quantity = cartData.quantity; // Giả định field quantity tồn tại trong cart
+    if (quantity === undefined || quantity <= 0) {
+      console.warn('Invalid quantity in cart data');
+      return null;
+    }
+
+    return quantity;
+  } catch (error) {
+    console.error('Error fetching order quantity:', error);
+    return null;
+  }
+};
+
 export default function OrderDetail() {
   const router = useRouter();
   const { user } = useUser();
@@ -118,6 +166,13 @@ export default function OrderDetail() {
       const response = await fetch(`${API_BASE}/order_status/${id}`);
       if (!response.ok) throw new Error('Lỗi tải chi tiết');
       let data = await response.json();
+
+      // THÊM: Fetch quantity từ chain APIs
+      const quantity = await fetchOrderQuantity(id);
+      data = {
+        ...data,
+        quantity, // Thêm quantity vào data
+      };
 
       // Enrich data: Fetch buyer, seller, shipper, product info
       const [buyerInfo, sellerInfo, shipperInfo, productInfo] = await Promise.all([
@@ -201,52 +256,47 @@ export default function OrderDetail() {
 
   return (
     <SellerScreenLayout title="Chi Tiết Đơn Hàng" subtitle="Thông tin chi tiết">
-      <ScrollView style={styles.scrollViewContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollViewContainer}>
         <View style={styles.detailContainer}>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Mã Đơn Hàng:</Text>
-            <Text style={styles.detailValue}>#{order.order_id}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Sản Phẩm:</Text>
-            <Text style={styles.detailValue}>{order.productInfo?.name || order.product_id || 'N/A'}</Text>
-          </View>
-          {order.productInfo?.price && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Giá Sản Phẩm:</Text>
-              <Text style={styles.detailValue}>{order.productInfo.price.toLocaleString()} VND</Text>
-            </View>
-          )}
+          {/* THÊM: Hiển thị số lượng sản phẩm */}
           {order.quantity && (
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Số Lượng:</Text>
               <Text style={styles.detailValue}>{order.quantity}</Text>
             </View>
           )}
-          {(order.color || order.productInfo?.defaultColor) && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Màu Sắc:</Text>
-              <Text style={styles.detailValue}>{order.color || order.productInfo?.defaultColor || 'N/A'}</Text>
-            </View>
-          )}
-          {(order.size || order.productInfo?.defaultSize) && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Kích Cỡ:</Text>
-              <Text style={styles.detailValue}>{order.size || order.productInfo?.defaultSize || 'N/A'}</Text>
-            </View>
-          )}
+
+          {/* Sản phẩm */}
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Sản Phẩm:</Text>
+            <Text style={styles.detailValue}>
+              {order.productInfo?.name || 'N/A'}
+              {order.productInfo?.defaultColor && ` - Màu: ${order.productInfo.defaultColor}`}
+              {order.productInfo?.defaultSize && ` - Size: ${order.productInfo.defaultSize}`}
+            </Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Giá:</Text>
+            <Text style={styles.detailValue}>
+              {order.productInfo?.price ? `${order.productInfo.price.toLocaleString('vi-VN')} VNĐ` : 'N/A'}
+            </Text>
+          </View>
+
+          {/* Người dùng */}
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Khách Hàng:</Text>
             <Text style={styles.detailValue}>{getUserDisplayName(order.buyerInfo, order.buyer_id)}</Text>
           </View>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Người bán:</Text>
+            <Text style={styles.detailLabel}>Seller:</Text>
             <Text style={styles.detailValue}>{getUserDisplayName(order.sellerInfo, order.seller_id)}</Text>
           </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Người Giao Hàng:</Text>
             <Text style={styles.detailValue}>{getShipperDisplay()}</Text>
           </View>
+
+          {/* Trạng thái */}
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Trạng Thái:</Text>
             <View style={[styles.statusBadge, { backgroundColor: STATUS_MAP[order.status]?.bgColor }]}>
