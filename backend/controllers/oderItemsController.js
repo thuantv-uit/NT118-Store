@@ -90,6 +90,32 @@ export async function updateOrderItem(req, res) {
   }
 }
 
+// Get all order items by order_id
+export async function getOrderItemsByOrderId(req, res) {
+  try {
+    const { order_id } = req.params;
+
+    // Validate input
+    if (!order_id) {
+      return res.status(400).json({ message: "order_id is required" });
+    }
+
+    // Query database
+    const orderItems = await sql`
+      SELECT * FROM order_item WHERE order_id = ${order_id}
+    `;
+
+    if (orderItems.length === 0) {
+      return res.status(404).json({ message: "No order items found for this order" });
+    }
+
+    res.status(200).json(orderItems);
+  } catch (error) {
+    console.error("Error fetching order items by order_id:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 // Delete OrderItem by ID
 export async function deleteOrderItem(req, res) {
   try {

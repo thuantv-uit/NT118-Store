@@ -5,7 +5,8 @@ import {
   getProductById,
   updateProduct,
   deleteProduct,
-  getAllProducts
+  getAllProducts,
+  updateVariantStock
 } from "../controllers/productsController.js";
 
 const storage = multer.memoryStorage();
@@ -27,5 +28,6 @@ router.get("/", getAllProducts);
 router.get("/:id", getProductById);
 router.put("/:id", upload.array('images', 5), updateProduct);
 router.delete("/:id", deleteProduct);
+router.put('/products/:product_id/variants/:variant_id/stock', updateVariantStock);
 
 export default router;
