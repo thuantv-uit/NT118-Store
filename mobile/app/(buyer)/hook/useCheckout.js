@@ -1,3 +1,4 @@
+// useCheckout.js
 import { useUser } from '@clerk/clerk-expo';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
@@ -89,7 +90,7 @@ export const useCheckout = (cartTotal, customerIdFromProp) => { // Đổi tên p
     }
   };
 
-  const handleCheckout = async (cartItems) => {
+  const handleCheckout = async (cartItems) => {  // SỬA: Nhận cartItems để pass sang OrderConfirm
     if (!currentCustomerId) {
       Alert.alert('Lỗi', 'Vui lòng đăng nhập để thanh toán!');
       return;
@@ -126,13 +127,12 @@ export const useCheckout = (cartTotal, customerIdFromProp) => { // Đổi tên p
 
       // console.log('Checkout success with IDs:', { shipmentId, paymentId });
 
-      // Navigate với data đầy đủ (giữ nguyên, nhưng shipmentData giờ chỉ có shipment_date và address_id)
-      // Lưu ý: Nếu cần full address details ở OrderConfirmScreen, có thể fetch thêm hoặc backend return full info
+      // Navigate với data đầy đủ (SỬA: Pass cartItems với { cart, product, variant })
       navigation.navigate('(buyer)/components/OrderConfirmScreen', {
         orderData: {
           // id: `ORD-${Date.now()}`,
           date: new Date().toISOString(),
-          items: cartItems,
+          items: cartItems,  // SỬA: Pass full cartItems
           shipment: { ...shipmentData, id: shipmentId },
           payment: { ...paymentData, id: paymentId },
           total: cartTotal,

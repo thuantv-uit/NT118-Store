@@ -1,3 +1,4 @@
+// OrderTrackingScreen.jsx
 import { useUser } from '@clerk/clerk-expo';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
@@ -32,19 +33,25 @@ const fetchBuyerStatuses = async (buyerId) => {
   }
 };
 
-// Hàm helper để lấy product info theo product_id
+// Hàm helper để lấy product info theo product_id (bao gồm variants)
 const fetchProductById = async (productId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/product/${productId}`);
     if (!response.ok) {
-      return { id: productId, name: 'Sản phẩm không xác định', price: 0 }; // Fallback
+      return { id: productId, name: 'Sản phẩm không xác định', price: 0, variants: [] };
     }
     const product = await response.json();
-    return product || { id: productId, name: 'Sản phẩm không xác định', price: 0 };
+    return product || { id: productId, name: 'Sản phẩm không xác định', price: 0, variants: [] };
   } catch (error) {
     console.error(`Error fetching product ${productId}:`, error);
-    return { id: productId, name: 'Sản phẩm không xác định', price: 0 };
+    return { id: productId, name: 'Sản phẩm không xác định', price: 0, variants: [] };
   }
+};
+
+// SỬA: Helper để match variant từ status (nếu có variant_id)
+const matchVariant = (product, status) => {
+  if (!product.variants || !status.variant_id) return null;
+  return product.variants.find(v => v.id === status.variant_id);
 };
 
 export default function OrderTrackingScreen() {
@@ -87,12 +94,12 @@ export default function OrderTrackingScreen() {
           productMap[product.id] = product;
         });
 
-        // Enrich statuses với product info
+        // Enrich statuses với product và variant
         const enriched = buyerStatuses.map(status => ({
           ...status,
           product: productMap[status.product_id] || { name: 'Sản phẩm không xác định', price: 0 },
+          variant: matchVariant(productMap[status.product_id], status),  // SỬA: Match variant nếu có
         }));
-
         setEnrichedStatuses(enriched);
       } catch (err) {
         setError(err.message);
@@ -143,26 +150,7 @@ export default function OrderTrackingScreen() {
     );
   }
 
-  if (enrichedStatuses.length === 0) {
-    return (
-      <SafeAreaView style={buyerStyles.safe}>
-        <View style={buyerStyles.container}>
-          <View style={buyerStyles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Icon name="arrow-back" size={24} color="#6D4C41" />
-            </TouchableOpacity>
-            <Text style={buyerStyles.headerTitle}>Theo dõi đơn hàng</Text>
-            <View style={{ width: 24 }} />
-          </View>
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>Chưa có đơn hàng nào!</Text>
-          </View>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // Timeline steps
+  // Timeline steps cho icon và màu (giữ nguyên)
   const statusSteps = {
     pending: { label: 'Chờ xác nhận', icon: 'time-outline', color: '#FF6B00' },
     processing: { label: 'Đang xử lý', icon: 'construct-outline', color: '#FFA500' },
@@ -174,6 +162,7 @@ export default function OrderTrackingScreen() {
   const renderStatusItem = ({ item: status }) => {
     const step = statusSteps[status.status] || { label: status.status, icon: 'help-outline', color: '#999' };
     const product = status.product || { name: 'Sản phẩm không xác định', price: 0 };
+    const variant = status.variant || {};  // SỬA: Hiển thị variant nếu có
     return (
       <TouchableOpacity
         onPress={() => navigation.navigate('(buyer)/components/OrderDetailScreen', { statusId: status.id })}
@@ -194,7 +183,10 @@ export default function OrderTrackingScreen() {
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 16, fontWeight: 'bold', color: step.color }}>{step.label}</Text>
             <Text style={{ fontSize: 14, marginTop: 4 }}>Sản phẩm: {product.name}</Text>
-            <Text style={{ fontSize: 14, color: '#00A651', marginTop: 2 }}>Giá: {parseFloat(product.price || 0).toLocaleString('vi-VN')} VNĐ</Text>
+            {Object.keys(variant).length > 0 && (
+              <Text style={{ fontSize: 14, marginTop: 2 }}>Kích cỡ: {variant.size || 'N/A'} | Màu: {variant.color || 'N/A'}</Text>
+            )}
+            <Text style={{ fontSize: 14, color: '#00A651', marginTop: 2 }}>Giá: {parseFloat(variant.price || product.price || 0).toLocaleString('vi-VN')} VNĐ</Text>
           </View>
         </View>
       </TouchableOpacity>

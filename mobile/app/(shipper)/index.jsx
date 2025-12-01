@@ -80,10 +80,37 @@ const fetchProductInfo = async (productId) => {
       return null;
     }
     const data = await response.json();
+    // console.log("data product: ", data); // Giữ nguyên để debug
+
+    // Xử lý variants để lấy price fallback nếu root price null
+    let productPrice = data.price;
+    let totalStock = data.stock || 0;
+    let variantsSummary = []; // Optional: summary variants nếu cần (ví dụ cho detail modal)
+
+    if (data.variants && Array.isArray(data.variants) && data.price === null) {
+      const firstVariant = data.variants[0];
+      if (firstVariant && firstVariant.price) {
+        productPrice = firstVariant.price; // Fallback: lấy price variant đầu tiên
+      }
+      // Optional: Tính tổng stock từ variants
+      totalStock = data.variants.reduce((sum, v) => sum + (v.stock || 0), 0);
+      // Optional: Lưu summary variants (ví dụ [{color, size, price, stock}])
+      variantsSummary = data.variants.map(v => ({
+        color: v.color,
+        size: v.size,
+        price: v.price,
+        stock: v.stock
+      }));
+    }
+
     const productInfo = {
       name: data.name || data.product_name || undefined,
-      image: data.image || data.image_url || undefined,
-      price: data.price || undefined,
+      image: data.images?.[0] || data.image || data.image_url || undefined, // Ưu tiên array[0]
+      price: productPrice, // Đã handle fallback
+      description: data.description || undefined, // Thêm nếu OrderItem cần
+      stock: totalStock, // Tổng stock (root + variants)
+      variants: variantsSummary || undefined, // Optional cho detail
+      sku: data.sku || undefined, // Thêm nếu cần
     };
     return productInfo;
   } catch (error) {

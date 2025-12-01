@@ -1,3 +1,4 @@
+// useOrder.js
 import { useAuth } from '@clerk/clerk-expo';
 import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
@@ -41,9 +42,11 @@ export const useOrder = ({ shipment_id, payment_id, shipmentData, paymentData, c
       if (!orderRes.ok) throw new Error('Tạo đơn hàng thất bại');
       const order = await orderRes.json();
 
-      // Bước 2: Tạo order_items
+      // Bước 2: Tạo order_items (SỬA: Thêm variant_id nếu có)
       const items = [];
       for (const item of cartItems) {
+        // SỬA: Dùng variant.price nếu có, fallback product.price
+        const itemPrice = item.variant?.price || item.product?.price || 0;
         const orderItemRes = await fetch(`${API_BASE}/order_item`, {
           method: 'POST',
           headers: {
@@ -52,14 +55,15 @@ export const useOrder = ({ shipment_id, payment_id, shipmentData, paymentData, c
           },
           body: JSON.stringify({
             quantity: item.cart?.quantity || 0,
-            price: item.product?.price || 0,
+            price: itemPrice,
             order_id: order.id,
             product_id: item.product?.id,
+            variant_id: item.variant?.id || null,  // SỬA: Thêm variant_id
           }),
         });
         if (!orderItemRes.ok) throw new Error(`Tạo item thất bại: ${item.product?.name}`);
         const orderItem = await orderItemRes.json();
-        items.push({ ...orderItem, product: item.product, cart: item.cart });
+        items.push({ ...orderItem, product: item.product, cart: item.cart, variant: item.variant });
       }
 
       // Set orderData

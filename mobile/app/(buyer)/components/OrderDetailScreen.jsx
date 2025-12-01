@@ -1,11 +1,12 @@
+// OrderDetailScreen.jsx
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    SafeAreaView,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { API_URL } from '../../../constants/api';
@@ -28,18 +29,18 @@ const fetchOrderStatusById = async (statusId) => {
   }
 };
 
-// Hàm helper để lấy product info theo product_id
+// Hàm helper để lấy product info theo product_id (bao gồm variants)
 const fetchProductById = async (productId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/product/${productId}`);
     if (!response.ok) {
-      return { name: 'Sản phẩm không xác định', price: 0 };
+      return { name: 'Sản phẩm không xác định', price: 0, variants: [] };
     }
     const product = await response.json();
-    return product || { name: 'Sản phẩm không xác định', price: 0 };
+    return product || { name: 'Sản phẩm không xác định', price: 0, variants: [] };
   } catch (error) {
     console.error(`Error fetching product ${productId}:`, error);
-    return { name: 'Sản phẩm không xác định', price: 0 };
+    return { name: 'Sản phẩm không xác định', price: 0, variants: [] };
   }
 };
 
@@ -48,7 +49,8 @@ export default function OrderDetailScreen() {
   const navigation = useNavigation();
   const { statusId } = route.params || {};
   const [status, setStatus] = useState(null);
-  const [product, setProduct] = useState({ name: 'Sản phẩm không xác định', price: 0 });
+  const [product, setProduct] = useState({ name: 'Sản phẩm không xác định', price: 0, variants: [] });
+  const [variant, setVariant] = useState(null); // SỬA: Thêm variant state
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -72,6 +74,12 @@ export default function OrderDetailScreen() {
         if (statusData?.product_id) {
           const productData = await fetchProductById(statusData.product_id);
           setProduct(productData);
+
+          // SỬA: Match variant nếu có variant_id từ status
+          if (statusData.variant_id && productData.variants) {
+            const matchingVariant = productData.variants.find(v => v.id === statusData.variant_id);
+            setVariant(matchingVariant || null);
+          }
         }
       } catch (err) {
         setError(err.message);
@@ -83,7 +91,7 @@ export default function OrderDetailScreen() {
     loadDetail();
   }, [statusId]);
 
-  // Timeline steps cho icon và màu
+  // Timeline steps cho icon và màu (giữ nguyên)
   const statusSteps = {
     pending: { label: 'Chờ xác nhận', icon: 'time-outline', color: '#FF6B00' },
     processing: { label: 'Đang xử lý', icon: 'construct-outline', color: '#FFA500' },
@@ -107,14 +115,14 @@ export default function OrderDetailScreen() {
           </View>
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <ActivityIndicator size="large" color="#6D4C41" />
-            <Text style={{ marginTop: 10 }}>Đang tải chi tiết...</Text>
+            <Text style={{ marginTop: 10 }}>Đang tải...</Text>
           </View>
         </View>
       </SafeAreaView>
     );
   }
 
-  if (error || !status) {
+  if (error) {
     return (
       <SafeAreaView style={buyerStyles.safe}>
         <View style={buyerStyles.container}>
@@ -160,11 +168,16 @@ export default function OrderDetailScreen() {
             <Text style={{ fontSize: 18, fontWeight: 'bold', color: step.color, marginTop: 8 }}>{step.label}</Text>
           </View>
 
-          {/* Thông tin sản phẩm */}
+          {/* Thông tin sản phẩm - SỬA: Hiển thị variant nếu có */}
           <View style={{ backgroundColor: '#FFF', padding: 16, borderRadius: 8, marginBottom: 16 }}>
             <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 8 }}>Sản phẩm</Text>
             <Text style={{ fontSize: 14, marginBottom: 4 }}>Tên: {product.name}</Text>
-            <Text style={{ fontSize: 14, color: '#00A651' }}>Giá: {parseFloat(product.price || 0).toLocaleString('vi-VN')} VNĐ</Text>
+            {variant && (
+              <View style={{ marginBottom: 4 }}>
+                <Text style={{ fontSize: 14, marginBottom: 2 }}>Kích cỡ: {variant.size} | Màu: {variant.color}</Text>
+              </View>
+            )}
+            <Text style={{ fontSize: 14, color: '#00A651' }}>Giá: {parseFloat(variant?.price || product.price || 0).toLocaleString('vi-VN')} VNĐ</Text>
           </View>
 
           {/* Vị trí hiện tại */}
