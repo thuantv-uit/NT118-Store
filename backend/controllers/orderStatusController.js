@@ -63,7 +63,7 @@ export async function getOrderStatusById(req, res) {
     }
 
     const orderStatus = await sql`
-      SELECT id, seller_id, buyer_id, product_id, order_id, status, current_location, created_at, updated_at
+      SELECT id, seller_id, buyer_id, shipper_id, product_id, order_id, status, current_location, created_at, updated_at
       FROM "order_status"
       WHERE id = ${id}
     `;
