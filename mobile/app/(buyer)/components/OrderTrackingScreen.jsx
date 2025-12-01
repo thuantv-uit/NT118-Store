@@ -1,4 +1,3 @@
-// OrderTrackingScreen.jsx
 import { useUser } from '@clerk/clerk-expo';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
@@ -24,7 +23,7 @@ const fetchBuyerStatuses = async (buyerId) => {
       throw new Error(`Failed to fetch buyer statuses: ${response.status}`);
     }
     const data = await response.json();
-    const statuses = Array.isArray(data) ? data : [data]; // Handle nếu là object đơn lẻ
+    const statuses = Array.isArray(data) ? data : [data];
     // console.log("Debug fetchBuyerStatuses - statuses:", statuses); // Debug
     return statuses;
   } catch (error) {
@@ -33,7 +32,7 @@ const fetchBuyerStatuses = async (buyerId) => {
   }
 };
 
-// SỬA: Helper để lấy product info theo product_id (bao gồm variants, handle price fallback, image từ array)
+//Helper để lấy product info theo product_id (bao gồm variants, handle price fallback, image từ array)
 const fetchProductById = async (productId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/product/${productId}`);
@@ -41,7 +40,7 @@ const fetchProductById = async (productId) => {
       return { id: productId, name: 'Sản phẩm không xác định', price: 0, variants: [], images: [] };
     }
     const product = await response.json();
-    console.log("data product: ", product); // Giữ để debug nếu cần
+    // console.log("data product: ", product); // Giữ để debug nếu cần
 
     // Xử lý variants để lấy price fallback nếu root price null
     let computedPrice = product.price;

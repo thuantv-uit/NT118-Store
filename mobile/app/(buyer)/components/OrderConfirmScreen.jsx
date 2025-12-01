@@ -2,8 +2,7 @@ import { useUser } from '@clerk/clerk-expo';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
+  ActivityIndicator, Alert, FlatList,
   SafeAreaView,
   ScrollView,
   Text,
@@ -65,7 +64,7 @@ const createOrder = async (orderData, customerId) => {
   }
 };
 
-// Hàm helper để tạo orderItems (thêm debug logs)
+// Hàm helper để tạo orderItems (SỬA: Dùng variant.price thay vì product.price)
 const createOrderItems = async (orderId, Data) => {
   // console.log("Debug createOrderItems - orderId:", orderId);
   // console.log("Debug createOrderItems - Data length:", Data);
@@ -74,7 +73,7 @@ const createOrderItems = async (orderId, Data) => {
     for (const [index, item] of (Data || []).entries()) {
       const payload = {
         quantity: item.cart?.quantity || 0,
-        price: item.product?.price || 0,
+        price: item.variant?.price || 0,  // SỬA: Dùng variant.price
         order_id: orderId,
         product_id: item.product?.id || null,
       };
@@ -125,13 +124,15 @@ const createOrderStatus = async (orderId, items, buyerId) => {
 
     for (const [index, item] of (items || []).entries()) {
       // Kiểm tra các trường cần thiết
-      if (!item.product?.id || !item.product?.customer_id) {  // Sửa: dùng customer_id thay vì seller_id
-        console.warn(`Debug createOrderStatus - Thiếu product_id hoặc seller_id (customer_id) cho item ${index}`);
-        continue; // Bỏ qua nếu thiếu
-      }
+      // console.log("seller_id: ", item.product.customer_id);
+      // console.log("seller_id: ", item.product.id);
+      //   if (!item.product?.id || !item.product?.customer_id) {  // Dùng customer_id thay vì seller_id
+      //   console.warn(`Debug createOrderStatus - Thiếu product_id hoặc seller_id (customer_id) cho item ${index}`);
+      //   // continue; // Bỏ qua nếu thiếu
+      // }
 
       const payload = {
-        seller_id: item.product.customer_id,  // Sửa: dùng customer_id làm seller_id
+        seller_id: item.product.customer_id,  // Dùng customer_id làm seller_id
         buyer_id: buyerId,
         product_id: item.product.id,
         order_id: orderId,
@@ -216,7 +217,7 @@ export default function OrderConfirmScreen() {
         const newOrder = await createOrder(passedData, currentCustomerId);
         // console.log('Debug OrderConfirm - New order created:', newOrder);
 
-        // Bước 2: Tạo orderItems với order_id mới
+        // Bước 2: Tạo orderItems với order_id mới (dùng variant.price)
         const newItems = await createOrderItems(newOrder.id, passedData.items);
         // console.log('Debug OrderConfirm - New order items created:', newItems);
 
@@ -224,18 +225,19 @@ export default function OrderConfirmScreen() {
         const newStatuses = await createOrderStatus(newOrder.id, passedData.items, currentCustomerId);
         // console.log('Debug OrderConfirm - New order statuses created:', newStatuses);
 
-        // Bước 4: Chuẩn bị dữ liệu hiển thị (sửa lỗi find undefined bằng cách kiểm tra passedData.items)
+        // Bước 4: Chuẩn bị dữ liệu hiển thị (CẬP NHẬT: Match theo index để đảm bảo đúng originalItem)
         const fullOrderData = {
           id: newOrder.id,
           date: newOrder.order_date || new Date().toISOString(),
-          items: newItems.map(item => {
-            // Tìm original item từ passedData.items dựa trên product_id (kiểm tra tồn tại trước)
-            const originalItem = passedData.items && passedData.items.length > 0 
-              ? passedData.items.find(orig => orig.product?.id === item.product_id) 
+          items: newItems.map((item, index) => {
+            // Sử dụng index để match trực tiếp với passedData.items (thứ tự giữ nguyên)
+            const originalItem = passedData.items && passedData.items.length > index 
+              ? passedData.items[index] 
               : null;
             return {
               ...item,
               product: originalItem?.product || { name: 'Sản phẩm không xác định' }, // Fallback nếu không tìm thấy
+              variant: originalItem?.variant || {},  // Thêm variant để hiển thị size/color
             };
           }),
           shipment: passedData.shipment || {},
@@ -288,7 +290,7 @@ export default function OrderConfirmScreen() {
           </View>
           <View style={orderConfirmStyles.emptySection}>
             <Text style={orderConfirmStyles.emptyText}>Lỗi: {error || 'Không tìm thấy đơn hàng!'}</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Cart')} style={orderConfirmStyles.emptyButton}>
+            <TouchableOpacity onPress={() => navigation.navigate('(buyer)/index')} style={orderConfirmStyles.emptyButton}>
               <Text style={orderConfirmStyles.emptyButtonText}>Về giỏ hàng</Text>
             </TouchableOpacity>
           </View>
@@ -300,7 +302,7 @@ export default function OrderConfirmScreen() {
   const { id, date, items, shipment, payment, total } = orderData;
 
   const handleTrackOrder = () => {
-    console.log("currentCustomerId: ", currentCustomerId);
+    // console.log("currentCustomerId: ", currentCustomerId);
     if (!currentCustomerId || !id) {
       Alert.alert('Lỗi', 'Không thể theo dõi vì thiếu thông tin người dùng. Vui lòng đăng nhập lại.');
       return;
@@ -334,7 +336,7 @@ export default function OrderConfirmScreen() {
             <Text style={orderConfirmStyles.info}>Ngày đặt: {new Date(date).toLocaleDateString('vi-VN')}</Text>
           </View>
 
-          {/* Order Items */}
+          {/* Order Items - SỬA: Hiển thị size/color từ variant */}
           <View style={orderConfirmStyles.section}>
             <Text style={orderConfirmStyles.title}>Sản phẩm</Text>
             <FlatList
@@ -344,6 +346,7 @@ export default function OrderConfirmScreen() {
                   <Text style={orderConfirmStyles.itemName}>{item.product?.name || 'Sản phẩm'}</Text>
                   <View style={orderConfirmStyles.itemDetails}>
                     <Text>Số lượng: {item.quantity || 0}</Text>
+                    <Text>Kích cỡ: {item.variant?.size || 'N/A'} | Màu: {item.variant?.color || 'N/A'}</Text>
                     <Text>Đơn giá: {(item.price || 0).toLocaleString('vi-VN')} VNĐ</Text>
                     <Text style={orderConfirmStyles.subtotal}>
                       Tạm tính: {((item.quantity || 0) * (item.price || 0)).toLocaleString('vi-VN')} VNĐ
@@ -356,13 +359,13 @@ export default function OrderConfirmScreen() {
             />
           </View>
 
-          {/* Shipment Info */}
+          {/* Shipment Info - SỬA: Hiển thị address, city từ shipment */}
           <View style={orderConfirmStyles.section}>
             <Text style={orderConfirmStyles.title}>Giao hàng đến</Text>
             <Text style={orderConfirmStyles.info}>
-              {/* {shipment.address || 'N/A'}, {shipment.city || 'N/A'} */}
-              {shipment.shipment_date || 'N/A'}
+              {`${shipment.address || 'N/A'}, ${shipment.city || 'N/A'}, ${shipment.state || ''}, ${shipment.country || ''} ${shipment.zipcode || ''}`.trim() || 'Chi tiết địa chỉ'}
             </Text>
+            <Text style={orderConfirmStyles.info}>Ngày giao dự kiến: {shipment.shipment_date || 'Chưa xác định'}</Text>
           </View>
 
           {/* Payment Info - Chỉ hỗ trợ 2 phương thức: ví và COD */}

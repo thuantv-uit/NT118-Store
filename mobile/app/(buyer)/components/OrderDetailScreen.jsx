@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   SafeAreaView,
+  ScrollView, // SỬA: Import ScrollView để enable scroll
   Text,
   TouchableOpacity,
   View
@@ -58,7 +59,7 @@ const fetchProductById = async (productId) => {
       return { name: 'Sản phẩm không xác định', price: 0, variants: [] };
     }
     const product = await response.json();
-    console.log("data product: ", product); // Giữ để debug nếu cần
+    // console.log("data product: ", product); // Giữ để debug nếu cần
 
     // Xử lý variants để lấy price fallback nếu root price null, và color/size mặc định
     let computedPrice = product.price;
@@ -270,7 +271,13 @@ export default function OrderDetailScreen() {
           <View style={{ width: 24 }} />
         </View>
 
-        <View style={{ flex: 1, padding: 16 }}>
+        {/* SỬA: Wrap nội dung vào ScrollView để enable scroll khi content dài */}
+        <ScrollView 
+          style={{ flex: 1 }} 
+          contentContainerStyle={{ padding: 16 }} 
+          showsVerticalScrollIndicator={true}
+          bounces={true}
+        >
           {/* Trạng thái */}
           <View style={{ alignItems: 'center', marginBottom: 24 }}>
             <View style={{
@@ -346,7 +353,7 @@ export default function OrderDetailScreen() {
               Cập nhật: {new Date(status.updated_at).toLocaleString('vi-VN')}
             </Text>
           </View>
-        </View>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
