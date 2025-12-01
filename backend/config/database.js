@@ -64,18 +64,32 @@ export async function initDB() {
     console.log("Database category initialized successfully");
 
     await sql`CREATE TABLE IF NOT EXISTS "product"(
-      id SERIAL PRIMARY KEY,
-      SKU VARCHAR(255) NOT NULL,
-      name VARCHAR(255) NOT NULL,
-      description VARCHAR(255) NOT NULL,
-      price DECIMAL(10,2) NOT NULL,
-      stock INT NOT NULL,
-      image VARCHAR(255) NOT NULL DEFAULT '',
-      customer_id VARCHAR(255) NULL REFERENCES customer(id),
-      category_id INT NULL REFERENCES category(id),
-      created_at DATE NOT NULL DEFAULT CURRENT_DATE
+    id SERIAL PRIMARY KEY,
+    SKU VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    price DECIMAL(10,2) NULL DEFAULT NULL,
+    stock INT NULL DEFAULT 0,
+    images JSONB NOT NULL DEFAULT '[]',
+    customer_id VARCHAR(255) NULL REFERENCES customer(id),
+    category_id INT NULL REFERENCES category(id),
+    created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
     console.log("Database product initialized successfully");
+
+    await sql`CREATE TABLE IF NOT EXISTS "product_variant"(
+    id SERIAL PRIMARY KEY,
+    product_id INT NOT NULL REFERENCES "product"(id) ON DELETE CASCADE,
+    size VARCHAR(50) NOT NULL,
+    color VARCHAR(50) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    stock INT NOT NULL DEFAULT 0,
+    weight DECIMAL(8,2) NOT NULL DEFAULT 0.00,
+    dimensions VARCHAR(100) NOT NULL DEFAULT '',
+    created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+    UNIQUE(product_id, size, color)
+    )`;
+    console.log("Database product variant initialized successfully");
 
     await sql`CREATE TABLE IF NOT EXISTS "cart"(
       id SERIAL PRIMARY KEY,
