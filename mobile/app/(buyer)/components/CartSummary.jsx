@@ -1,9 +1,10 @@
+// CartSummary.jsx
 import { Text, TouchableOpacity, View } from 'react-native';
 import { buyerStyles } from '../styles/BuyerStyles';
 
 export default function CartSummary({ total = 0, onCheckout }) {
   // Fallback if total undefined from API data
-  const formattedTotal = total.toLocaleString('vi-VN');
+  const formattedTotal = parseFloat(total).toLocaleString('vi-VN');
 
   return (
     <View style={buyerStyles.summary}>

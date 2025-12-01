@@ -19,7 +19,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { API_URL } from '../../../constants/api';
 
 const { width, height } = Dimensions.get('window');
-const IMAGE_HEIGHT = height * 0.45;
+const IMAGE_HEIGHT = height * 0.5;
 
 const detailStyles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#FFF6F5' },

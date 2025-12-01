@@ -22,7 +22,7 @@ const API_BASE_URL = API_URL;
 export default function CheckoutScreen() {
   const { user } = useUser();
   const customerId = user?.id;
-  const { cartItems, total } = useCart(customerId);
+  const { cartItems, total } = useCart(customerId);  // SỬA: cartItems = [{ cart, product, variant }]
   const navigation = useNavigation();
 
   const {
@@ -133,7 +133,7 @@ export default function CheckoutScreen() {
       return;
     }
     // console.log('Confirming with shipmentData:', shipmentData); // Debug log để check address_id đã truyền chưa
-    handleCheckout(cartItems);
+    handleCheckout(cartItems);  // SỬA: Pass cartItems với { cart, product, variant }
   };
 
   // Render item địa chỉ
@@ -151,7 +151,7 @@ export default function CheckoutScreen() {
       >
         <View style={checkoutStyles.optionLeft}>
           <MaterialCommunityIcons
-            name={isSelected ? 'map-marker-check' : 'map-marker-outline'}
+            name="map-marker-outline"
             size={26}
             color={isSelected ? '#fff' : '#6D4C41'}
           />
@@ -161,16 +161,18 @@ export default function CheckoutScreen() {
                 checkoutStyles.optionText,
                 isSelected && { color: '#fff', fontWeight: '600' },
               ]}
+              numberOfLines={1}
             >
-              {item.address || 'Địa chỉ không xác định'}
+              {item.name || 'Địa chỉ mặc định'}  {/* Giả định có field name */}
             </Text>
             <Text
               style={[
-                { fontSize: 12, color: isSelected ? '#fff' : '#999' },
-                isSelected && { color: '#fff' },
+                { fontSize: 12, color: isSelected ? 'rgba(255,255,255,0.8)' : '#8D6E63' },
+                checkoutStyles.optionText,
               ]}
+              numberOfLines={2}
             >
-              {item.city}, {item.state}, {item.country} - {item.zipcode}
+              {`${item.address || ''}, ${item.district || ''}, ${item.city || ''}`.trim() || 'Chi tiết địa chỉ'}
             </Text>
           </View>
         </View>
@@ -270,22 +272,20 @@ export default function CheckoutScreen() {
             })}
           </View>
 
-          {/* Cart Items List - Giữ nguyên */}
+          {/* Cart Items List - SỬA: Hiển thị từ cartItems với variant */}
           <View style={checkoutStyles.section}>
             <Text style={checkoutStyles.sectionTitle}>Giỏ hàng của bạn ({cartItems.length} sản phẩm)</Text>
             <FlatList
-              data={cartItems.map(item => ({
-                product: item.product || (item.cart?.product || {}),
-                cart: item.cart || item,
-              }))}
+              data={cartItems}  // SỬA: Dùng cartItems trực tiếp [{ cart, product, variant }]
               renderItem={({ item }) => (
                 <View style={checkoutStyles.orderItem}>
                   <Text style={checkoutStyles.itemName}>{item.product?.name || 'Sản phẩm'}</Text>
                   <View style={checkoutStyles.itemDetails}>
                     <Text>Số lượng: {item.cart?.quantity || 0}</Text>
-                    <Text>Đơn giá: {(item.product?.price || 0).toLocaleString('vi-VN')} VNĐ</Text>
+                    <Text>Kích cỡ: {item.variant?.size || 'N/A'} | Màu: {item.variant?.color || 'N/A'}</Text>
+                    <Text>Đơn giá: {(item.variant?.price || 0).toLocaleString('vi-VN')} VNĐ</Text>
                     <Text style={checkoutStyles.subtotal}>
-                      Tạm tính: {((item.cart?.quantity || 0) * (item.product?.price || 0)).toLocaleString('vi-VN')} VNĐ
+                      Tạm tính: {((item.cart?.quantity || 0) * (item.variant?.price || 0)).toLocaleString('vi-VN')} VNĐ
                     </Text>
                   </View>
                 </View>
