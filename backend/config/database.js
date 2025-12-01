@@ -97,6 +97,7 @@ export async function initDB() {
       size VARCHAR(10) NULL,
       color VARCHAR(50) NULL,
       customer_id VARCHAR(255) NULL REFERENCES customer(id),
+      product_variant_id INT NULL REFERENCES "product_variant"(id) ON DELETE SET NULL,
       product_id INT NULL REFERENCES product(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
