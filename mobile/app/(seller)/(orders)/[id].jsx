@@ -1,17 +1,16 @@
-// File: app/(seller)/order/[id].jsx (OrderDetail - Chi Tiết Đơn Hàng)
 import { useUser } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { API_URL } from '../../../constants/api';
@@ -28,11 +27,68 @@ const STATUS_MAP = {
   cancelled: { text: 'Đã Hủy', color: '#FF4500', bgColor: '#F8D7DA' },
 };
 
+// Hàm fetch thông tin user (buyer/seller/shipper)
+const fetchUserInfo = async (userId) => {
+  if (!userId) return null;
+  try {
+    const response = await fetch(`${API_BASE}/customers/${userId}`);
+    if (!response.ok) {
+      console.warn(`Failed to fetch user ${userId}: ${response.status}`);
+      return null;
+    }
+    const data = await response.json();
+    return {
+      first_name: data.first_name || data.firstname || undefined,
+      last_name: data.last_name || data.lastname || undefined,
+      phone: data.phone_number || data.phone || undefined,
+      // Thêm avatar nếu cần: avatar: data.avatar || data.avatar_url || undefined,
+    };
+  } catch (error) {
+    console.error('Error fetching user info:', error);
+    return null;
+  }
+};
+
+// CẬP NHẬT: Hàm fetch thông tin variant (thay vì product, dùng variant_id để lấy chi tiết đầy đủ) - THÊM LOG ĐỂ DEBUG
+const fetchVariantInfo = async (variantId) => {
+  if (!variantId) {
+    // console.log('Debug fetchVariantInfo: variantId is null or undefined, skipping fetch');
+    return null;
+  }
+  try {
+    // console.log(`Debug fetchVariantInfo: Calling API for variantId = ${variantId}`);
+    const response = await fetch(`${API_BASE}/product/product_variant/${variantId}`);
+    // console.log(`Debug fetchVariantInfo: API response status = ${response.status}`);
+    if (!response.ok) {
+      console.warn(`Failed to fetch variant ${variantId}: ${response.status}`);
+      return null;
+    }
+    const resData = await response.json();
+    // console.log('Debug fetchVariantInfo: Full API response data =', resData);  // LOG ĐẦY ĐỦ ĐỂ DEBUG LỖI DỮ LIỆU
+
+    const data = resData.data || resData; // Giả sử response có { success: true, data: {...} }
+    // console.log('Debug fetchVariantInfo: Processed data after extracting =', data);  // LOG SAU KHI XỬ LÝ
+
+    const variantInfo = {
+      name: data.product_name || 'N/A', // Tên sản phẩm từ variant
+      price: parseFloat(data.price) || 0, // Parse string price thành number
+      size: data.size || 'N/A',
+      color: data.color || 'N/A',
+      stock: data.stock || 0, // Thêm stock nếu cần hiển thị sau
+    };
+    // console.log('Debug fetchVariantInfo: Final variantInfo object =', variantInfo);  // LOG CUỐI CÙNG ĐỂ KIỂM TRA
+    return variantInfo;
+  } catch (error) {
+    console.error('Error fetching variant info:', error);
+    return null;
+  }
+};
+
 export default function OrderDetail() {
   const router = useRouter();
   const { user } = useUser();
   const sellerId = user?.id;
-  const { id } = useLocalSearchParams(); // Lấy order ID từ route params
+  const { id } = useLocalSearchParams(); // Lấy order_status ID từ route params
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -53,16 +109,94 @@ export default function OrderDetail() {
 
     try {
       setLoading(true);
+      // console.log(`Debug loadOrderDetail: Fetching order_status/${id}`);  // THÊM LOG CHO LOAD CHÍNH
       const response = await fetch(`${API_BASE}/order_status/${id}`);
+      // console.log(`Debug loadOrderDetail: order_status API response status = ${response.status}`);
       if (!response.ok) throw new Error('Lỗi tải chi tiết');
-      const data = await response.json();
+      let data = await response.json();
+      // console.log('Debug loadOrderDetail: Full order_status data =', data);  // LOG ĐẦY ĐỦ ORDER_STATUS ĐỂ KIỂM TRA VARIANT_ID
+
+      // CẬP NHẬT: In ra giá trị variant_id ngay sau khi fetch (để debug khi click)
+      // console.log('Data:', data);
+      // console.log('Variant ID:', data.variant_id);  // <-- THÊM LOG NÀY ĐÂY!
+
+      // CẬP NHẬT: Lấy quantity trực tiếp từ order_status response
+      const quantity = data.quantity || null;
+      // console.log('Debug loadOrderDetail: Extracted quantity =', quantity);
+
+      // CẬP NHẬT: Check variant_id - Nếu không có, throw error ngay
+      if (!data.variant_id) {
+        throw new Error('Thiếu variant_id trong đơn hàng. Không thể tải chi tiết sản phẩm.');
+      }
+      // console.log('Debug loadOrderDetail: Found variant_id =', data.variant_id);
+
+      // Enrich data: Fetch buyer, seller, shipper, và variant info (bắt buộc fetch vì đã check variant_id)
+      const [buyerInfo, sellerInfo, shipperInfo, variantInfo] = await Promise.all([
+        fetchUserInfo(data.buyer_id),
+        fetchUserInfo(data.seller_id),
+        data.shipper_id ? fetchUserInfo(data.shipper_id) : null,
+        fetchVariantInfo(data.variant_id), // Luôn fetch vì đã check tồn tại
+      ]);
+
+      // CẬP NHẬT: Nếu variantInfo null (API fail), throw error
+      if (!variantInfo) {
+        throw new Error('Không thể lấy thông tin sản phẩm từ variant_id.');
+      }
+
+      // console.log('Debug loadOrderDetail: Enriched buyerInfo =', buyerInfo);
+      // console.log('Debug loadOrderDetail: Enriched sellerInfo =', sellerInfo);
+      // console.log('Debug loadOrderDetail: Enriched shipperInfo =', shipperInfo);
+      // console.log('Debug loadOrderDetail: Enriched variantInfo =', variantInfo);
+
+      // Gộp enriched info vào order
+      data = {
+        ...data,
+        quantity,
+        buyerInfo,
+        sellerInfo,
+        shipperInfo,
+        productInfo: variantInfo, // Không fallback nữa, vì đã check
+      };
+      // console.log('Debug loadOrderDetail: Final merged order data =', data);  // LOG CUỐI CÙNG ĐỂ KIỂM TRA TOÀN BỘ
+
       setOrder(data);
       setNewStatus(data.status);
     } catch (error) {
       console.error('Lỗi load order detail:', error);
-      Alert.alert('Lỗi', 'Không thể tải chi tiết đơn hàng');
+      Alert.alert('Lỗi', error.message || 'Không thể tải chi tiết đơn hàng');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // CẬP NHẬT: Hàm update stock variant (gọi khi chuyển từ pending sang processing)
+  const updateVariantStock = async (productId, variantId, change) => {
+    if (!productId || !variantId || change === undefined) {
+      console.warn('Missing params for stock update');
+      return false;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/product/products/${productId}/variants/${variantId}/stock`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ change }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Failed to update stock:', errorText);
+        Alert.alert('Lỗi', 'Không thể cập nhật tồn kho. Vui lòng thử lại.');
+        return false;
+      }
+
+      const result = await response.json();
+      // console.log('Stock updated successfully:', result);
+      return true;
+    } catch (error) {
+      console.error('Error updating stock:', error);
+      Alert.alert('Lỗi', 'Không thể cập nhật tồn kho.');
+      return false;
     }
   };
 
@@ -79,9 +213,22 @@ export default function OrderDetail() {
         body: JSON.stringify({ status, seller_id: sellerId }),
       });
       if (!response.ok) throw new Error('Lỗi cập nhật');
-      Alert.alert('Thành công', 'Cập nhật trạng thái đơn hàng thành công');
+
+      // CẬP NHẬT: Nếu chuyển từ 'pending' sang 'processing', giảm stock variant bằng quantity
+      if (order.status === 'pending' && status === 'processing' && order.quantity > 0 && order.product_id && order.variant_id) {
+        const stockUpdated = await updateVariantStock(order.product_id, order.variant_id, -order.quantity);
+        if (!stockUpdated) {
+          // Nếu update stock fail, có thể rollback status hoặc chỉ warn (tùy business logic)
+          Alert.alert('Cảnh báo', 'Cập nhật trạng thái thành công, nhưng tồn kho chưa được điều chỉnh. Vui lòng kiểm tra thủ công.');
+        } else {
+          Alert.alert('Thành công', 'Cập nhật trạng thái và tồn kho thành công!');
+        }
+      } else {
+        Alert.alert('Thành công', 'Cập nhật trạng thái đơn hàng thành công');
+      }
+
       setModalVisible(false);
-      loadOrderDetail(); // Reload chi tiết
+      loadOrderDetail(); // Reload chi tiết (sẽ re-enrich)
     } catch (error) {
       console.error('Lỗi update status:', error);
       Alert.alert('Lỗi', 'Không thể cập nhật trạng thái');
@@ -90,6 +237,33 @@ export default function OrderDetail() {
 
   const openUpdateModal = () => {
     setModalVisible(true);
+  };
+
+  // Helper để hiển thị tên user
+  const getUserDisplayName = (userInfo, fallbackId) => {
+    if (userInfo && userInfo.first_name && userInfo.last_name) {
+      return `${userInfo.first_name} ${userInfo.last_name}`.trim();
+    }
+    return fallbackId || 'N/A';
+  };
+
+  // Helper để hiển thị shipper (với fallback nếu chưa assign)
+  const getShipperDisplay = () => {
+    if (order.shipper_id && order.shipperInfo) {
+      return getUserDisplayName(order.shipperInfo, order.shipper_id);
+    }
+    return 'Chưa assign người giao hàng';
+  };
+
+  // CẬP NHẬT: Helper hiển thị ngày với múi giờ Việt Nam
+  const formatDateVN = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('vi-VN', { 
+      timeZone: 'Asia/Ho_Chi_Minh',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
   };
 
   if (loading || !order) {
@@ -105,20 +279,52 @@ export default function OrderDetail() {
 
   return (
     <SellerScreenLayout title="Chi Tiết Đơn Hàng" subtitle="Thông tin chi tiết">
-      <ScrollView style={styles.scrollViewContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollViewContainer}>
         <View style={styles.detailContainer}>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Mã Đơn Hàng:</Text>
-            <Text style={styles.detailValue}>#{order.order_id}</Text>
+          {/* CẬP NHẬT: Hiển thị số lượng sản phẩm trực tiếp từ order_status */}
+          {order.quantity && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Số Lượng:</Text>
+              <Text style={styles.detailValue}>{order.quantity}</Text>
+            </View>
+          )}
+
+          {/* CẬP NHẬT: UI Sản phẩm gọn gàng hơn - gộp tên, size, color vào một row, giá riêng */}
+          <View style={styles.productSection}>
+            <Text style={styles.sectionTitle}>Sản Phẩm</Text>
+            <View style={styles.productCard}>
+              <Text style={styles.productName}>{order.productInfo?.name || 'N/A'}</Text>
+              <Text style={styles.productVariant}>
+                {order.productInfo?.size !== 'N/A' && `Size: ${order.productInfo.size} | `}
+                {order.productInfo?.color !== 'N/A' && `Màu: ${order.productInfo.color}`}
+              </Text>
+            </View>
+            <View style={styles.priceRow}>
+              <Text style={styles.detailLabel}>Giá:</Text>
+              <Text style={styles.priceValue}>
+                {order.productInfo?.price > 0 
+                  ? `${order.productInfo.price.toLocaleString('vi-VN')} VNĐ` 
+                  : 'N/A'
+                }
+              </Text>
+            </View>
           </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Sản Phẩm:</Text>
-            <Text style={styles.detailValue}>{order.product_id} (Chi tiết sản phẩm)</Text>
-          </View>
+
+          {/* Người dùng */}
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Khách Hàng:</Text>
-            <Text style={styles.detailValue}>{order.buyer_id}</Text>
+            <Text style={styles.detailValue}>{getUserDisplayName(order.buyerInfo, order.buyer_id)}</Text>
           </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Seller:</Text>
+            <Text style={styles.detailValue}>{getUserDisplayName(order.sellerInfo, order.seller_id)}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Người Giao Hàng:</Text>
+            <Text style={styles.detailValue}>{getShipperDisplay()}</Text>
+          </View>
+
+          {/* Trạng thái */}
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Trạng Thái:</Text>
             <View style={[styles.statusBadge, { backgroundColor: STATUS_MAP[order.status]?.bgColor }]}>
@@ -127,21 +333,18 @@ export default function OrderDetail() {
               </Text>
             </View>
           </View>
+          {/* CẬP NHẬT: Ngày với múi giờ VN */}
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Ngày Tạo:</Text>
-            <Text style={styles.detailValue}>{new Date(order.created_at).toLocaleDateString('vi-VN')}</Text>
+            <Text style={styles.detailValue}>{formatDateVN(order.created_at)}</Text>
           </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Ngày Cập Nhật:</Text>
-            <Text style={styles.detailValue}>{new Date(order.updated_at).toLocaleDateString('vi-VN')}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Seller ID:</Text>
-            <Text style={styles.detailValue}>{order.seller_id}</Text>
+            <Text style={styles.detailValue}>{formatDateVN(order.updated_at)}</Text>
           </View>
         </View>
 
-        <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+        <TouchableOpacity
           style={styles.updateButton}
           onPress={openUpdateModal}
           activeOpacity={0.7}
@@ -156,7 +359,7 @@ export default function OrderDetail() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Cập Nhật Trạng Thái</Text>
-              <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+              <TouchableOpacity
                 onPress={() => setModalVisible(false)}
                 style={styles.closeBtn}
                 activeOpacity={0.7}
@@ -166,7 +369,7 @@ export default function OrderDetail() {
             </View>
             <Text style={styles.modalOrderId}>Đơn hàng: #{order.order_id}</Text>
             <Text style={styles.modalLabel}>Chọn trạng thái mới:</Text>
-            <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+            <TouchableOpacity
               style={styles.statusOption}
               onPress={() => setNewStatus('pending')}
               activeOpacity={0.8}
@@ -174,7 +377,7 @@ export default function OrderDetail() {
               <View style={[styles.statusCircle, newStatus === 'pending' && styles.statusCircleSelected]} />
               <Text style={styles.statusOptionText}>Chờ Xử Lý</Text>
             </TouchableOpacity>
-            <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+            <TouchableOpacity
               style={styles.statusOption}
               onPress={() => setNewStatus('processing')}
               activeOpacity={0.8}
@@ -182,7 +385,7 @@ export default function OrderDetail() {
               <View style={[styles.statusCircle, newStatus === 'processing' && styles.statusCircleSelected]} />
               <Text style={styles.statusOptionText}>Đang Xử Lý</Text>
             </TouchableOpacity>
-            <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+            <TouchableOpacity
               style={styles.statusOption}
               onPress={() => setNewStatus('shipped')}
               activeOpacity={0.8}
@@ -190,7 +393,7 @@ export default function OrderDetail() {
               <View style={[styles.statusCircle, newStatus === 'shipped' && styles.statusCircleSelected]} />
               <Text style={styles.statusOptionText}>Đang Giao</Text>
             </TouchableOpacity>
-            <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+            <TouchableOpacity
               style={styles.statusOption}
               onPress={() => setNewStatus('delivered')}
               activeOpacity={0.8}
@@ -198,7 +401,7 @@ export default function OrderDetail() {
               <View style={[styles.statusCircle, newStatus === 'delivered' && styles.statusCircleSelected]} />
               <Text style={styles.statusOptionText}>Đã Giao</Text>
             </TouchableOpacity>
-            <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+            <TouchableOpacity
               style={styles.statusOption}
               onPress={() => setNewStatus('cancelled')}
               activeOpacity={0.8}
@@ -206,7 +409,7 @@ export default function OrderDetail() {
               <View style={[styles.statusCircle, newStatus === 'cancelled' && styles.statusCircleSelected]} />
               <Text style={styles.statusOptionText}>Đã Hủy</Text>
             </TouchableOpacity>
-            <TouchableOpacity  // Thay Pressable bằng TouchableOpacity
+            <TouchableOpacity
               style={styles.saveBtn}
               onPress={() => updateStatus(newStatus)}
               activeOpacity={0.7}
@@ -244,6 +447,49 @@ const styles = StyleSheet.create({
     paddingVertical: hp('1.5%'),
     borderBottomWidth: 1,
     borderBottomColor: '#EEE',
+  },
+  // CẬP NHẬT: Styles mới cho phần sản phẩm gọn gàng
+  productSection: {
+    marginBottom: hp('2%'),
+  },
+  sectionTitle: {
+    fontSize: hp('2.2%'),
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: hp('1%'),
+  },
+  productCard: {
+    backgroundColor: '#F8F9FA',
+    padding: wp('4%'),
+    borderRadius: 8,
+    marginBottom: hp('1%'),
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+  },
+  productName: {
+    fontSize: hp('2%'),
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: hp('0.5%'),
+  },
+  productVariant: {
+    fontSize: hp('1.6%'),
+    color: '#666',
+    marginBottom: hp('0.5%'),
+  },
+  priceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: hp('1%'),
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE',
+  },
+  priceValue: {
+    fontSize: hp('2%'),
+    fontWeight: '600',
+    color: '#EE4D2D',
+    textAlign: 'right',
+    flex: 1,
   },
   detailLabel: {
     fontSize: hp('1.8%'),

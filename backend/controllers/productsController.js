@@ -164,6 +164,41 @@ export async function getAllProducts(req, res) {
   }
 }
 
+// Get Variant by variant_id (with product name)
+export async function getVariantById(req, res) {
+  try {
+    const { variant_id } = req.params;
+
+    if (!variant_id || isNaN(variant_id)) {
+      return res.status(400).json({ message: "variant_id is required and must be a valid number" });
+    }
+
+    const variant = await sql`
+      SELECT 
+        pv.*,
+        p.name AS product_name,
+        p.SKU AS product_SKU
+      FROM product_variant pv
+      JOIN product p ON pv.product_id = p.id
+      WHERE pv.id = ${variant_id}
+    `;
+
+    if (variant.length === 0) {
+      return res.status(404).json({ message: "Variant not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: variant[0]
+    });
+
+  } catch (error) {
+    console.error("Error getting variant by ID:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+
 // Create Product (with variants)
 export async function createProduct(req, res) {
   try {
@@ -236,7 +271,6 @@ export async function createProduct(req, res) {
     return res.status(500).json({ message: "Internal server error" });
   }
 }
-
 
 // Update Product (replace variants, COALESCE fields)
 export async function updateProduct(req, res) {
@@ -367,6 +401,57 @@ export async function updateProduct(req, res) {
     if (error.code === '23505') {
       return res.status(409).json({ message: "SKU or variant already exists" });
     }
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// Update stock of the product variant
+export async function updateVariantStock(req, res) {
+  try {
+    const { product_id, variant_id } = req.params;
+    const { change } = req.body; // nhận change thay vì stock
+
+    if (!product_id || !variant_id) {
+      return res.status(400).json({ message: "Missing product_id or variant_id" });
+    }
+
+    if (change === undefined || isNaN(change)) {
+      return res.status(400).json({ message: "Invalid change value" });
+    }
+
+    // Lấy stock hiện tại
+    const existing = await sql`
+      SELECT stock FROM product_variant
+      WHERE id = ${variant_id} AND product_id = ${product_id}
+    `;
+
+    if (existing.length === 0) {
+      return res.status(404).json({ message: "Variant not found" });
+    }
+
+    const currentStock = existing[0].stock;
+    const newStock = currentStock + Number(change);
+
+    if (newStock < 0) {
+      return res.status(400).json({ message: "Stock cannot be negative" });
+    }
+
+    // Update stock
+    const updated = await sql`
+      UPDATE product_variant
+      SET stock = ${newStock}
+      WHERE id = ${variant_id} AND product_id = ${product_id}
+      RETURNING id, product_id, stock
+    `;
+
+    return res.status(200).json({
+      success: true,
+      message: "Stock adjusted successfully",
+      data: updated[0],
+    });
+
+  } catch (error) {
+    console.error("Error updating variant stock:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }

@@ -35,15 +35,15 @@ export async function getOrderItemById(req, res) {
 
 export async function createOrderItem(req, res) {
 try {
-    const { quantity, price, order_id, product_id } = req.body;
+    const { quantity, price, order_id, product_id, variant_id } = req.body;
 
     if (!quantity) {
     return res.status(400).json({ message: "All fields are required" });
     }
 
     const order_item = await sql`
-    INSERT INTO "order_item"(quantity, price, order_id, product_id)
-    VALUES (${quantity},${price},${order_id},${product_id})
+    INSERT INTO "order_item"(quantity, price, order_id, product_id, variant_id)
+    VALUES (${quantity},${price},${order_id},${product_id},${variant_id})
     RETURNING *
     `;
 
@@ -86,6 +86,32 @@ export async function updateOrderItem(req, res) {
     res.status(200).json(updatedOrderItem[0]);
   } catch (error) {
     console.error("Error updating the OrderItem:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// Get all order items by order_id
+export async function getOrderItemsByOrderId(req, res) {
+  try {
+    const { order_id } = req.params;
+
+    // Validate input
+    if (!order_id) {
+      return res.status(400).json({ message: "order_id is required" });
+    }
+
+    // Query database
+    const orderItems = await sql`
+      SELECT * FROM order_item WHERE order_id = ${order_id}
+    `;
+
+    if (orderItems.length === 0) {
+      return res.status(404).json({ message: "No order items found for this order" });
+    }
+
+    res.status(200).json(orderItems);
+  } catch (error) {
+    console.error("Error fetching order items by order_id:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }

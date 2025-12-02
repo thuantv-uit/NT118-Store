@@ -1,17 +1,19 @@
+// CartItem.jsx
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { buyerStyles } from '../styles/BuyerStyles';
 
 export default function CartItem({ item, onUpdateQuantity, onRemove }) {
-  // Destructure from { cart, product } (product can null)
-  const { cart, product } = item || {};
-  const { id: cartId, quantity, size, color } = cart || {};
-  const { name = 'Sản phẩm không xác định', price = 0, images = [], image } = product || {};  // from product
+  // SỬA: Destructure từ { cart, product, variant }
+  const { cart, product, variant } = item || {};
+  const { id: cartId, quantity } = cart || {};
+  const { name = 'Sản phẩm không xác định' } = product || {};
+  const { price = 0, size = 'N/A', color = 'N/A', stock = 0 } = variant || {};  // SỬA: Dùng variant
 
   const formattedPrice = parseFloat(price).toLocaleString('vi-VN'); // Parse string from API
-  const imageUri = images?.[0] || image || 'https://via.placeholder.com/80x80/BDAAA8/FFFFFF?text=No+Image';
+  const imageUri = product?.images?.[0] || product?.image || 'https://via.placeholder.com/80x80/BDAAA8/FFFFFF?text=No+Image';
 
-  // console.log(`CartItem for cart ${cartId}: product images=`, images, 'single image=', image, 'uri=', imageUri); // Debug images
+  // console.log(`CartItem for cart ${cartId}: variant=`, variant, 'uri=', imageUri); // Debug
 
   const handleDecrease = () => {
     if (quantity > 1) {
@@ -21,7 +23,13 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }) {
     }
   };
 
-  const handleIncrease = () => onUpdateQuantity(cartId, quantity + 1);
+  const handleIncrease = () => {
+    if (stock > 0 && quantity < stock) {
+      onUpdateQuantity(cartId, quantity + 1);
+    } else if (stock === 0) {
+      Alert.alert('Cảnh báo', 'Sản phẩm đã hết hàng!');
+    }
+  };
 
   return (
     <View style={buyerStyles.cartItem}>
@@ -36,9 +44,14 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }) {
           {name}
         </Text>
         <Text style={buyerStyles.itemDetails}>
-          Kích cỡ: {size || 'N/A'} | Màu: {color || 'N/A'}
+          Kích cỡ: {size} | Màu: {color}
         </Text>
         <Text style={buyerStyles.itemPrice}>{formattedPrice}₫</Text>
+        {stock > 0 && (
+          <Text style={{ fontSize: 12, color: 'gray', marginTop: 4 }}>
+            Còn lại: {stock}
+          </Text>
+        )}
       </View>
       <View style={{ alignItems: 'center', justifyContent: 'space-between' }}>
         <View style={buyerStyles.quantityContainer}>
@@ -56,8 +69,12 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }) {
           </TouchableOpacity>
           <Text style={buyerStyles.qtyNumber}>{quantity}</Text>
           <TouchableOpacity
-            style={buyerStyles.qtyButton}
+            style={[
+              buyerStyles.qtyButton,
+              stock === 0 && { opacity: 0.5 }
+            ]}
             onPress={handleIncrease}
+            disabled={stock === 0}
             accessibilityLabel={`Tăng số lượng của ${name}`}
             accessibilityRole="button"
           >

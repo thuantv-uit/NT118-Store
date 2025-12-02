@@ -3,29 +3,30 @@ import { sql } from "../config/database.js";
 // Create order_status
 export async function createOrderStatus(req, res) {
   try {
-    const { seller_id, buyer_id, product_id, order_id, status } = req.body;
+    const { seller_id, buyer_id, product_id, order_id, status, quantity, variant_id } = req.body;  // THÊM: variant_id từ req.body
 
-    if (!seller_id || !buyer_id || !product_id || !order_id || !status) {
-      return res.status(400).json({ message: "seller_id, buyer_id, product_id, order_id, and status are required" });
+    // THÊM: Validate variant_id required (để unique theo variant)
+    if (!seller_id || !buyer_id || !product_id || !order_id || !status || !quantity || !variant_id) {
+      return res.status(400).json({ message: "seller_id, buyer_id, product_id, order_id, status, quantity and variant_id are required" });
     }
 
-    // Validate status
+    // Validate status (giữ nguyên)
     const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: `Status must be one of: ${validStatuses.join(', ')}` });
     }
 
-    // Check nếu đã tồn tại cho combo order_id + product_id
+    // CẬP NHẬT: Check nếu đã tồn tại cho combo order_id + product_id + variant_id (tránh duplicate variant)
     const existingStatus = await sql`
       SELECT id FROM "order_status" 
-      WHERE order_id = ${order_id} AND product_id = ${product_id}
+      WHERE order_id = ${order_id} AND product_id = ${product_id} AND variant_id = ${variant_id}
     `;
 
     if (existingStatus.length > 0) {
-      return res.status(400).json({ message: "Order status already exists for this order and product" });
+      return res.status(400).json({ message: "Order status already exists for this order, product and variant" });
     }
 
-    // Tìm shipper ngẫu nhiên từ bảng customer (role = 'shipper')
+    // Tìm shipper ngẫu nhiên từ bảng customer (role = 'shipper') - giữ nguyên
     const shippers = await sql`
       SELECT id FROM "customer" 
       WHERE role = 'shipper' 
@@ -39,11 +40,11 @@ export async function createOrderStatus(req, res) {
 
     const shipper_id = shippers[0].id;
 
-    // Tạo mới (current_location mặc định NULL, shipper_id từ query)
+    // CẬP NHẬT: Tạo mới với thêm variant_id vào INSERT (current_location mặc định NULL)
     const newOrderStatus = await sql`
-      INSERT INTO "order_status" (seller_id, buyer_id, product_id, order_id, status, shipper_id)
-      VALUES (${seller_id}, ${buyer_id}, ${product_id}, ${order_id}, ${status}, ${shipper_id})
-      RETURNING id, seller_id, buyer_id, product_id, order_id, status, shipper_id, current_location, created_at, updated_at
+      INSERT INTO "order_status" (seller_id, buyer_id, product_id, order_id, status, shipper_id, quantity, variant_id)
+      VALUES (${seller_id}, ${buyer_id}, ${product_id}, ${order_id}, ${status}, ${shipper_id}, ${quantity}, ${variant_id})
+      RETURNING id, seller_id, buyer_id, product_id, order_id, status, shipper_id, quantity, variant_id, current_location, created_at, updated_at
     `;
 
     res.status(201).json(newOrderStatus[0]);
@@ -63,7 +64,7 @@ export async function getOrderStatusById(req, res) {
     }
 
     const orderStatus = await sql`
-      SELECT id, seller_id, buyer_id, product_id, order_id, status, current_location, created_at, updated_at
+      SELECT id, seller_id, buyer_id, shipper_id, product_id, order_id, variant_id, quantity, status, current_location, created_at, updated_at
       FROM "order_status"
       WHERE id = ${id}
     `;
@@ -89,7 +90,7 @@ export async function getOrderStatusByOrderId(req, res) {
     }
 
     const orderStatuses = await sql`
-      SELECT id, seller_id, buyer_id, product_id, order_id, status, current_location, created_at, updated_at
+      SELECT id, seller_id, buyer_id, product_id, order_id, quantity, status, current_location, created_at, updated_at
       FROM "order_status"
       WHERE order_id = ${order_id}
       ORDER BY created_at ASC
@@ -116,7 +117,7 @@ export async function getOrderStatusBySellerId(req, res) {
     }
 
     const orderStatuses = await sql`
-      SELECT id, seller_id, buyer_id, product_id, order_id, status, current_location, created_at, updated_at
+      SELECT id, seller_id, buyer_id, product_id, order_id, quantity, status, current_location, created_at, updated_at
       FROM "order_status"
       WHERE seller_id = ${seller_id}
       ORDER BY created_at DESC
@@ -143,7 +144,7 @@ export async function getOrderStatusByBuyerId(req, res) {
     }
 
     const orderStatuses = await sql`
-      SELECT id, seller_id, buyer_id, product_id, order_id, status, current_location, created_at, updated_at
+      SELECT id, seller_id, buyer_id, product_id, order_id, quantity, status, current_location, created_at, updated_at
       FROM "order_status"
       WHERE buyer_id = ${buyer_id}
       ORDER BY created_at DESC
@@ -170,7 +171,7 @@ export async function getOrderStatusByShipperId(req, res) {
     }
 
     const orderStatuses = await sql`
-      SELECT id, seller_id, buyer_id, product_id, order_id, status, shipper_id, current_location, created_at, updated_at
+      SELECT id, seller_id, buyer_id, product_id, order_id, variant_id, quantity, status, shipper_id, current_location, created_at, updated_at
       FROM "order_status"
       WHERE shipper_id = ${shipper_id}
       ORDER BY created_at DESC
@@ -197,9 +198,65 @@ export async function updateOrderStatus(req, res) {
       return res.status(400).json({ message: "ID is required" });
     }
 
-    // Phải có shipper hoặc seller ID
     if (!shipper_id && !seller_id) {
       return res.status(400).json({ message: "At least one of shipper_id or seller_id is required to update" });
+    }
+
+    // Lấy trạng thái hiện tại
+    const existing = await sql`
+      SELECT order_id, product_id, seller_id, shipper_id, status
+      FROM "order_status" 
+      WHERE id = ${id}
+    `;
+
+    if (existing.length === 0) {
+      return res.status(403).json({ message: "Order not found" });
+    }
+
+    const oldStatus = existing[0].status;
+    const order_id = existing[0].order_id;
+    const product_id = existing[0].product_id;
+
+    // Nếu seller đổi trạng thái từ "pending" sang "processing"
+    if (seller_id && status === 'processing' && oldStatus === 'pending') {
+      
+      // Lấy variant + quantity từ order_item
+      const orderItem = await sql`
+        SELECT variant_id, quantity 
+        FROM "order_item"
+        WHERE order_id = ${order_id} AND product_id = ${product_id}
+      `;
+
+      if (orderItem.length === 0) {
+        return res.status(400).json({ message: "Order item not found while updating stock" });
+      }
+
+      const variant_id = orderItem[0].variant_id;
+      const quantity = orderItem[0].quantity;
+
+      // Lấy stock hiện tại
+      const stockQuery = await sql`
+        SELECT stock FROM product_variant
+        WHERE id = ${variant_id}
+      `;
+
+      if (stockQuery.length === 0) {
+        return res.status(400).json({ message: "Variant not found when updating stock" });
+      }
+
+      const currentStock = stockQuery[0].stock;
+      const newStock = currentStock - quantity;
+
+      if (newStock < 0) {
+        return res.status(400).json({ message: "Not enough stock to process this order!" });
+      }
+
+      // Update stock
+      await sql`
+        UPDATE product_variant
+        SET stock = ${newStock}
+        WHERE id = ${variant_id}
+      `;
     }
 
     // Validate status nếu có
@@ -210,14 +267,13 @@ export async function updateOrderStatus(req, res) {
       }
     }
 
-    // Validate current_location nếu có
     if (current_location && current_location.length > 500) {
       return res.status(400).json({ message: "Current location must be under 500 characters" });
     }
 
-    // Check ownership: shipper hoặc seller phải match
+    // Check quyền sửa
     const existingStatus = await sql`
-      SELECT id, seller_id, shipper_id FROM "order_status" 
+      SELECT id FROM "order_status" 
       WHERE id = ${id} AND (seller_id = ${seller_id} OR shipper_id = ${shipper_id})
     `;
 
@@ -225,6 +281,7 @@ export async function updateOrderStatus(req, res) {
       return res.status(403).json({ message: "Access denied: You are not allowed to update this order" });
     }
 
+    // Update trạng thái đơn hàng
     const updatedOrderStatus = await sql`
       UPDATE "order_status"
       SET 
@@ -255,7 +312,7 @@ export async function deleteOrderStatus(req, res) {
     const deletedOrderStatus = await sql`
       DELETE FROM "order_status"
       WHERE id = ${id} AND (seller_id = ${seller_id} OR buyer_id = ${buyer_id})
-      RETURNING id, seller_id, buyer_id, product_id, order_id, status, current_location
+      RETURNING id, seller_id, buyer_id, product_id, order_id, quantity, status, current_location
     `;
 
     if (deletedOrderStatus.length === 0) {

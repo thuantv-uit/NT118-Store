@@ -7,17 +7,16 @@ import CartSummary from './components/CartSummary';
 import { useCart } from './hook/useCart';
 import { buyerStyles } from './styles/BuyerStyles';
 
-
 export default function CartScreen() {
   const { user } = useUser();
   const customerId = user?.id;
   const navigation = useNavigation();
 
   const {
-    cartItems,
+    cartItems,  // SỬA: Array { cart, product, variant }
     loading,
     error,
-    total,
+    total,  // SỬA: Tính từ variant.price * quantity
     updateQuantity,
     removeItem,
     refetchCart,
@@ -114,10 +113,10 @@ export default function CartScreen() {
         </View>
 
         <FlatList
-          data={cartItems}  // Array { cart, product }
-          renderItem={({ item }) => (  // item = { cart, product }
+          data={cartItems}  // SỬA: Array { cart, product, variant }
+          renderItem={({ item }) => (  // item = { cart, product, variant }
             <CartItem
-              item={item}  // Transmit { cart, product }
+              item={item}  // SỬA: Transmit { cart, product, variant } – CartItem sẽ dùng variant.price, variant.size, variant.color, etc.
               onUpdateQuantity={updateQuantity}
               onRemove={removeItem}
             />

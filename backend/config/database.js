@@ -97,6 +97,7 @@ export async function initDB() {
       size VARCHAR(10) NULL,
       color VARCHAR(50) NULL,
       customer_id VARCHAR(255) NULL REFERENCES customer(id),
+      product_variant_id INT NULL REFERENCES "product_variant"(id) ON DELETE SET NULL,
       product_id INT NULL REFERENCES product(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
@@ -126,6 +127,7 @@ export async function initDB() {
       quantity INT NOT NULL,
       price DECIMAL(10,2) NOT NULL,
       product_id INT NULL REFERENCES product(id),
+      variant_id INT NULL REFERENCES "product_variant"(id),
       order_id INT NULL REFERENCES "order"(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
@@ -137,6 +139,8 @@ export async function initDB() {
       buyer_id VARCHAR(255) NOT NULL REFERENCES customer(id),
       shipper_id VARCHAR(255) NOT NULL REFERENCES customer(id),
       product_id INT NOT NULL REFERENCES "product"(id),
+      variant_id INT NULL REFERENCES "product_variant"(id),
+      quantity INT NOT NULL DEFAULT NULL,
       order_id INT NOT NULL REFERENCES "order"(id),
       current_location VARCHAR(500) DEFAULT NULL,
       status VARCHAR(50) NOT NULL CHECK (status IN ('pending', 'processing', 'shipped', 'delivered', 'cancelled')),

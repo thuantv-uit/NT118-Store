@@ -5,22 +5,27 @@ export async function getCartById(req, res) {
   try {
     const { id } = req.params;
 
-    // Check cartId is it provider
     if (!id) {
       return res.status(400).json({ message: "cart ID is required" });
     }
 
-    // Handle query
     const carts = await sql`
-      SELECT * FROM cart WHERE id = ${id}
+      SELECT 
+        c.*,
+        pv.price as variant_price,
+        pv.stock as variant_stock,
+        p.name as product_name,
+        p.description
+      FROM cart c
+      LEFT JOIN product_variant pv ON c.product_variant_id = pv.id
+      LEFT JOIN product p ON pv.product_id = p.id
+      WHERE c.id = ${id}
     `;
 
-    // Check if any records are found
     if (carts.length === 0) {
       return res.status(404).json({ message: "cart not found" });
     }
 
-    // Returns the first record (since id is usually unique)
     res.status(200).json(carts[0]);
   } catch (error) {
     console.error("Error getting the cart:", error);
@@ -33,22 +38,27 @@ export async function getCartsByCustomerId(req, res) {
   try {
     const { id: customerId } = req.params;
 
-    // Check customerId
     if (!customerId) {
       return res.status(400).json({ message: "customer ID is required" });
     }
 
-    // Handle query to get all cart of the customer
     const carts = await sql`
-      SELECT * FROM cart WHERE customer_id = ${customerId}
+      SELECT 
+        c.*,
+        pv.price as variant_price,
+        pv.stock as variant_stock,
+        p.name as product_name,
+        p.description
+      FROM cart c
+      LEFT JOIN product_variant pv ON c.product_variant_id = pv.id
+      LEFT JOIN product p ON pv.product_id = p.id
+      WHERE c.customer_id = ${customerId}
     `;
 
-    // Trả về mảng rỗng nếu không có carts (thay vì 404 error)
     if (carts.length === 0) {
       return res.status(200).json([]);
     }
 
-    // return entire array carts
     res.status(200).json(carts);
   } catch (error) {
     console.error("Error getting carts by customer:", error);
@@ -56,24 +66,60 @@ export async function getCartsByCustomerId(req, res) {
   }
 }
 
-
 // Create cart
 export async function createCart(req, res) {
   try {
     const { quantity, customer_id, product_id, size, color } = req.body;
 
-    // Validation: quantity is required, size and color optional (vì NULL allowed)
-    if (!quantity || !customer_id || !product_id) {
-      return res.status(400).json({ message: "quantity, customer_id, and product_id are required" });
+    // Validation: Bắt buộc tất cả vì cần validate variant
+    if (!quantity || !customer_id || !product_id || !size || !color) {
+      return res.status(400).json({ 
+        message: "quantity, customer_id, product_id, size, and color are required" 
+      });
     }
 
+    // Bước 1: Tìm product_variant_id dựa trên product_id, size, color
+    const variants = await sql`
+      SELECT id, price, stock
+      FROM product_variant 
+      WHERE product_id = ${product_id} AND size = ${size} AND color = ${color}
+    `;
+
+    if (variants.length === 0) {
+      return res.status(404).json({ 
+        message: `Product variant not found for product_id: ${product_id}, size: ${size}, color: ${color}` 
+      });
+    }
+
+    const { id: product_variant_id, price, stock } = variants[0];
+
+    // Kiểm tra stock
+    if (quantity > stock) {
+      return res.status(400).json({ 
+        message: `Insufficient stock. Available: ${stock}, Requested: ${quantity}` 
+      });
+    }
+
+    // Bước 2: Tạo cart với product_variant_id VÀ size/color (để UI dùng)
     const cart = await sql`
-      INSERT INTO cart(quantity, customer_id, product_id, size, color)
-      VALUES (${quantity}, ${customer_id}, ${product_id}, ${size || null}, ${color || null})
+      INSERT INTO cart(quantity, customer_id, product_id, product_variant_id, size, color)
+      VALUES (${quantity}, ${customer_id}, ${product_id}, ${product_variant_id}, ${size}, ${color})
       RETURNING *
     `;
 
-    res.status(201).json(cart[0]);
+    // Trả về full info (UI có thể dùng c.size, c.color trực tiếp)
+    const fullCart = await sql`
+      SELECT 
+        c.*,
+        pv.price as variant_price,
+        p.name as product_name
+      FROM cart c
+      JOIN product_variant pv ON c.product_variant_id = pv.id
+      JOIN product p ON pv.product_id = p.id
+      WHERE c.id = ${cart[0].id}
+    `;
+
+    res.status(201).json(fullCart[0]);
   } catch (error) {
     console.error("Error creating the cart", error);
     res.status(500).json({ message: "Internal server error" });

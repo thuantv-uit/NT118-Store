@@ -54,20 +54,30 @@ const fetchProductById = async (productId) => {
   }
 };
 
-// Load carts and fetch products unmerge, set { cart, product }
+// NEW: Helper to match variant từ cart (dựa trên size/color/variant_id)
+const matchVariant = (product, cart) => {
+  if (!product || !product.variants || product.variants.length === 0) return null;
+  return product.variants.find(v => 
+    v.id === cart.variant_id || (v.size === cart.size && v.color === cart.color)
+  );
+};
+
+// Load carts and fetch products unmerge, set { cart, product, variant }
 const loadCartWithProducts = async (carts) => {
   const itemsWithProducts = await Promise.all(
     carts.map(async (cart) => {
       const product = await fetchProductById(cart.product_id);
+      const variant = product ? matchVariant(product, cart) : null;
       return {
         cart,
         product,
+        variant,
       };
     })
   );
 
-  // Filter items have product valid (price >0)
-  const validItems = itemsWithProducts.filter(({ product }) => product && parseFloat(product.price || 0) > 0);
+  // Filter items have variant valid (price >0)
+  const validItems = itemsWithProducts.filter(({ variant }) => variant && parseFloat(variant.price || 0) > 0);
   return validItems;
 };
 
@@ -82,9 +92,10 @@ const updateCartQuantity = async (cartId, newQty) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const updatedCart = await response.json();
-    // Re-fetch product để giữ nguyên
+    // Re-fetch product để match variant mới
     const product = await fetchProductById(updatedCart.product_id);
-    return { cart: updatedCart, product };
+    const variant = product ? matchVariant(product, updatedCart) : null;
+    return { cart: updatedCart, product, variant };
   } catch (err) {
     console.error('Error updating quantity:', err);
     throw err;
@@ -147,6 +158,7 @@ export const useCart = (customerId) => {
 
         // Enrich và filter valid
         const enrichedData = await loadCartWithProducts(unOrderedCarts);
+        // console.log("enrichedData: ", enrichedData);
         setCartItems(enrichedData);
       } catch (err) {
         setError(err.message);
@@ -186,9 +198,9 @@ export const useCart = (customerId) => {
     }
   }, []);
 
-  // Total from product.price * cart.quantity
+  // Total from variant.price * cart.quantity (SỬA: Dùng variant.price thay product.price)
   const total = cartItems.reduce((sum, item) => {
-    const price = parseFloat(item.product?.price || 0);
+    const price = parseFloat(item.variant?.price || 0);
     return sum + (price * item.cart.quantity);
   }, 0);
 

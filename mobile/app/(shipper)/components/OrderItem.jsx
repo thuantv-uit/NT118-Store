@@ -10,7 +10,7 @@ const statusSteps = {
   cancelled: { label: 'Đã hủy', icon: 'close-circle-outline', color: '#FF4D4F' },
 };
 
-export default function OrderItem({ order, onPressDetail, onUpdateLocation, onUpdateStatus, buyerInfo }) {
+export default function OrderItem({ order, onPressDetail, onUpdateLocation, onUpdateStatus, buyerInfo, shipmentInfo }) {
   if (!order) {
     console.warn('OrderItem: Received null order, skipping render');
     return null;
@@ -32,6 +32,12 @@ export default function OrderItem({ order, onPressDetail, onUpdateLocation, onUp
 
   const displayName = buyerInfo ? `${buyerInfo.firstname || ''} ${buyerInfo.lastname || ''}`.trim() || `Buyer: ${order.buyer_id?.slice(0, 8)}...` : `Buyer: ${order.buyer_id?.slice(0, 8)}...`;
 
+  // CẬP NHẬT: Hiển thị vị trí giao hàng ngắn gọn từ shipmentInfo (nếu có)
+  const deliveryAddressShort = shipmentInfo ? [
+    shipmentInfo.city || '',
+    shipmentInfo.address ? shipmentInfo.address.slice(0, 20) + '...' : ''
+  ].filter(Boolean).join(', ') : 'Chưa có địa chỉ giao';
+
   return (
     <TouchableOpacity onPress={handlePressDetail} activeOpacity={0.7} style={shipperStyles.orderItem}>
       <View style={shipperStyles.orderAvatarContainer}>
@@ -52,8 +58,12 @@ export default function OrderItem({ order, onPressDetail, onUpdateLocation, onUp
         </View>
         <Text style={shipperStyles.orderBuyer}>{displayName}</Text>
         {buyerInfo?.phone && <Text style={shipperStyles.orderPhone}>SĐT: {buyerInfo.phone}</Text>}
+        {/* CẬP NHẬT: Thêm hiển thị vị trí giao hàng (ngắn gọn) */}
+        {deliveryAddressShort !== 'Chưa có địa chỉ giao' && (
+          <Text style={shipperStyles.orderLocation} numberOfLines={1}>Giao đến: {deliveryAddressShort}</Text>
+        )}
         {order?.current_location && (
-          <Text style={shipperStyles.orderLocation}>Vị trí: {order.current_location}</Text>
+          <Text style={shipperStyles.orderLocation}>Vị trí hiện: {order.current_location}</Text>
         )}
       </View>
       <View style={shipperStyles.orderActions}>
