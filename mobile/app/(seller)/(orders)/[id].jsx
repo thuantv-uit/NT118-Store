@@ -49,91 +49,37 @@ const fetchUserInfo = async (userId) => {
   }
 };
 
-// Hàm fetch thông tin product (name, price, và variants để lấy color/size nếu có)
-const fetchProductInfo = async (productId) => {
-  if (!productId) return null;
-  try {
-    const response = await fetch(`${API_BASE}/product/${productId}`);
-    if (!response.ok) {
-      console.warn(`Failed to fetch product ${productId}: ${response.status}`);
-      return null;
-    }
-    const data = await response.json();
-    // console.log("data product: ", data); // Giữ để debug nếu cần
-
-    // Xử lý variants để lấy price fallback nếu root price null, và color/size mặc định
-    let productPrice = data.price;
-    let defaultColor = null;
-    let defaultSize = null;
-    if (data.variants && Array.isArray(data.variants) && data.variants.length > 0) {
-      const firstVariant = data.variants[0];
-      if (data.price === null && firstVariant && firstVariant.price) {
-        productPrice = firstVariant.price; // Fallback: lấy price variant đầu tiên
-      }
-      defaultColor = firstVariant.color;
-      defaultSize = firstVariant.size;
-    }
-
-    const productInfo = {
-      name: data.name || data.product_name || undefined,
-      price: productPrice, // Thêm price
-      // image: data.images?.[0] || data.image || data.image_url || undefined, // Nếu cần hiển thị image
-      variants: data.variants || undefined, // Để dùng nếu cần chi tiết hơn
-      defaultColor: defaultColor,
-      defaultSize: defaultSize,
-    };
-    return productInfo;
-  } catch (error) {
-    console.error('Error fetching product info:', error);
+// CẬP NHẬT: Hàm fetch thông tin variant (thay vì product, dùng variant_id để lấy chi tiết đầy đủ) - THÊM LOG ĐỂ DEBUG
+const fetchVariantInfo = async (variantId) => {
+  if (!variantId) {
+    // console.log('Debug fetchVariantInfo: variantId is null or undefined, skipping fetch');
     return null;
   }
-};
-
-// THÊM: Hàm fetch quantity từ chain: order_status → order → cart
-const fetchOrderQuantity = async (orderStatusId) => {
   try {
-    // Bước 1: Fetch order_status để lấy order_id
-    const statusResponse = await fetch(`${API_BASE}/order_status/${orderStatusId}`);
-    if (!statusResponse.ok) {
-      console.warn(`Failed to fetch order status ${orderStatusId}: ${statusResponse.status}`);
+    // console.log(`Debug fetchVariantInfo: Calling API for variantId = ${variantId}`);
+    const response = await fetch(`${API_BASE}/product/product_variant/${variantId}`);
+    // console.log(`Debug fetchVariantInfo: API response status = ${response.status}`);
+    if (!response.ok) {
+      console.warn(`Failed to fetch variant ${variantId}: ${response.status}`);
       return null;
     }
-    const statusData = await statusResponse.json();
-    const orderId = statusData.order_id;
-    if (!orderId) {
-      console.warn('No order_id found in status data');
-      return null;
-    }
+    const resData = await response.json();
+    // console.log('Debug fetchVariantInfo: Full API response data =', resData);  // LOG ĐẦY ĐỦ ĐỂ DEBUG LỖI DỮ LIỆU
 
-    // Bước 2: Fetch order để lấy cart_id
-    const orderResponse = await fetch(`${API_BASE}/order/${orderId}`);
-    if (!orderResponse.ok) {
-      console.warn(`Failed to fetch order ${orderId}: ${orderResponse.status}`);
-      return null;
-    }
-    const orderData = await orderResponse.json();
-    const cartId = orderData.cart_id; // Giả định field cart_id tồn tại trong order
-    if (!cartId) {
-      console.warn('No cart_id found in order data');
-      return null;
-    }
+    const data = resData.data || resData; // Giả sử response có { success: true, data: {...} }
+    // console.log('Debug fetchVariantInfo: Processed data after extracting =', data);  // LOG SAU KHI XỬ LÝ
 
-    // Bước 3: Fetch cart để lấy quantity
-    const cartResponse = await fetch(`${API_BASE}/cart/detail/${cartId}`);
-    if (!cartResponse.ok) {
-      console.warn(`Failed to fetch cart ${cartId}: ${cartResponse.status}`);
-      return null;
-    }
-    const cartData = await cartResponse.json();
-    const quantity = cartData.quantity; // Giả định field quantity tồn tại trong cart
-    if (quantity === undefined || quantity <= 0) {
-      console.warn('Invalid quantity in cart data');
-      return null;
-    }
-
-    return quantity;
+    const variantInfo = {
+      name: data.product_name || 'N/A', // Tên sản phẩm từ variant
+      price: parseFloat(data.price) || 0, // Parse string price thành number
+      size: data.size || 'N/A',
+      color: data.color || 'N/A',
+      stock: data.stock || 0, // Thêm stock nếu cần hiển thị sau
+    };
+    // console.log('Debug fetchVariantInfo: Final variantInfo object =', variantInfo);  // LOG CUỐI CÙNG ĐỂ KIỂM TRA
+    return variantInfo;
   } catch (error) {
-    console.error('Error fetching order quantity:', error);
+    console.error('Error fetching variant info:', error);
     return null;
   }
 };
@@ -142,7 +88,7 @@ export default function OrderDetail() {
   const router = useRouter();
   const { user } = useUser();
   const sellerId = user?.id;
-  const { id } = useLocalSearchParams(); // Lấy order ID từ route params
+  const { id } = useLocalSearchParams(); // Lấy order_status ID từ route params
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -163,41 +109,94 @@ export default function OrderDetail() {
 
     try {
       setLoading(true);
+      // console.log(`Debug loadOrderDetail: Fetching order_status/${id}`);  // THÊM LOG CHO LOAD CHÍNH
       const response = await fetch(`${API_BASE}/order_status/${id}`);
+      // console.log(`Debug loadOrderDetail: order_status API response status = ${response.status}`);
       if (!response.ok) throw new Error('Lỗi tải chi tiết');
       let data = await response.json();
+      // console.log('Debug loadOrderDetail: Full order_status data =', data);  // LOG ĐẦY ĐỦ ORDER_STATUS ĐỂ KIỂM TRA VARIANT_ID
 
-      // THÊM: Fetch quantity từ chain APIs
-      const quantity = await fetchOrderQuantity(id);
-      data = {
-        ...data,
-        quantity, // Thêm quantity vào data
-      };
+      // CẬP NHẬT: In ra giá trị variant_id ngay sau khi fetch (để debug khi click)
+      // console.log('Data:', data);
+      // console.log('Variant ID:', data.variant_id);  // <-- THÊM LOG NÀY ĐÂY!
 
-      // Enrich data: Fetch buyer, seller, shipper, product info
-      const [buyerInfo, sellerInfo, shipperInfo, productInfo] = await Promise.all([
+      // CẬP NHẬT: Lấy quantity trực tiếp từ order_status response
+      const quantity = data.quantity || null;
+      // console.log('Debug loadOrderDetail: Extracted quantity =', quantity);
+
+      // CẬP NHẬT: Check variant_id - Nếu không có, throw error ngay
+      if (!data.variant_id) {
+        throw new Error('Thiếu variant_id trong đơn hàng. Không thể tải chi tiết sản phẩm.');
+      }
+      // console.log('Debug loadOrderDetail: Found variant_id =', data.variant_id);
+
+      // Enrich data: Fetch buyer, seller, shipper, và variant info (bắt buộc fetch vì đã check variant_id)
+      const [buyerInfo, sellerInfo, shipperInfo, variantInfo] = await Promise.all([
         fetchUserInfo(data.buyer_id),
         fetchUserInfo(data.seller_id),
         data.shipper_id ? fetchUserInfo(data.shipper_id) : null,
-        fetchProductInfo(data.product_id),
+        fetchVariantInfo(data.variant_id), // Luôn fetch vì đã check tồn tại
       ]);
+
+      // CẬP NHẬT: Nếu variantInfo null (API fail), throw error
+      if (!variantInfo) {
+        throw new Error('Không thể lấy thông tin sản phẩm từ variant_id.');
+      }
+
+      // console.log('Debug loadOrderDetail: Enriched buyerInfo =', buyerInfo);
+      // console.log('Debug loadOrderDetail: Enriched sellerInfo =', sellerInfo);
+      // console.log('Debug loadOrderDetail: Enriched shipperInfo =', shipperInfo);
+      // console.log('Debug loadOrderDetail: Enriched variantInfo =', variantInfo);
 
       // Gộp enriched info vào order
       data = {
         ...data,
+        quantity,
         buyerInfo,
         sellerInfo,
         shipperInfo,
-        productInfo,
+        productInfo: variantInfo, // Không fallback nữa, vì đã check
       };
+      // console.log('Debug loadOrderDetail: Final merged order data =', data);  // LOG CUỐI CÙNG ĐỂ KIỂM TRA TOÀN BỘ
 
       setOrder(data);
       setNewStatus(data.status);
     } catch (error) {
       console.error('Lỗi load order detail:', error);
-      Alert.alert('Lỗi', 'Không thể tải chi tiết đơn hàng');
+      Alert.alert('Lỗi', error.message || 'Không thể tải chi tiết đơn hàng');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // CẬP NHẬT: Hàm update stock variant (gọi khi chuyển từ pending sang processing)
+  const updateVariantStock = async (productId, variantId, change) => {
+    if (!productId || !variantId || change === undefined) {
+      console.warn('Missing params for stock update');
+      return false;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/product/products/${productId}/variants/${variantId}/stock`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ change }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Failed to update stock:', errorText);
+        Alert.alert('Lỗi', 'Không thể cập nhật tồn kho. Vui lòng thử lại.');
+        return false;
+      }
+
+      const result = await response.json();
+      // console.log('Stock updated successfully:', result);
+      return true;
+    } catch (error) {
+      console.error('Error updating stock:', error);
+      Alert.alert('Lỗi', 'Không thể cập nhật tồn kho.');
+      return false;
     }
   };
 
@@ -214,7 +213,20 @@ export default function OrderDetail() {
         body: JSON.stringify({ status, seller_id: sellerId }),
       });
       if (!response.ok) throw new Error('Lỗi cập nhật');
-      Alert.alert('Thành công', 'Cập nhật trạng thái đơn hàng thành công');
+
+      // CẬP NHẬT: Nếu chuyển từ 'pending' sang 'processing', giảm stock variant bằng quantity
+      if (order.status === 'pending' && status === 'processing' && order.quantity > 0 && order.product_id && order.variant_id) {
+        const stockUpdated = await updateVariantStock(order.product_id, order.variant_id, -order.quantity);
+        if (!stockUpdated) {
+          // Nếu update stock fail, có thể rollback status hoặc chỉ warn (tùy business logic)
+          Alert.alert('Cảnh báo', 'Cập nhật trạng thái thành công, nhưng tồn kho chưa được điều chỉnh. Vui lòng kiểm tra thủ công.');
+        } else {
+          Alert.alert('Thành công', 'Cập nhật trạng thái và tồn kho thành công!');
+        }
+      } else {
+        Alert.alert('Thành công', 'Cập nhật trạng thái đơn hàng thành công');
+      }
+
       setModalVisible(false);
       loadOrderDetail(); // Reload chi tiết (sẽ re-enrich)
     } catch (error) {
@@ -243,6 +255,17 @@ export default function OrderDetail() {
     return 'Chưa assign người giao hàng';
   };
 
+  // CẬP NHẬT: Helper hiển thị ngày với múi giờ Việt Nam
+  const formatDateVN = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('vi-VN', { 
+      timeZone: 'Asia/Ho_Chi_Minh',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  };
+
   if (loading || !order) {
     return (
       <SellerScreenLayout title="Chi Tiết Đơn Hàng" subtitle="Thông tin chi tiết">
@@ -258,7 +281,7 @@ export default function OrderDetail() {
     <SellerScreenLayout title="Chi Tiết Đơn Hàng" subtitle="Thông tin chi tiết">
       <ScrollView style={styles.scrollViewContainer}>
         <View style={styles.detailContainer}>
-          {/* THÊM: Hiển thị số lượng sản phẩm */}
+          {/* CẬP NHẬT: Hiển thị số lượng sản phẩm trực tiếp từ order_status */}
           {order.quantity && (
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Số Lượng:</Text>
@@ -266,20 +289,25 @@ export default function OrderDetail() {
             </View>
           )}
 
-          {/* Sản phẩm */}
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Sản Phẩm:</Text>
-            <Text style={styles.detailValue}>
-              {order.productInfo?.name || 'N/A'}
-              {order.productInfo?.defaultColor && ` - Màu: ${order.productInfo.defaultColor}`}
-              {order.productInfo?.defaultSize && ` - Size: ${order.productInfo.defaultSize}`}
-            </Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Giá:</Text>
-            <Text style={styles.detailValue}>
-              {order.productInfo?.price ? `${order.productInfo.price.toLocaleString('vi-VN')} VNĐ` : 'N/A'}
-            </Text>
+          {/* CẬP NHẬT: UI Sản phẩm gọn gàng hơn - gộp tên, size, color vào một row, giá riêng */}
+          <View style={styles.productSection}>
+            <Text style={styles.sectionTitle}>Sản Phẩm</Text>
+            <View style={styles.productCard}>
+              <Text style={styles.productName}>{order.productInfo?.name || 'N/A'}</Text>
+              <Text style={styles.productVariant}>
+                {order.productInfo?.size !== 'N/A' && `Size: ${order.productInfo.size} | `}
+                {order.productInfo?.color !== 'N/A' && `Màu: ${order.productInfo.color}`}
+              </Text>
+            </View>
+            <View style={styles.priceRow}>
+              <Text style={styles.detailLabel}>Giá:</Text>
+              <Text style={styles.priceValue}>
+                {order.productInfo?.price > 0 
+                  ? `${order.productInfo.price.toLocaleString('vi-VN')} VNĐ` 
+                  : 'N/A'
+                }
+              </Text>
+            </View>
           </View>
 
           {/* Người dùng */}
@@ -305,13 +333,14 @@ export default function OrderDetail() {
               </Text>
             </View>
           </View>
+          {/* CẬP NHẬT: Ngày với múi giờ VN */}
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Ngày Tạo:</Text>
-            <Text style={styles.detailValue}>{new Date(order.created_at).toLocaleDateString('vi-VN')}</Text>
+            <Text style={styles.detailValue}>{formatDateVN(order.created_at)}</Text>
           </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Ngày Cập Nhật:</Text>
-            <Text style={styles.detailValue}>{new Date(order.updated_at).toLocaleDateString('vi-VN')}</Text>
+            <Text style={styles.detailValue}>{formatDateVN(order.updated_at)}</Text>
           </View>
         </View>
 
@@ -418,6 +447,49 @@ const styles = StyleSheet.create({
     paddingVertical: hp('1.5%'),
     borderBottomWidth: 1,
     borderBottomColor: '#EEE',
+  },
+  // CẬP NHẬT: Styles mới cho phần sản phẩm gọn gàng
+  productSection: {
+    marginBottom: hp('2%'),
+  },
+  sectionTitle: {
+    fontSize: hp('2.2%'),
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: hp('1%'),
+  },
+  productCard: {
+    backgroundColor: '#F8F9FA',
+    padding: wp('4%'),
+    borderRadius: 8,
+    marginBottom: hp('1%'),
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+  },
+  productName: {
+    fontSize: hp('2%'),
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: hp('0.5%'),
+  },
+  productVariant: {
+    fontSize: hp('1.6%'),
+    color: '#666',
+    marginBottom: hp('0.5%'),
+  },
+  priceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: hp('1%'),
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE',
+  },
+  priceValue: {
+    fontSize: hp('2%'),
+    fontWeight: '600',
+    color: '#EE4D2D',
+    textAlign: 'right',
+    flex: 1,
   },
   detailLabel: {
     fontSize: hp('1.8%'),
