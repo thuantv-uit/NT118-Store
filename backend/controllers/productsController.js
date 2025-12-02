@@ -164,6 +164,41 @@ export async function getAllProducts(req, res) {
   }
 }
 
+// Get Variant by variant_id (with product name)
+export async function getVariantById(req, res) {
+  try {
+    const { variant_id } = req.params;
+
+    if (!variant_id || isNaN(variant_id)) {
+      return res.status(400).json({ message: "variant_id is required and must be a valid number" });
+    }
+
+    const variant = await sql`
+      SELECT 
+        pv.*,
+        p.name AS product_name,
+        p.SKU AS product_SKU
+      FROM product_variant pv
+      JOIN product p ON pv.product_id = p.id
+      WHERE pv.id = ${variant_id}
+    `;
+
+    if (variant.length === 0) {
+      return res.status(404).json({ message: "Variant not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: variant[0]
+    });
+
+  } catch (error) {
+    console.error("Error getting variant by ID:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+
 // Create Product (with variants)
 export async function createProduct(req, res) {
   try {

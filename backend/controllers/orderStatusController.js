@@ -64,7 +64,7 @@ export async function getOrderStatusById(req, res) {
     }
 
     const orderStatus = await sql`
-      SELECT id, seller_id, buyer_id, shipper_id, product_id, order_id, quantity, status, current_location, created_at, updated_at
+      SELECT id, seller_id, buyer_id, shipper_id, product_id, order_id, variant_id, quantity, status, current_location, created_at, updated_at
       FROM "order_status"
       WHERE id = ${id}
     `;
@@ -171,7 +171,7 @@ export async function getOrderStatusByShipperId(req, res) {
     }
 
     const orderStatuses = await sql`
-      SELECT id, seller_id, buyer_id, product_id, order_id, quantity, status, shipper_id, current_location, created_at, updated_at
+      SELECT id, seller_id, buyer_id, product_id, order_id, variant_id, quantity, status, shipper_id, current_location, created_at, updated_at
       FROM "order_status"
       WHERE shipper_id = ${shipper_id}
       ORDER BY created_at DESC
