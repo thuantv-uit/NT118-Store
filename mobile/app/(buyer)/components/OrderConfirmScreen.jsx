@@ -15,7 +15,7 @@ import { buyerStyles, orderConfirmStyles } from '../styles/BuyerStyles';
 
 const API_BASE_URL = API_URL;
 
-// Hàm helper để tạo order (sửa: lấy mảng cart_id từ tất cả items)
+// Hàm helper để tạo order (giữ nguyên)
 const createOrder = async (orderData, customerId) => {
   try {
     // Loop qua items để lấy tất cả cart.id, unique bằng Set
@@ -64,7 +64,7 @@ const createOrder = async (orderData, customerId) => {
   }
 };
 
-// Hàm helper để tạo orderItems (SỬA: Dùng variant.price thay vì product.price)
+// Hàm helper để tạo orderItems (CẬP NHẬT: Thêm variant_id vào payload để sync với order_status nếu cần)
 const createOrderItems = async (orderId, Data) => {
   // console.log("Debug createOrderItems - orderId:", orderId);
   // console.log("Debug createOrderItems - Data length:", Data);
@@ -72,11 +72,14 @@ const createOrderItems = async (orderId, Data) => {
     const createdItems = [];
     for (const [index, item] of (Data || []).entries()) {
       const payload = {
-        quantity: item.cart?.quantity || 0,
-        price: item.variant?.price || 0,  // SỬA: Dùng variant.price
+        quantity: item.cart?.quantity || 0,  // Nguồn dữ liệu quantity từ cart
+        price: item.variant?.price || 0,  // Dùng variant.price
         order_id: orderId,
         product_id: item.product?.id || null,
+        variant_id: item.variant?.id || null,  // CẬP NHẬT: Thêm variant_id để unique nếu backend cần
       };
+
+      // console.log(`Debug createOrderItems - payload cho item ${index}:`, payload);  // Log để debug quantity và variant_id
 
       const response = await fetch(`${API_BASE_URL}/order_item`, {
         method: 'POST',
@@ -96,6 +99,7 @@ const createOrderItems = async (orderId, Data) => {
       const newItem = await response.json();
       createdItems.push(newItem);
     }
+    // console.log('Debug createOrderItems - createdItems:', createdItems);
     return createdItems;
   } catch (error) {
     // console.error('Debug createOrderItems - caught error:', error);
@@ -103,7 +107,7 @@ const createOrderItems = async (orderId, Data) => {
   }
 };
 
-// Hàm helper để tạo order_status cho từng product trong order
+// Hàm helper để tạo order_status cho từng product trong order (CẬP NHẬT: Thêm variant_id vào payload để unique theo variant)
 const createOrderStatus = async (orderId, items, buyerId) => {
   // console.log("Debug createOrderStatus - orderId:", orderId);
   // console.log("Debug createOrderStatus - items length:", items?.length);
@@ -111,33 +115,34 @@ const createOrderStatus = async (orderId, items, buyerId) => {
   try {
     const createdStatuses = [];
     
-    // Trích xuất tất cả product_id và seller_id để debug/log
+    // Trích xuất tất cả product_id và seller_id để debug/log (CẬP NHẬT: Thêm variant_id)
     const allProductIds = [];
+    const allVariantIds = [];  // THÊM: Để debug variant_id
     const allSellerIds = [];
     (items || []).forEach((item, index) => {
       if (item.product?.id) allProductIds.push(item.product.id);
+      if (item.variant?.id) allVariantIds.push(item.variant.id);  // THÊM: Log variant_id
       if (item.product?.customer_id) allSellerIds.push(item.product.customer_id);
-      // console.log(`Debug createOrderStatus - Item ${index}: product_id=${item.product?.id}, seller_id=${item.product?.customer_id}`);
+      // console.log(`Debug createOrderStatus - Item ${index}: product_id=${item.product?.id}, variant_id=${item.variant?.id}, seller_id=${item.product?.customer_id}, quantity từ cart=${item.cart?.quantity}`);
     });
     // console.log("Debug createOrderStatus - All product_ids:", allProductIds);
+    // console.log("Debug createOrderStatus - All variant_ids:", allVariantIds);  // THÊM: Log để verify unique
     // console.log("Debug createOrderStatus - All seller_ids:", allSellerIds);
 
     for (const [index, item] of (items || []).entries()) {
-      // Kiểm tra các trường cần thiết
-      // console.log("seller_id: ", item.product.customer_id);
-      // console.log("seller_id: ", item.product.id);
-      //   if (!item.product?.id || !item.product?.customer_id) {  // Dùng customer_id thay vì seller_id
-      //   console.warn(`Debug createOrderStatus - Thiếu product_id hoặc seller_id (customer_id) cho item ${index}`);
-      //   // continue; // Bỏ qua nếu thiếu
-      // }
-
+      // Dùng CÙNG NGUỒN DỮ LIỆU như order_item: item.cart?.quantity, item.product?.id, item.variant?.id, item.product.customer_id
       const payload = {
-        seller_id: item.product.customer_id,  // Dùng customer_id làm seller_id
+        seller_id: item.product?.customer_id || null,  // Từ product.customer_id (seller)
         buyer_id: buyerId,
-        product_id: item.product.id,
+        product_id: item.product?.id,  // Cùng product_id như order_item
+        variant_id: item.variant?.id || null,  // CẬP NHẬT: Thêm variant_id để unique theo variant (tránh duplicate)
+        quantity: item.cart?.quantity || 0,  // CÙNG quantity từ cart như order_item (sync 100%)
         order_id: orderId,
         status: 'pending', // Status mặc định cho order mới
+        current_location: null,  // Default nếu cần
       };
+
+      // console.log(`Debug createOrderStatus - payload cho item ${index}:`, payload);  // Log để debug variant_id và quantity
 
       const response = await fetch(`${API_BASE_URL}/order_status`, {
         method: 'POST',
@@ -176,15 +181,7 @@ export default function OrderConfirmScreen() {
   const [error, setError] = useState(null);
   const currentCustomerId = passedData?.customerId || fallbackCustomerId;
 
-  // const carts = passedData.items.map(item => item.cart.product_id);
-  // console.log("Debug OrderConfirm - passedData - items.id:", carts);
-  // console.log("Debug OrderConfirm - passedData - items:", passedData.items);
-  // console.log("Debug OrderConfirm - passedData - items:", passedData.payment);
-  // console.log("Debug OrderConfirm - passedData - shipment:", passedData.shipment);
-  // console.log("Debug OrderConfirm - passedData:", passedData);
-  // console.log("Debug OrderConfirm - fallbackCustomerId from user:", fallbackCustomerId);
-
-  // Effect để tạo order và orderItems khi component mount
+  // Effect để tạo order và orderItems khi component mount (giữ nguyên: Tách riêng, gọi orderItems trước, status sau)
   useEffect(() => {
     if (!passedData) {
       setLoading(false);
@@ -207,6 +204,7 @@ export default function OrderConfirmScreen() {
       setError('Giỏ hàng trống!');
       return;
     }
+
     const createFullOrder = async () => {
       try {
         // console.log('Debug OrderConfirm - Bắt đầu tạo full order...');
@@ -217,13 +215,18 @@ export default function OrderConfirmScreen() {
         const newOrder = await createOrder(passedData, currentCustomerId);
         // console.log('Debug OrderConfirm - New order created:', newOrder);
 
-        // Bước 2: Tạo orderItems với order_id mới (dùng variant.price)
+        // Bước 2: Tạo orderItems với order_id mới (dùng variant.price và cart.quantity)
         const newItems = await createOrderItems(newOrder.id, passedData.items);
         // console.log('Debug OrderConfirm - New order items created:', newItems);
 
-        // Bước 3: Tạo order_status cho từng product (mới thêm)
+        // Bước 3: Tạo order_status cho từng product (dùng CÙNG passedData.items để sync quantity với order_item)
         const newStatuses = await createOrderStatus(newOrder.id, passedData.items, currentCustomerId);
         // console.log('Debug OrderConfirm - New order statuses created:', newStatuses);
+
+        // Validate sync: Kiểm tra số lượng items và statuses khớp (tránh chênh lệch)
+        if (newItems.length !== passedData.items.length || newStatuses.length !== passedData.items.length) {
+          throw new Error('Chênh lệch số lượng items và statuses - vui lòng kiểm tra lại!');
+        }
 
         // Bước 4: Chuẩn bị dữ liệu hiển thị (CẬP NHẬT: Match theo index để đảm bảo đúng originalItem)
         const fullOrderData = {
