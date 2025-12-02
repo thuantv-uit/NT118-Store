@@ -3,29 +3,30 @@ import { sql } from "../config/database.js";
 // Create order_status
 export async function createOrderStatus(req, res) {
   try {
-    const { seller_id, buyer_id, product_id, order_id, status } = req.body;
+    const { seller_id, buyer_id, product_id, order_id, status, quantity, variant_id } = req.body;  // THÊM: variant_id từ req.body
 
-    if (!seller_id || !buyer_id || !product_id || !order_id || !status) {
-      return res.status(400).json({ message: "seller_id, buyer_id, product_id, order_id, and status are required" });
+    // THÊM: Validate variant_id required (để unique theo variant)
+    if (!seller_id || !buyer_id || !product_id || !order_id || !status || !quantity || !variant_id) {
+      return res.status(400).json({ message: "seller_id, buyer_id, product_id, order_id, status, quantity and variant_id are required" });
     }
 
-    // Validate status
+    // Validate status (giữ nguyên)
     const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: `Status must be one of: ${validStatuses.join(', ')}` });
     }
 
-    // Check nếu đã tồn tại cho combo order_id + product_id
+    // CẬP NHẬT: Check nếu đã tồn tại cho combo order_id + product_id + variant_id (tránh duplicate variant)
     const existingStatus = await sql`
       SELECT id FROM "order_status" 
-      WHERE order_id = ${order_id} AND product_id = ${product_id}
+      WHERE order_id = ${order_id} AND product_id = ${product_id} AND variant_id = ${variant_id}
     `;
 
     if (existingStatus.length > 0) {
-      return res.status(400).json({ message: "Order status already exists for this order and product" });
+      return res.status(400).json({ message: "Order status already exists for this order, product and variant" });
     }
 
-    // Tìm shipper ngẫu nhiên từ bảng customer (role = 'shipper')
+    // Tìm shipper ngẫu nhiên từ bảng customer (role = 'shipper') - giữ nguyên
     const shippers = await sql`
       SELECT id FROM "customer" 
       WHERE role = 'shipper' 
@@ -39,11 +40,11 @@ export async function createOrderStatus(req, res) {
 
     const shipper_id = shippers[0].id;
 
-    // Tạo mới (current_location mặc định NULL, shipper_id từ query)
+    // CẬP NHẬT: Tạo mới với thêm variant_id vào INSERT (current_location mặc định NULL)
     const newOrderStatus = await sql`
-      INSERT INTO "order_status" (seller_id, buyer_id, product_id, order_id, status, shipper_id)
-      VALUES (${seller_id}, ${buyer_id}, ${product_id}, ${order_id}, ${status}, ${shipper_id})
-      RETURNING id, seller_id, buyer_id, product_id, order_id, status, shipper_id, current_location, created_at, updated_at
+      INSERT INTO "order_status" (seller_id, buyer_id, product_id, order_id, status, shipper_id, quantity, variant_id)
+      VALUES (${seller_id}, ${buyer_id}, ${product_id}, ${order_id}, ${status}, ${shipper_id}, ${quantity}, ${variant_id})
+      RETURNING id, seller_id, buyer_id, product_id, order_id, status, shipper_id, quantity, variant_id, current_location, created_at, updated_at
     `;
 
     res.status(201).json(newOrderStatus[0]);
@@ -63,7 +64,7 @@ export async function getOrderStatusById(req, res) {
     }
 
     const orderStatus = await sql`
-      SELECT id, seller_id, buyer_id, shipper_id, product_id, order_id, status, current_location, created_at, updated_at
+      SELECT id, seller_id, buyer_id, shipper_id, product_id, order_id, quantity, status, current_location, created_at, updated_at
       FROM "order_status"
       WHERE id = ${id}
     `;
@@ -89,7 +90,7 @@ export async function getOrderStatusByOrderId(req, res) {
     }
 
     const orderStatuses = await sql`
-      SELECT id, seller_id, buyer_id, product_id, order_id, status, current_location, created_at, updated_at
+      SELECT id, seller_id, buyer_id, product_id, order_id, quantity, status, current_location, created_at, updated_at
       FROM "order_status"
       WHERE order_id = ${order_id}
       ORDER BY created_at ASC
@@ -116,7 +117,7 @@ export async function getOrderStatusBySellerId(req, res) {
     }
 
     const orderStatuses = await sql`
-      SELECT id, seller_id, buyer_id, product_id, order_id, status, current_location, created_at, updated_at
+      SELECT id, seller_id, buyer_id, product_id, order_id, quantity, status, current_location, created_at, updated_at
       FROM "order_status"
       WHERE seller_id = ${seller_id}
       ORDER BY created_at DESC
@@ -143,7 +144,7 @@ export async function getOrderStatusByBuyerId(req, res) {
     }
 
     const orderStatuses = await sql`
-      SELECT id, seller_id, buyer_id, product_id, order_id, status, current_location, created_at, updated_at
+      SELECT id, seller_id, buyer_id, product_id, order_id, quantity, status, current_location, created_at, updated_at
       FROM "order_status"
       WHERE buyer_id = ${buyer_id}
       ORDER BY created_at DESC
@@ -170,7 +171,7 @@ export async function getOrderStatusByShipperId(req, res) {
     }
 
     const orderStatuses = await sql`
-      SELECT id, seller_id, buyer_id, product_id, order_id, status, shipper_id, current_location, created_at, updated_at
+      SELECT id, seller_id, buyer_id, product_id, order_id, quantity, status, shipper_id, current_location, created_at, updated_at
       FROM "order_status"
       WHERE shipper_id = ${shipper_id}
       ORDER BY created_at DESC
@@ -311,7 +312,7 @@ export async function deleteOrderStatus(req, res) {
     const deletedOrderStatus = await sql`
       DELETE FROM "order_status"
       WHERE id = ${id} AND (seller_id = ${seller_id} OR buyer_id = ${buyer_id})
-      RETURNING id, seller_id, buyer_id, product_id, order_id, status, current_location
+      RETURNING id, seller_id, buyer_id, product_id, order_id, quantity, status, current_location
     `;
 
     if (deletedOrderStatus.length === 0) {
