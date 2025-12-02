@@ -18,7 +18,7 @@ const statusLabels = {
   cancelled: 'Đã hủy',
 };
 
-export default function OrderDetailModal({ visible, order, buyerInfo, productInfo, orderInfo, shipmentInfo, onClose }) {
+export default function OrderDetailModal({ visible, order, buyerInfo, productInfo, orderInfo, shipmentInfo, quantity, onClose }) {
   const [loading, setLoading] = useState(false);
 
   const fetchOrderDetails = async () => {
@@ -94,7 +94,16 @@ export default function OrderDetailModal({ visible, order, buyerInfo, productInf
                   )}
                   <View style={shipperStyles.detailInfo}>
                     <Text style={shipperStyles.detailName}>{productInfo.name || 'N/A'}</Text>
+                    {/* CẬP NHẬT: Hiển thị quantity nếu có */}
+                    {quantity && <Text style={shipperStyles.detailItem}>Số lượng: {quantity}</Text>}
                     <Text style={shipperStyles.detailItem}>Giá: {productInfo.price ? `${productInfo.price.toLocaleString()} VND` : 'N/A'}</Text>
+                    {/* CẬP NHẬT: Nếu có variantInfo, hiển thị size/color */}
+                    {order.variantInfo && (
+                      <>
+                        {order.variantInfo.size !== 'N/A' && <Text style={shipperStyles.detailItem}>Size: {order.variantInfo.size}</Text>}
+                        {order.variantInfo.color !== 'N/A' && <Text style={shipperStyles.detailItem}>Màu: {order.variantInfo.color}</Text>}
+                      </>
+                    )}
                   </View>
                 </View>
               ) : (

@@ -71,6 +71,42 @@ const fetchBuyerInfo = async (buyerId) => {
   }
 };
 
+// CẬP NHẬT: Thêm hàm fetchVariantInfo để lấy chi tiết từ variant_id (tương tự seller screen)
+const fetchVariantInfo = async (variantId) => {
+  if (!variantId) {
+    // console.log('Debug fetchVariantInfo: variantId is null or undefined, skipping fetch');
+    return null;
+  }
+  try {
+    // console.log(`Debug fetchVariantInfo: Calling API for variantId = ${variantId}`);
+    const response = await fetch(`${API_BASE_URL}/product/product_variant/${variantId}`);
+    // console.log(`Debug fetchVariantInfo: API response status = ${response.status}`);
+    if (!response.ok) {
+      console.warn(`Failed to fetch variant ${variantId}: ${response.status}`);
+      return null;
+    }
+    const resData = await response.json();
+    // console.log('Debug fetchVariantInfo: Full API response data =', resData);
+
+    const data = resData.data || resData; // Giả sử response có { success: true, data: {...} }
+    // console.log('Debug fetchVariantInfo: Processed data after extracting =', data);
+
+    const variantInfo = {
+      name: data.product_name || 'N/A', // Tên sản phẩm từ variant
+      price: parseFloat(data.price) || 0, // Parse string price thành number
+      size: data.size || 'N/A',
+      color: data.color || 'N/A',
+      stock: data.stock || 0, // Thêm stock nếu cần hiển thị sau
+      sku: data.product_sku || 'N/A',
+    };
+    // console.log('Debug fetchVariantInfo: Final variantInfo object =', variantInfo);
+    return variantInfo;
+  } catch (error) {
+    console.error('Error fetching variant info:', error);
+    return null;
+  }
+};
+
 const fetchProductInfo = async (productId) => {
   if (!productId) return null;
   try {
@@ -224,20 +260,33 @@ export default function ShipperScreen() {
       setError(null);
       const shipperOrders = await fetchShipperOrders(shipperId);
       
-      // Enrich orders with buyerInfo, productInfo, orderInfo, và shipmentInfo nếu có shipment_id
+      // CẬP NHẬT: Enrich orders with buyerInfo, productInfo, orderInfo, shipmentInfo, và variantInfo nếu có variant_id
+      // Quantity lấy trực tiếp từ order.quantity (từ API order_status)
       const enriched = await Promise.all(
         shipperOrders.map(async (order) => {
           if (!order) return null;
-          const [buyerInfo, productInfo, orderInfo] = await Promise.all([
+          const [buyerInfo, productInfo, orderInfo, variantInfo] = await Promise.all([
             fetchBuyerInfo(order.buyer_id),
             fetchProductInfo(order.product_id),
-            fetchOrderInfo(order.order_id)
+            fetchOrderInfo(order.order_id),
+            order.variant_id ? fetchVariantInfo(order.variant_id) : null, // Chỉ fetch nếu có variant_id
           ]);
           let shipmentInfo = null;
           if (orderInfo?.shipment_id) {
             shipmentInfo = await fetchShipmentInfo(orderInfo.shipment_id);
           }
-          return { ...order, buyerInfo, productInfo, orderInfo, shipmentInfo };
+          // CẬP NHẬT: Lấy quantity từ order (từ API order_status)
+          const quantity = order.quantity || 1; // Fallback nếu không có
+          // console.log(`Debug loadOrders: Order ${order.id} - Quantity: ${quantity}, Variant ID: ${order.variant_id}`);
+          return { 
+            ...order, 
+            buyerInfo, 
+            productInfo, 
+            orderInfo, 
+            shipmentInfo, 
+            variantInfo, // Để dùng trong detail/modal
+            quantity // Explicit để dễ pass xuống
+          };
         })
       );
       const validEnriched = enriched.filter(Boolean);
@@ -351,6 +400,7 @@ export default function ShipperScreen() {
               onUpdateLocation={handleUpdateLocation}
               onUpdateStatus={handleUpdateStatus}
               buyerInfo={item?.buyerInfo}
+              shipmentInfo={item?.shipmentInfo} // CẬP NHẬT: Pass shipmentInfo để hiển thị vị trí giao
             />
           )}
           keyExtractor={(item) => item?.id?.toString() || Math.random().toString()}
@@ -396,13 +446,15 @@ export default function ShipperScreen() {
           }}
         />
 
+        {/* CẬP NHẬT: Pass thêm quantity và variantInfo vào modal */}
         <OrderDetailModal
           visible={showDetailModal}
           order={selectedOrder}
           buyerInfo={selectedOrder?.buyerInfo}
-          productInfo={selectedOrder?.productInfo}
+          productInfo={selectedOrder?.productInfo || selectedOrder?.variantInfo} // Ưu tiên variantInfo nếu có
           orderInfo={selectedOrder?.orderInfo}
           shipmentInfo={selectedOrder?.shipmentInfo}
+          quantity={selectedOrder?.quantity} // Pass quantity để hiển thị
           onClose={() => {
             setShowDetailModal(false);
             setSelectedOrder(null);
