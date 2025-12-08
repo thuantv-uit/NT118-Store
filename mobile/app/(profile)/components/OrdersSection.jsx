@@ -1,10 +1,39 @@
 import { useNavigation } from '@react-navigation/native';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { styles } from '../styles/ProfileStyles';
 
-const OrdersSection = ({ tabs }) => {
+const OrdersSection = () => {
   const navigation = useNavigation();
+
+  // Hardcode tabs với labels và icons mới, thêm "Hủy đơn"
+  const tabs = [
+    {
+      label: 'Đơn hàng mua',
+      icon: 'cart-outline',
+      color: '#2196F3', // Blue cho tổng đơn
+    },
+    {
+      label: 'Chờ xác nhận',
+      icon: 'time-outline',
+      color: '#FF9800', // Orange cho chờ
+    },
+    {
+      label: 'Giao hàng',
+      icon: 'bicycle-outline',
+      color: '#4CAF50', // Green cho giao hàng
+    },
+    {
+      label: 'Hủy đơn',
+      icon: 'close-circle-outline',
+      color: '#F44336', // Red cho hủy
+    },
+    {
+      label: 'Lịch sử giao hàng',
+      icon: 'archive-outline',
+      color: '#9E9E9E', // Gray cho lịch sử
+    },
+  ];
 
   const handleTabPress = (label) => {
     switch (label) {
@@ -12,12 +41,20 @@ const OrdersSection = ({ tabs }) => {
         // Navigate đến màn hình hiển thị tất cả đơn hàng
         navigation.navigate('(buyer)/components/OrderTrackingScreen');
         break;
-      case 'Đang giao':
-        // Navigate đến màn hình theo dõi đơn hàng đang giao (liên kết với OrderTrackingScreen)
-        // navigation.navigate('OrderTracking', { buyerId: 'current_buyer_id' }); // Thay buyerId bằng logic thực tế nếu cần
+      case 'Chờ xác nhận':
+        // Navigate đến màn hình đơn hàng chờ xác nhận (có thể filter status='pending')
+        // navigation.navigate('OrderPendingScreen', { buyerId: 'current_buyer_id' });
         break;
-      case 'Lịch sử':
-        // Navigate đến màn hình đơn hàng hoàn thành
+      case 'Giao hàng':
+        // Navigate đến màn hình đơn hàng đang giao (filter status='processing' hoặc 'shipped')
+        // navigation.navigate('OrderShippingScreen', { buyerId: 'current_buyer_id' });
+        break;
+      case 'Hủy đơn':
+        // Navigate đến màn hình đơn hàng bị hủy (filter status='cancelled')
+        // navigation.navigate('CancelledOrdersScreen', { buyerId: 'current_buyer_id' });
+        break;
+      case 'Lịch sử giao hàng':
+        // Navigate đến màn hình đơn hàng hoàn thành (filter status='delivered')
         // navigation.navigate('(profile)/components/OrdersCompletedScreen');
         break;
       default:
@@ -29,25 +66,40 @@ const OrdersSection = ({ tabs }) => {
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Đơn mua</Text>
-      <View style={styles.tabRow}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={[styles.tabRow, { paddingHorizontal: 16 }]} // Thêm padding để scroll mượt
+        snapToInterval={90} // Adjust theo width của tabItem để snap đẹp (mỗi tab ~90px)
+        decelerationRate="fast"
+      >
         {tabs.map((tab, index) => (
           <TouchableOpacity
-            key={tab.label || index} // Sử dụng label làm key nếu có, fallback index
+            key={tab.label} // Sử dụng label làm key để ổn định hơn
             style={[
               styles.tabItem, 
               { 
-                borderRightWidth: index < tabs.length - 1 ? 1 : 0, // Sửa: border cho tất cả trừ item cuối
-                borderRightColor: '#E0E0E0' 
+                borderRightWidth: index < tabs.length - 1 ? 1 : 0, // Border cho tất cả trừ item cuối
+                borderRightColor: '#E0E0E0',
+                width: 90, // Width cố định để các ô icon bằng nhau (adjust nếu cần)
+                alignItems: 'center', // Center nội dung
+                justifyContent: 'center',
               }
             ]}
             onPress={() => handleTabPress(tab.label)}
-            activeOpacity={0.8} // Thêm feedback touch
+            activeOpacity={0.8} // Feedback touch
           >
             <Icon name={tab.icon} size={28} color={tab.color} />
-            <Text style={styles.tabLabel}>{tab.label}</Text>
+            <Text 
+              style={styles.tabLabel}
+              numberOfLines={2} // Cho phép wrap xuống hàng nếu label dài (3-4 chữ/từ)
+              textAlign="center" // Căn giữa text
+            >
+              {tab.label}
+            </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
     </View>
   );
 };
