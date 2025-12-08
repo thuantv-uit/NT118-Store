@@ -353,6 +353,60 @@ export async function getOrderStatusGroupedByStatusForBuyer(req, res) {
   }
 }
 
+// MỚI THÊM: Get pending orders for seller (chỉ status = 'pending')
+export async function getPendingOrdersBySellerId(req, res) {
+  try {
+    const { seller_id } = req.params;
+
+    if (!seller_id) {
+      return res.status(400).json({ message: "Seller ID is required" });
+    }
+
+    const pendingOrders = await sql`
+      SELECT id, seller_id, buyer_id, product_id, order_id, quantity, status, current_location, created_at, updated_at
+      FROM "order_status"
+      WHERE seller_id = ${seller_id} AND status = 'pending'
+      ORDER BY created_at DESC
+    `;
+
+    if (pendingOrders.length === 0) {
+      return res.status(200).json([]); // Trả về empty array thay vì 404, để dễ handle ở frontend
+    }
+
+    res.status(200).json(pendingOrders);
+  } catch (error) {
+    console.error("Error getting pending orders by seller_id:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// MỚI THÊM: Get other orders for seller (status != 'pending')
+export async function getOtherOrdersBySellerId(req, res) {
+  try {
+    const { seller_id } = req.params;
+
+    if (!seller_id) {
+      return res.status(400).json({ message: "Seller ID is required" });
+    }
+
+    const otherOrders = await sql`
+      SELECT id, seller_id, buyer_id, product_id, order_id, quantity, status, current_location, created_at, updated_at
+      FROM "order_status"
+      WHERE seller_id = ${seller_id} AND status != 'pending'
+      ORDER BY created_at DESC
+    `;
+
+    if (otherOrders.length === 0) {
+      return res.status(200).json([]); // Trả về empty array thay vì 404
+    }
+
+    res.status(200).json(otherOrders);
+  } catch (error) {
+    console.error("Error getting other orders by seller_id:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 // Update order_status (shipper_id hoặc seller_id mới được cập nhật)
 export async function updateOrderStatus(req, res) {
   try {

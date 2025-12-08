@@ -11,6 +11,8 @@ import {
   getOrderSummaryByShipperId,
   getOrderStatusGroupedByStatusForSeller,
   getOrderStatusGroupedByStatusForBuyer,
+  getPendingOrdersBySellerId,
+  getOtherOrdersBySellerId,
   updateOrderStatus,
   deleteOrderStatus
 } from "../controllers/orderStatusController.js";
@@ -49,6 +51,12 @@ router.get("/summary/seller/:seller_id/status", getOrderStatusGroupedByStatusFor
 
 // MỚI THÊM: GET /order-status/summary/buyer/:buyer_id/status - Phân loại đơn hàng theo status cho buyer
 router.get("/summary/buyer/:buyer_id/status", getOrderStatusGroupedByStatusForBuyer);
+
+// MỚI THÊM: GET /order-status/seller/:seller_id/pending - Lấy chỉ pending orders của seller
+router.get("/seller/:seller_id/pending", getPendingOrdersBySellerId);
+
+// MỚI THÊM: GET /order-status/seller/:seller_id/other - Lấy các orders khác (không pending) của seller
+router.get("/seller/:seller_id/other", getOtherOrdersBySellerId);
 
 // PUT /order-status/:id - Cập nhật status (và location nếu gửi)
 router.put("/:id", updateOrderStatus);

@@ -33,22 +33,42 @@ export async function getCategoryById(req, res) {
   }
 }
 
+// Get all categories
+export async function getAllCategories(req, res) {
+  try {
+    const categories = await sql`
+      SELECT * FROM category ORDER BY id ASC
+    `;
+
+    res.status(200).json(categories);
+  } catch (error) {
+    console.error("Error getting all categories:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// Create category
 export async function createCategory(req, res) {
   try {
-    const { name } = req.body;
+    const { name, gender_type } = req.body;
 
     if (!name) {
       return res.status(400).json({ message: "Name is required" });
     }
 
+    const allowedGender = ["Nam", "Nữ", "cả Nam và Nữ"];
+    if (!allowedGender.includes(gender_type)) {
+      return res.status(400).json({
+        message: "gender_type must be one of: Nam, Nữ, Cả nam và nữ"
+      });
+    }
+
     const category = await sql`
-      INSERT INTO category(name)
-      VALUES (${name})
+      INSERT INTO category(name, gender_type)
+      VALUES (${name}, ${gender_type})
       RETURNING *
     `;
 
-    // To use debug
-    // console.log(category);
     res.status(201).json(category[0]);
   } catch (error) {
     console.log("Error creating the category", error);
