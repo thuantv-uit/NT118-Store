@@ -1,4 +1,3 @@
-// CartSummary.jsx
 import { Text, TouchableOpacity, View } from 'react-native';
 import { buyerStyles } from '../styles/BuyerStyles';
 

@@ -1,5 +1,4 @@
-// File: app/(seller)/order/index.jsx (Cập nhật SellerOrders - List View Đơn Giản)
-import { useUser } from '@clerk/clerk-expo'; // Import useUser từ Clerk
+import { useUser } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';

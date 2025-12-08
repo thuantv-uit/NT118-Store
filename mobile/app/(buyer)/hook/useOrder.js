@@ -1,10 +1,9 @@
-// useOrder.js
 import { useAuth } from '@clerk/clerk-expo';
 import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 import { API_URL } from '../../../constants/api';
 
-const API_BASE = API_URL; // Thay bằng backend real
+const API_BASE = API_URL;
 
 export const useOrder = ({ shipment_id, payment_id, shipmentData, paymentData, cartItems, customerId, total }) => {
   const [orderData, setOrderData] = useState(null);

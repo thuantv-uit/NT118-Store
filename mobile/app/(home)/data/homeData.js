@@ -1,4 +1,3 @@
-// Mock data cho HomeScreen
 export const banners = [
   { id: 'b1', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1200' },
   { id: 'b2', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1200' },
