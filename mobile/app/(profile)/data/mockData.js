@@ -13,7 +13,7 @@ export const mockOrdersTabs = [
 
 export const mockUtilities = [
   { icon: 'settings', label: 'Cài đặt' },
-  { icon: 'local-police', label: 'Chính sách' },
+  { icon: 'format-list-bulleted', label: 'Danh sách yêu thích' },
   { icon: 'emoji-transportation', label: 'Giao hàng' },
   { icon: 'payment', label: 'Thanh toán' },
   { icon: 'security', label: 'Bảo mật' },
