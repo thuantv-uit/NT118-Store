@@ -16,10 +16,11 @@ const UtilitiesSection = ({ utilities }) => {
         console.log('Clicked on Cài đặt');
         // Ví dụ: navigation.navigate('Settings');
         break;
-      case 'Chính sách':
+      case 'Danh sách yêu thích':
         // Logic cho Chính sách
-        console.log('Clicked on Chính sách');
+        // console.log('Clicked on Chính sách');
         // Ví dụ: navigation.navigate('Policy');
+        navigation.navigate('(buyer)/components/WishListScreen');
         break;
       case 'Thanh toán':
         navigation.navigate('(profile)/components/WalletScreen');

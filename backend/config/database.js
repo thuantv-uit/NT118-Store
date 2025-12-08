@@ -59,6 +59,7 @@ export async function initDB() {
     await sql`CREATE TABLE IF NOT EXISTS "category"(
       id SERIAL PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
+      gender_type VARCHAR(255) NOT NULL,
       created_at DATE NOT NULL DEFAULT CURRENT_DATE
     )`;
     console.log("Database category initialized successfully");
@@ -104,7 +105,7 @@ export async function initDB() {
     console.log("Database cart initialized successfully");
 
     await sql`CREATE TABLE IF NOT EXISTS "wish_list"(
-      id VARCHAR(255) PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       customer_id VARCHAR(255) NULL REFERENCES customer(id),
       product_id INT NULL REFERENCES product(id),
       created_at DATE NOT NULL DEFAULT CURRENT_DATE

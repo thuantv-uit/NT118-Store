@@ -89,6 +89,10 @@ export default function Page() {
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity onPress={() => router.push('/forgot-password')} style={{ alignSelf: 'center', marginTop: 10 }}>
+          <Text style={styles.linkText}>Forgot password?</Text>
+        </TouchableOpacity>
+
         <View style={styles.footerContainer}>
           <Text style={styles.footerText}>Don&apos;t have an account?</Text>
 

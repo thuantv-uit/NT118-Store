@@ -1,30 +1,140 @@
+import { useUser } from "@clerk/clerk-expo"; // Import useUser từ Clerk
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react"; // Import useState và useEffect
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from "react-native-responsive-screen";
+import { API_URL } from "../../../constants/api";
 import SellerScreenLayout from "../components/SellerScreenLayout";
-
-const STAT_CARDS = [
-  { id: "revenue", iconType: MaterialCommunityIcons, icon: "cash-multiple", label: "Doanh thu tháng", value: "124.500.000 đ" },
-  { id: "orders", iconType: Ionicons, icon: "cart-outline", label: "Đơn hàng mới", value: "320" },
-  { id: "conversion", iconType: MaterialCommunityIcons, icon: "chart-line-stacked", label: "Tỉ lệ chuyển đổi", value: "4,2%" },
-  { id: "visits", iconType: Ionicons, icon: "people-outline", label: "Lượt truy cập", value: "12.540" },
-];
 
 const HIGHLIGHTS = [
   { id: "hot", title: "Sản phẩm bán chạy", description: "Ly gốm A08 tăng trưởng 34% so với tuần trước." },
   { id: "campaign", title: "Chiến dịch sắp diễn ra", description: "Flash sale cuối tuần giúp tăng tỷ lệ chuyển đổi." },
 ];
+const API_BASE_URL = API_URL;
 
 export default function SellerDashboard() {
   const router = useRouter();
+  const { user } = useUser(); // Lấy user từ Clerk
+  const [stats, setStats] = useState({
+    revenue: "0 đ",
+    orders: "0",
+    conversion: "0%", // Giữ nguyên hardcoded nếu chưa có API
+    visits: "0", // Giữ nguyên hardcoded nếu chưa có API
+  });
+  const [loading, setLoading] = useState(true); // State cho loading
+  const [error, setError] = useState(null); // State cho error
+
   const navigateToOrders = () => router.push("(seller)/(orders)");
+
+  // Hàm format số tiền (thêm dấu chấm phân cách)
+  const formatCurrency = (amount) => {
+    if (!amount) return "0 đ";
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      minimumFractionDigits: 0,
+    }).format(amount).replace("₫", " đ");
+  };
+
+  useEffect(() => {
+    const fetchOrderSummary = async () => {
+      if (!user?.id) {
+        setError("Không tìm thấy thông tin người dùng");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        // Fetch summary cho revenue và totalOrders (giữ nguyên)
+        const summaryResponse = await fetch(`${API_BASE_URL}/order_status/summary/seller/${user.id}`);
+        if (!summaryResponse.ok) {
+          throw new Error(`Lỗi API summary: ${summaryResponse.status}`);
+        }
+        const summaryData = await summaryResponse.json();
+
+        // MỚI THÊM: Fetch pending orders để lấy count cho "Đơn hàng mới"
+        const pendingResponse = await fetch(`${API_BASE_URL}/order_status/seller/${user.id}/pending`);
+        if (!pendingResponse.ok) {
+          throw new Error(`Lỗi API pending: ${pendingResponse.status}`);
+        }
+        const pendingData = await pendingResponse.json();
+        const pendingCount = pendingData.length || 0;
+
+        setStats((prev) => ({
+          ...prev,
+          revenue: formatCurrency(summaryData.totalAmount),
+          orders: pendingCount.toString(), // Sử dụng pending count cho "Đơn hàng mới"
+        }));
+      } catch (err) {
+        console.error("Lỗi fetch order summary:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrderSummary();
+  }, [user?.id]);
+
+  // Render loading spinner nếu đang load
+  if (loading) {
+    return (
+      <SellerScreenLayout title="Bảng điều khiển" subtitle="Tổng quan hiệu suất">
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#BE123C" />
+          <Text style={styles.loadingText}>Đang tải dữ liệu...</Text>
+        </View>
+      </SellerScreenLayout>
+    );
+  }
+
+  // Render error nếu có lỗi
+  if (error) {
+    return (
+      <SellerScreenLayout title="Bảng điều khiển" subtitle="Tổng quan hiệu suất">
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Lỗi: {error}</Text>
+          <Pressable onPress={() => window.location.reload()} style={styles.retryButton}>
+            <Text style={styles.retryButtonText}>Thử lại</Text>
+          </Pressable>
+        </View>
+      </SellerScreenLayout>
+    );
+  }
 
   return (
     <SellerScreenLayout title="Bảng điều khiển" subtitle="Tổng quan hiệu suất">
       <View style={styles.statGrid}>
-        {STAT_CARDS.map(({ id, iconType: Icon, icon, label, value }) => {
+        {Object.entries(stats).map(([id, value]) => {
+          let Icon, icon, label;
+          switch (id) {
+            case "revenue":
+              Icon = MaterialCommunityIcons;
+              icon = "cash-multiple";
+              label = "Doanh thu";
+              break;
+            case "orders":
+              Icon = Ionicons;
+              icon = "cart-outline";
+              label = "Đơn hàng mới";
+              break;
+            case "conversion":
+              Icon = MaterialCommunityIcons;
+              icon = "chart-line-stacked";
+              label = "Tỉ lệ chuyển đổi";
+              break;
+            case "visits":
+              Icon = Ionicons;
+              icon = "people-outline";
+              label = "Lượt truy cập";
+              break;
+            default:
+              return null;
+          }
+
           const isOrdersCard = id === "orders";
           return (
             <Pressable
@@ -190,4 +300,38 @@ const styles = StyleSheet.create({
   ordersButtonTextWrap: { flex: 1 },
   ordersButtonTitle: { fontSize: hp("2%"), fontWeight: "700", color: "#7F1D1D" },
   ordersButtonSubtitle: { fontSize: hp("1.7%"), color: "#4B5563", marginTop: hp("0.2%") },
+  // Styles mới cho loading và error
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: hp("1%"),
+    fontSize: hp("1.8%"),
+    color: "#6B7280",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: wp("10%"),
+  },
+  errorText: {
+    fontSize: hp("1.8%"),
+    color: "#EF4444",
+    textAlign: "center",
+    marginBottom: hp("2%"),
+  },
+  retryButton: {
+    backgroundColor: "#BE123C",
+    paddingVertical: hp("1%"),
+    paddingHorizontal: wp("5%"),
+    borderRadius: 10,
+  },
+  retryButtonText: {
+    color: "white",
+    fontSize: hp("1.7%"),
+    fontWeight: "600",
+  },
 });

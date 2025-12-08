@@ -33,17 +33,35 @@ export async function getwishListById(req, res) {
   }
 }
 
+// Get all wishlist items for a customer
+export async function getWishListByCustomer(req, res) {
+  try {
+    const { customerId } = req.params;
+
+    if (!customerId) {
+      return res.status(400).json({ message: "Customer ID is required" });
+    }
+
+    const wishLists = await sql`
+      SELECT * FROM wish_list WHERE customer_id = ${customerId}
+    `;
+
+    // Không trả lỗi, chỉ trả danh sách rỗng nếu không có dữ liệu
+    return res.status(200).json(wishLists);
+  } catch (error) {
+    console.error("Error getting wishlist of customer:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// Create wishlist
 export async function createwishList(req, res) {
 try {
-    const { id, customer_id, product_id } = req.body;
-
-    // if (!quantity || !id ) {
-    // return res.status(400).json({ message: "All fields are required" });
-    // }
+    const { customer_id, product_id } = req.body;
 
     const wishList = await sql`
-    INSERT INTO wish_list(id, customer_id, product_id)
-    VALUES (${id},${customer_id},${product_id})
+    INSERT INTO wish_list(customer_id, product_id)
+    VALUES (${customer_id},${product_id})
     RETURNING *
     `;
 

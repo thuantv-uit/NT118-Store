@@ -3,7 +3,7 @@ import * as ImagePicker from "expo-image-picker";
 // use choose image
 import { useAuth } from "@clerk/clerk-expo";
 import { LinearGradient } from "expo-linear-gradient";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -44,29 +44,82 @@ const VARIANT_FIELDS = [
   { id: "dimensions", label: "Kích thước vận chuyển", placeholder: "Ví dụ: 10x20x30 cm", value: "" },
 ];
 
-const SHIPPING_OPTIONS = ["GHTK", "GHN", "Viettel Post", "J&T Express"]; // Ví dụ methods
+const SHIPPING_OPTIONS = ["GHTK", "GHN", "Viettel Post", "J&T Express"];
 
 const MAX_IMAGES = 5;
-const MAX_VARIANTS = 10; // Giới hạn để tránh UI lộn xộn
+const MAX_VARIANTS = 10;
 
 export default function SellerProductCreate({ navigation }) {
   const [formData, setFormData] = useState(
     { ...BASIC_FIELDS.reduce((acc, field) => { acc[field.id] = field.value; return acc; }, {}),
-      ...DESCRIPTION_SECTIONS.reduce((acc, field) => { acc[field.id] = field.value; return acc; }, {}) }
+      ...DESCRIPTION_SECTIONS.reduce((acc, field) => { acc[field.id] = field.value; return acc; }, {}),
+      category_id: "" }
   );
+  const [categories, setCategories] = useState([]);
+  const [originalCategories, setOriginalCategories] = useState([]); // Lưu data gốc cho table
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [shippingData, setShippingData] = useState({
     method: SHIPPING_OPTIONS[0],
     processing_time: "1-2",
     shipping_fee: "",
   });
-  const [variants, setVariants] = useState([{ id: Date.now(), ...Object.fromEntries(VARIANT_FIELDS.map(f => [f.id, ""])) }]); // Mặc định 1 variant rỗng
+  const [variants, setVariants] = useState([{ id: Date.now(), ...Object.fromEntries(VARIANT_FIELDS.map(f => [f.id, ""])) }]);
   const [images, setImages] = useState([]); // Array URIs cho preview
   const [loading, setLoading] = useState(false);
 
   // THÊM: Lấy userId từ Clerk
   const { userId, isLoaded } = useAuth();
 
-  // SỬA: handleInputChange - Chỉ convert number cho numeric fields, string cho text
+  // Mới: Fetch categories khi component mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const response = await fetch(`${API_URL}/category`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("LOG all categories:", data); // Debug log
+        setOriginalCategories(data || []); // Lưu data gốc cho table
+        console.log("Set originalCategories:", data || []); // Debug log sau set
+        // Giả sử data là array [{id, name, parent_id?, gender_type?}], flatten với indent cho nested
+        const flattenedCategories = flattenCategories(data || []);
+        console.log("LOG flattened categories:", flattenedCategories); // Debug log
+        setCategories(flattenedCategories);
+      } catch (error) {
+        console.error("Lỗi fetch categories:", error);
+        Alert.alert("Lỗi", "Không thể tải danh mục. Vui lòng thử lại hoặc nhập ID thủ công.");
+        // Fallback: Giữ nguyên TextInput cũ nếu fetch fail
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Mới: Helper để flatten tree categories với indent (hiển thị dạng "Parent > Child")
+  // Fix: Handle flat list (no parent_id) by treating all as top-level if parentId null
+  const flattenCategories = (categories, parentId = null, level = 0) => {
+    return categories
+      .filter(cat => {
+        if (parentId === null) {
+          // Top-level: no parent_id or parent_id is null/undefined
+          return cat.parent_id == null; // == null handles both null and undefined
+        } else {
+          return cat.parent_id === parentId;
+        }
+      })
+      .flatMap(cat => [
+        {
+          id: cat.id,
+          displayName: "  ".repeat(level) + `• ${cat.name}`, // Indent với dấu chấm
+          gender_type: cat.gender_type, // Thêm gender_type cho bảng
+        },
+        ...flattenCategories(categories, cat.id, level + 1), // Recursive cho con
+      ]);
+  };
+  
   const handleInputChange = (id, value) => {
     const isNumeric = ["price", "stock", "weight", "category_id"].includes(id);
     let processedValue = value;
@@ -389,6 +442,34 @@ export default function SellerProductCreate({ navigation }) {
           ))}
         </View>
 
+        {/* MỚI: Section Bảng danh mục (hiển thị ID, Tên, Giới tính với indent cho hierarchy) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Danh sách danh mục</Text>
+          {loadingCategories ? (
+            <ActivityIndicator size="large" color="#BE123C" style={{ alignSelf: "center", marginTop: hp("2%") }} />
+          ) : categories.length > 0 ? (
+            <ScrollView style={styles.categoryTable} nestedScrollEnabled={true}>
+              <View style={styles.tableHeader}>
+                <Text style={styles.tableHeaderText}>ID</Text>
+                <Text style={[styles.tableHeaderText, { flex: 2 }]}>Tên danh mục</Text>
+                <Text style={styles.tableHeaderText}>Giới tính</Text>
+              </View>
+              {categories.map((cat, index) => (
+                <View key={cat.id} style={[
+                  styles.tableRow,
+                  index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd
+                ]}>
+                  <Text style={styles.tableCell}>{cat.id}</Text>
+                  <Text style={[styles.tableCell, { flex: 2 }]}>{cat.displayName}</Text>
+                  <Text style={styles.tableCell}>{cat.gender_type || 'N/A'}</Text>
+                </View>
+              ))}
+            </ScrollView>
+          ) : (
+            <Text style={styles.input}>Không có dữ liệu danh mục.</Text>
+          )}
+        </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Thông tin cơ bản</Text>
           {BASIC_FIELDS.map((item) => (
@@ -423,44 +504,6 @@ export default function SellerProductCreate({ navigation }) {
             </View>
           ))}
         </View>
-
-        {/* THÊM: Section Thiết lập vận chuyển */}
-        {/* <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Thiết lập vận chuyển</Text>
-          <View style={styles.inputShell}>
-            <Text style={styles.inputLabel}>Đơn vị vận chuyển</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={shippingData.method}
-                onValueChange={(value) => handleShippingChange("method", value)}
-                style={styles.picker}
-              >
-                {SHIPPING_OPTIONS.map(option => (
-                  <Picker.Item key={option} label={option} value={option} />
-                ))}
-              </Picker>
-            </View>
-          </View>
-          <View style={styles.inputShell}>
-            <Text style={styles.inputLabel}>Thời gian xử lý (ngày)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ví dụ: 1-2"
-              value={shippingData.processing_time}
-              onChangeText={(value) => handleShippingChange("processing_time", value)}
-            />
-          </View>
-          <View style={styles.inputShell}>
-            <Text style={styles.inputLabel}>Phí vận chuyển cơ bản (đ)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ví dụ: 30000"
-              value={shippingData.shipping_fee}
-              onChangeText={(value) => handleShippingChange("shipping_fee", value)}
-              keyboardType="numeric"
-            />
-          </View>
-        </View> */}
 
         <Pressable
           style={({ pressed }) => [styles.publishButton, pressed && styles.publishButtonPressed]}
@@ -558,20 +601,59 @@ const styles = StyleSheet.create({
   removeVariantButton: {
     padding: 5,
   },
+  // MỚI: Styles cho bảng danh mục (cải thiện UI)
+  categoryTable: {
+    maxHeight: hp("30%"), // Tăng chiều cao một chút
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    backgroundColor: "#FFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginBottom: hp("1%"),
+  },
+  tableHeader: {
+    flexDirection: "row",
+    backgroundColor: "#BE123C",
+    paddingHorizontal: wp("4%"),
+    paddingVertical: hp("1.5%"),
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  tableHeaderText: {
+    flex: 1,
+    fontSize: hp("1.8%"),
+    fontWeight: "700",
+    color: "#FFF",
+    textAlign: "center",
+  },
+  tableRow: {
+    flexDirection: "row",
+    paddingHorizontal: wp("4%"),
+    paddingVertical: hp("1.2%"),
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
+  },
+  tableRowEven: {
+    backgroundColor: "#F9FAFB",
+  },
+  tableRowOdd: {
+    backgroundColor: "#FFF",
+  },
+  tableCell: {
+    flex: 1,
+    fontSize: hp("1.7%"),
+    color: "#374151",
+    textAlign: "center",
+    fontWeight: "500",
+  },
   // THÊM: Styles cho multiline description (lớn hơn)
   multilineInput: {
     minHeight: hp("8%"), // Lớn hơn để dễ nhập
     maxHeight: hp("15%"),
-  },
-  // THÊM: Styles cho shipping picker
-  pickerContainer: {
-    backgroundColor: "#FFF",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "rgba(204,120,97,0.2)",
-  },
-  picker: {
-    height: hp("6%"),
   },
 
   uploadCard: {

@@ -1,6 +1,5 @@
 import { useUser } from '@clerk/clerk-expo';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient'; // Thêm import cho gradient button
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -158,23 +157,6 @@ const detailStyles = StyleSheet.create({
     marginBottom: 4,
   },
   descText: { fontSize: 13, color: '#8D6E63', lineHeight: 20 },
-  addButton: {
-    marginTop: 24,
-    borderRadius: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  addGradient: {
-    paddingVertical: 18,
-    borderRadius: 16,
-    alignItems: 'center',
-    width: '100%',
-  },
-  addText: { fontSize: 18, fontWeight: 'bold', color: '#fff' },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -266,20 +248,36 @@ const detailStyles = StyleSheet.create({
     marginRight: 16,
   },
   sellerName: { fontSize: 16, fontWeight: '600', color: '#5B453F' },
-  sellerContact: {
-    backgroundColor: '#FF8A65',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-    marginTop: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+  // THÊM: Styles cho row icons dưới cùng
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+    paddingHorizontal: 20,
   },
-  sellerContactText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  actionIconButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FF8A65',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  actionIcon: {
+    fontSize: 28,
+    color: '#fff',
+  },
+  actionIconDisabled: {
+    backgroundColor: '#E0E0E0',
+    opacity: 0.6,
+  },
 });
 
 const API_BASE_URL = API_URL;
@@ -303,6 +301,8 @@ export default function ProductDetail() {
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0); // Cho dots indicator
+  // THÊM: State cho wishlist
+  const [isInWishlist, setIsInWishlist] = useState(false);
 
   // Get user from Clerk (giữ nguyên)
   const { user, isSignedIn } = useUser();
@@ -508,6 +508,42 @@ export default function ProductDetail() {
     }
   };
 
+  // THÊM: Handle wishlist
+  const handleAddToWishlist = async () => {
+    const customerExists = await checkCustomerExists();
+    if (!customerExists) {
+      return;
+    }
+
+    if (!product) {
+      Alert.alert('Lỗi', 'Không thể thêm vào danh sách yêu thích!');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/wish_list`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customer_id: customerId,
+          product_id: product.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      setIsInWishlist(true);
+      Alert.alert('Thành công', 'Đã thêm vào danh sách yêu thích!');
+    } catch (err) {
+      // console.error('Error adding to wishlist:', err);
+      Alert.alert('Lỗi', 'Không thể thêm vào danh sách yêu thích!');
+    }
+  };
+
   const handleContactSeller = async () => {
     if (!customerId) {
       Alert.alert('Lỗi', 'Vui lòng đăng nhập để liên hệ!');
@@ -664,12 +700,6 @@ export default function ProductDetail() {
                   </Text>
                 </View>
               </View>
-              <TouchableOpacity 
-                style={detailStyles.sellerContact}
-                onPress={handleContactSeller}
-              >
-                <Text style={detailStyles.sellerContactText}>Liên hệ ngay</Text>
-              </TouchableOpacity>
             </View>
           )}
 
@@ -718,22 +748,47 @@ export default function ProductDetail() {
             </Text>
           )}
 
-          {/* SỬA: Gradient button */}
-          <LinearGradient
-            colors={['#FF8A65', '#FF7043']}
-            style={detailStyles.addButton}
-          >
-            <TouchableOpacity 
-              style={detailStyles.addGradient}
+          {/* THÊM: Row icons dưới cùng */}
+          <View style={detailStyles.actionRow}>
+            {/* Contact Seller Icon */}
+            <TouchableOpacity
+              style={[
+                detailStyles.actionIconButton,
+                !seller && detailStyles.actionIconDisabled
+              ]}
+              onPress={handleContactSeller}
+              disabled={!seller}
+            >
+              <Icon name="chatbubble-outline" style={detailStyles.actionIcon} />
+            </TouchableOpacity>
+
+            {/* Add to Cart Icon */}
+            <TouchableOpacity
+              style={[
+                detailStyles.actionIconButton,
+                (!selectedVariant || currentStock === 0) && detailStyles.actionIconDisabled
+              ]}
               onPress={handleAddToCart}
               disabled={!selectedVariant || currentStock === 0}
-              activeOpacity={0.8}
             >
-              <Text style={detailStyles.addText}>
-                {selectedVariant ? `Thêm vào giỏ hàng (${currentStock > 0 ? 'Có sẵn' : 'Hết hàng'})` : 'Chọn size & color'}
-              </Text>
+              <Icon name="cart-outline" style={detailStyles.actionIcon} />
             </TouchableOpacity>
-          </LinearGradient>
+
+            {/* Wishlist Icon */}
+            <TouchableOpacity
+              style={[
+                detailStyles.actionIconButton,
+                !isSignedIn && detailStyles.actionIconDisabled
+              ]}
+              onPress={handleAddToWishlist}
+              disabled={!isSignedIn}
+            >
+              <Icon 
+                name={isInWishlist ? "heart" : "heart-outline"} 
+                style={detailStyles.actionIcon} 
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
