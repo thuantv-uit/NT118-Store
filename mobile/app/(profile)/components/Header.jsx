@@ -13,6 +13,7 @@ const Header = ({ user }) => {
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || null);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [role, setRole] = useState('buyer'); // State cho role, fallback buyer
   const [loadingProfile, setLoadingProfile] = useState(true);
 
   useEffect(() => {
@@ -32,16 +33,19 @@ const Header = ({ user }) => {
         setAvatarUrl(data.avatar || null);
         setFirstName(data.first_name || '');
         setLastName(data.last_name || '');
+        setRole(data.role || 'buyer'); // Fetch role từ API, fallback buyer nếu không có
       } else if (response.status === 404) {
         setAvatarUrl(null);
         setFirstName('');
         setLastName('');
+        setRole('buyer');
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
       setAvatarUrl(null);
       setFirstName('');
       setLastName('');
+      setRole('buyer');
     } finally {
       setLoadingProfile(false);
     }
@@ -54,6 +58,18 @@ const Header = ({ user }) => {
 
   const handleAvatarPress = () => {
     router.push('/(profile)/components/updateProfile');
+  };
+
+  // Function: Xử lý click button dashboard dựa trên role
+  const handleDashboardPress = () => {
+    if (role === 'seller') {
+      router.push('/(seller)'); // Adjust route nếu cần
+    } else if (role === 'shipper') {
+      router.push('/(shipper)'); // Adjust route nếu cần
+    } else {
+      // Buyer: Không làm gì
+      console.log('Buyer - No action');
+    }
   };
 
   const displayName = firstName && lastName ? `${lastName} ${firstName}` : user?.name || 'Tên người dùng';
@@ -80,7 +96,7 @@ const Header = ({ user }) => {
 
   return (
     <View style={styles.header}>
-      {/* Thêm button back ở đầu header, bên trái */}
+      {/* Button back ở đầu header, bên trái */}
       <TouchableOpacity onPress={handleGoBack} style={styles.backButtonContainer}>
         <Icon name="arrow-back" size={24} color="#6D4C41" />
       </TouchableOpacity>
@@ -108,14 +124,9 @@ const Header = ({ user }) => {
       </View>
 
       <View style={styles.headerIcons}>
-        <TouchableOpacity style={styles.iconBtn}>
-          <Icon name="settings-outline" size={24} color="#FF6B9D" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconBtn}>
-          <Icon name="cart-outline" size={24} color="#FF6B9D" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconBtn}>
-          <Icon name="chatbubble-outline" size={24} color="#FF6B9D" />
+        {/* Chỉ giữ lại button dashboard */}
+        <TouchableOpacity style={styles.iconBtn} onPress={handleDashboardPress} disabled={loadingProfile}>
+          <Icon name="construct" size={24} color="#FF6B9D" />
         </TouchableOpacity>
       </View>
     </View>
