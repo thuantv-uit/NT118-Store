@@ -258,7 +258,7 @@ export default function OrderTrackingScreen() {
         <FlatList
           data={enrichedStatuses} // Hiển thị enriched statuses với product info
           renderItem={renderStatusItem}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item.id}
           style={{ flex: 1 }}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
