@@ -188,6 +188,171 @@ export async function getOrderStatusByShipperId(req, res) {
   }
 }
 
+// MỚI THÊM: Get order summary for buyer (total orders and total amount)
+export async function getOrderSummaryByBuyerId(req, res) {
+  try {
+    const { buyer_id } = req.params;
+
+    if (!buyer_id) {
+      return res.status(400).json({ message: "Buyer ID is required" });
+    }
+
+    const summary = await sql`
+      SELECT 
+        COUNT(*)::INTEGER as totalOrders,
+        COALESCE(SUM(pv.price * os.quantity), 0)::DECIMAL(10, 2) as totalAmount
+      FROM "order_status" os
+      LEFT JOIN product_variant pv ON os.variant_id = pv.id
+      WHERE buyer_id = ${buyer_id}
+    `;
+
+    if (summary.length === 0) {
+      return res.status(404).json({ message: "No order summary found for this buyer" });
+    }
+
+    res.status(200).json({
+      totalOrders: summary[0].totalorders,
+      totalAmount: summary[0].totalamount
+    });
+  } catch (error) {
+    console.error("Error getting order summary by buyer_id:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// MỚI THÊM: Get order summary for seller (total orders and total amount)
+export async function getOrderSummaryBySellerId(req, res) {
+  try {
+    const { seller_id } = req.params;
+
+    if (!seller_id) {
+      return res.status(400).json({ message: "Seller ID is required" });
+    }
+
+    const summary = await sql`
+      SELECT 
+        COUNT(*)::INTEGER as totalOrders,
+        COALESCE(SUM(pv.price * os.quantity), 0)::DECIMAL(10, 2) as totalAmount
+      FROM "order_status" os
+      LEFT JOIN product_variant pv ON os.variant_id = pv.id
+      WHERE seller_id = ${seller_id}
+    `;
+
+    if (summary.length === 0) {
+      return res.status(404).json({ message: "No order summary found for this seller" });
+    }
+
+    res.status(200).json({
+      totalOrders: summary[0].totalorders,
+      totalAmount: summary[0].totalamount
+    });
+  } catch (error) {
+    console.error("Error getting order summary by seller_id:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// MỚI THÊM: Get order summary for shipper (total orders only)
+export async function getOrderSummaryByShipperId(req, res) {
+  try {
+    const { shipper_id } = req.params;
+
+    if (!shipper_id) {
+      return res.status(400).json({ message: "Shipper ID is required" });
+    }
+
+    const summary = await sql`
+      SELECT 
+        COUNT(*)::INTEGER as totalOrders
+      FROM "order_status"
+      WHERE shipper_id = ${shipper_id}
+    `;
+
+    if (summary.length === 0) {
+      return res.status(404).json({ message: "No order summary found for this shipper" });
+    }
+
+    res.status(200).json({
+      totalOrders: summary[0].totalorders
+    });
+  } catch (error) {
+    console.error("Error getting order summary by shipper_id:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// MỚI THÊM: Get order statuses grouped by status for seller (phân loại theo status)
+export async function getOrderStatusGroupedByStatusForSeller(req, res) {
+  try {
+    const { seller_id } = req.params;
+
+    if (!seller_id) {
+      return res.status(400).json({ message: "Seller ID is required" });
+    }
+
+    const groupedStatuses = await sql`
+      SELECT 
+        status,
+        COUNT(*)::INTEGER as count
+      FROM "order_status"
+      WHERE seller_id = ${seller_id}
+      GROUP BY status
+      ORDER BY count DESC
+    `;
+
+    if (groupedStatuses.length === 0) {
+      return res.status(404).json({ message: "No order status found for this seller" });
+    }
+
+    // Chuyển đổi thành object dễ dùng (key: status, value: count)
+    const statusSummary = {};
+    groupedStatuses.forEach(row => {
+      statusSummary[row.status] = row.count;
+    });
+
+    res.status(200).json(statusSummary);
+  } catch (error) {
+    console.error("Error getting order status grouped by status for seller:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// MỚI THÊM: Get order statuses grouped by status for buyer (phân loại theo status)
+export async function getOrderStatusGroupedByStatusForBuyer(req, res) {
+  try {
+    const { buyer_id } = req.params;
+
+    if (!buyer_id) {
+      return res.status(400).json({ message: "Buyer ID is required" });
+    }
+
+    const groupedStatuses = await sql`
+      SELECT 
+        status,
+        COUNT(*)::INTEGER as count
+      FROM "order_status"
+      WHERE buyer_id = ${buyer_id}
+      GROUP BY status
+      ORDER BY count DESC
+    `;
+
+    if (groupedStatuses.length === 0) {
+      return res.status(404).json({ message: "No order status found for this buyer" });
+    }
+
+    // Chuyển đổi thành object dễ dùng (key: status, value: count)
+    const statusSummary = {};
+    groupedStatuses.forEach(row => {
+      statusSummary[row.status] = row.count;
+    });
+
+    res.status(200).json(statusSummary);
+  } catch (error) {
+    console.error("Error getting order status grouped by status for buyer:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 // Update order_status (shipper_id hoặc seller_id mới được cập nhật)
 export async function updateOrderStatus(req, res) {
   try {

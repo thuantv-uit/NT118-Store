@@ -5,9 +5,14 @@ import {
   getOrderStatusByOrderId,
   getOrderStatusBySellerId,
   getOrderStatusByBuyerId,
+  getOrderStatusByShipperId,
+  getOrderSummaryByBuyerId,
+  getOrderSummaryBySellerId,
+  getOrderSummaryByShipperId,
+  getOrderStatusGroupedByStatusForSeller,
+  getOrderStatusGroupedByStatusForBuyer,
   updateOrderStatus,
-  deleteOrderStatus,
-  getOrderStatusByShipperId
+  deleteOrderStatus
 } from "../controllers/orderStatusController.js";
 
 const router = express.Router();
@@ -21,14 +26,29 @@ router.get("/:id", getOrderStatusById);
 // GET /order-status/order/:order_id - Lấy theo order_id
 router.get("/order/:order_id", getOrderStatusByOrderId);
 
-// GET /order-status/seller/:seller_id - Lấy theo seller_id (mới thêm)
+// GET /order-status/seller/:seller_id - Lấy theo seller_id
 router.get("/seller/:seller_id", getOrderStatusBySellerId);
 
-// GET /order-status/buyer/:buyer_id - Lấy theo buyer_id (mới thêm)
+// GET /order-status/buyer/:buyer_id - Lấy theo buyer_id
 router.get("/buyer/:buyer_id", getOrderStatusByBuyerId);
 
-// GET /order-status/buyer/:buyer_id - Lấy theo buyer_id (mới thêm)
+// GET /order-status/shipper/:shipper_id - Lấy theo shipper_id
 router.get("/shipper/:shipper_id", getOrderStatusByShipperId);
+
+// MỚI THÊM: GET /order-status/summary/buyer/:buyer_id - Tóm tắt đơn hàng cho buyer (số lượng và tổng tiền)
+router.get("/summary/buyer/:buyer_id", getOrderSummaryByBuyerId);
+
+// MỚI THÊM: GET /order-status/summary/seller/:seller_id - Tóm tắt đơn hàng cho seller (số lượng và tổng tiền)
+router.get("/summary/seller/:seller_id", getOrderSummaryBySellerId);
+
+// MỚI THÊM: GET /order-status/summary/shipper/:shipper_id - Tóm tắt đơn hàng cho shipper (chỉ số lượng)
+router.get("/summary/shipper/:shipper_id", getOrderSummaryByShipperId);
+
+// MỚI THÊM: GET /order-status/summary/seller/:seller_id/status - Phân loại đơn hàng theo status cho seller
+router.get("/summary/seller/:seller_id/status", getOrderStatusGroupedByStatusForSeller);
+
+// MỚI THÊM: GET /order-status/summary/buyer/:buyer_id/status - Phân loại đơn hàng theo status cho buyer
+router.get("/summary/buyer/:buyer_id/status", getOrderStatusGroupedByStatusForBuyer);
 
 // PUT /order-status/:id - Cập nhật status (và location nếu gửi)
 router.put("/:id", updateOrderStatus);
