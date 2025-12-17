@@ -1,4 +1,4 @@
-import { useUser } from '@clerk/clerk-expo'; // Hoặc '@clerk/clerk-react' nếu dùng web, adjust theo setup Clerk của bạn
+import { useUser } from '@clerk/clerk-expo';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Dimensions, ScrollView, Text, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';

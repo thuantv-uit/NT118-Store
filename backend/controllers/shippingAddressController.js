@@ -1,4 +1,4 @@
-import { sql } from "../config/database.js";  // Import sql từ database config
+import { sql } from "../config/database.js";
 
 // GET: Lấy danh sách địa chỉ theo customer_id (userID)
 export async function getShippingAddressesByCustomer(req, res) {

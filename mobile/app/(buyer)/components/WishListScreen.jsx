@@ -1,5 +1,5 @@
 import { useAuth } from '@clerk/clerk-expo';
-import { useNavigation } from '@react-navigation/native'; // Import useNavigation từ React Navigation
+import { useNavigation } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,

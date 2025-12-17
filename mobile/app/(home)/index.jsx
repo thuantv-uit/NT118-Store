@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SafeAreaView, ScrollView } from 'react-native'; // Thêm Text để fallback nếu cần
+import { SafeAreaView, ScrollView } from 'react-native';
 import BannerCarousel from './components/BannerCarousel';
 import BottomNav from './components/BottomNav';
 import Categories from './components/Categories';

@@ -1,10 +1,9 @@
-// OrderDetailScreen.jsx
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   SafeAreaView,
-  ScrollView, // SỬA: Import ScrollView để enable scroll
+  ScrollView,
   Text,
   TouchableOpacity,
   View

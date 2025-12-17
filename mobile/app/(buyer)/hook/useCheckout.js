@@ -1,4 +1,3 @@
-// useCheckout.js
 import { useUser } from '@clerk/clerk-expo';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
@@ -8,7 +7,7 @@ import { API_URL } from '../../../constants/api';
 
 const API_BASE_URL = API_URL;
 
-export const useCheckout = (cartTotal, customerIdFromProp) => { // Đổi tên prop để rõ
+export const useCheckout = (cartTotal, customerIdFromProp) => {
   const [shipmentData, setShipmentData] = useState({
     shipment_date: new Date().toISOString(),
     address_id: '', // Thay đổi: Chỉ cần address_id thay vì các trường địa chỉ chi tiết
