@@ -1,5 +1,19 @@
 # Siny Daily
 
+## 🤖 NEW: Trợ lý ảo AI
+Tính năng mới: Trợ lý mua sắm thông minh với AI!
+- 💬 Chat với AI (Gemini/ChatGPT/Claude)
+- 🎯 Hiểu đơn hàng & giỏ hàng
+- ⚡ Bubble icon có thể kéo thả
+- 🆓 **Google Gemini MIỄN PHÍ** - không cần thẻ!
+
+**📚 Hướng dẫn:**
+- ⚡ [QUICK_AI_SETUP.md](./QUICK_AI_SETUP.md) - Setup 2 phút
+- 🔑 [GET_API_KEYS.md](./GET_API_KEYS.md) - Lấy API keys
+- 📖 [ASSISTANT_GUIDE.md](./ASSISTANT_GUIDE.md) - Chi tiết đầy đủ
+
+---
+
 ## Basic Workflow Principles
 To ensure a consistent and collaborative development process, contributors should follow these fundamental principles when working on the project:
 - **Pull the Main Branch First**: Before starting work on a new feature, always pull the latest changes from the `main` branch to your local repository to ensure your work is based on the most up-to-date codebase. Use the command:

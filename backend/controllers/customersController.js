@@ -64,7 +64,7 @@ export async function getCustomerById(req, res) {
 // Create profile for user
 export async function createCustomer(req, res) {
   try {
-    const { first_name, last_name, phone_number, role, id, avatar: avatarFromBody } = req.body;
+    const { first_name, last_name, phone_number, role, id, avatar: avatarFromBody, email } = req.body;
 
     if (!first_name || !last_name || !id || !phone_number || !role) {
       return res.status(400).json({ message: "All fields are required" });
@@ -80,8 +80,8 @@ export async function createCustomer(req, res) {
     }
 
     const transaction = await sql`
-      INSERT INTO customer(id, first_name, last_name, phone_number, role, avatar)
-      VALUES (${id},${first_name},${last_name},${phone_number},${role}, ${avatarUrl})
+      INSERT INTO customer(id, first_name, last_name, phone_number, role, avatar, email)
+      VALUES (${id},${first_name},${last_name},${phone_number},${role}, ${avatarUrl}, ${email || null})
       RETURNING *
     `;
 
@@ -144,6 +144,33 @@ export async function updateCustomer(req, res) {
     res.status(200).json(updatedCustomer[0]);
   } catch (error) {
     console.error("Error updating the customer:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// Sync email from Clerk
+export async function syncEmailFromClerk(req, res) {
+  try {
+    const { id, email } = req.body;
+    
+    if (!id || !email) {
+      return res.status(400).json({ message: "ID and email are required" });
+    }
+
+    const updated = await sql`
+      UPDATE customer 
+      SET email = ${email}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+
+    if (updated.length === 0) {
+      return res.status(404).json({ message: "Customer not found" });
+    }
+
+    res.status(200).json(updated[0]);
+  } catch (error) {
+    console.error("Error syncing email:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { API_URL } from '../../../constants/api';
-import { buyerStyles } from '../styles/BuyerStyles';
+import { buyerStyles } from '../_styles/BuyerStyles';
 
 const API_BASE_URL = API_URL;
 

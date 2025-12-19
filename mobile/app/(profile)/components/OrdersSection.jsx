@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { styles } from '../styles/ProfileStyles';
+import { styles } from '../_styles/ProfileStyles';
 
 const OrdersSection = () => {
   const navigation = useNavigation();
@@ -11,27 +11,27 @@ const OrdersSection = () => {
     {
       label: 'Đơn hàng mua',
       icon: 'cart-outline',
-      color: '#2196F3', // Blue cho tổng đơn
+      color: '#FF4D79',
     },
     {
       label: 'Chờ xác nhận',
       icon: 'time-outline',
-      color: '#FF9800', // Orange cho chờ
+      color: '#FF7BAC',
     },
     {
       label: 'Giao hàng',
       icon: 'bicycle-outline',
-      color: '#4CAF50', // Green cho giao hàng
+      color: '#FF9FC3',
     },
     {
       label: 'Hủy đơn',
       icon: 'close-circle-outline',
-      color: '#F44336', // Red cho hủy
+      color: '#C2185B',
     },
     {
       label: 'Lịch sử giao hàng',
       icon: 'archive-outline',
-      color: '#9E9E9E', // Gray cho lịch sử
+      color: '#7A5368',
     },
   ];
 

@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { COLORS } from "../../constants/colors";
+import { API_URL } from "../../constants/api";
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -14,19 +15,80 @@ export default function SignUpScreen() {
 
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [role, setRole] = useState("buyer");
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const API_BASE = API_URL;
+
+  const syncCustomerProfile = async (userId) => {
+    if (!userId) return;
+    const formPayload = new FormData();
+    formPayload.append("id", userId);
+    formPayload.append("first_name", firstName);
+    formPayload.append("last_name", lastName);
+    formPayload.append("phone_number", phoneNumber);
+    formPayload.append("role", role);
+    formPayload.append("email", emailAddress);
+    formPayload.append("password", "default");
+    formPayload.append("address", "");
+    formPayload.append("avatar", "https://res.cloudinary.com/demo/image/upload/v1699999999/default-avatar.png");
+    formPayload.append("emaiil", emailAddress); // backend typo-safe
+
+    const postCustomer = async () => {
+      return fetch(`${API_BASE}/customers`, {
+        method: "POST",
+        body: formPayload,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    };
+
+    const putCustomer = async () => {
+      return fetch(`${API_BASE}/customers/${userId}`, {
+        method: "PUT",
+        body: formPayload,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    };
+
+    try {
+      let response = await postCustomer();
+      if (response.status === 409) {
+        // hồ sơ đã tồn tại → cập nhật thay vì tạo
+        response = await putCustomer();
+      }
+      if (!response.ok) {
+        const message = await response.text();
+        console.warn("Không thể đồng bộ hồ sơ khách hàng:", message);
+      }
+    } catch (syncErr) {
+      console.warn("Sync profile failed", syncErr);
+    }
+  };
 
   // Handle submission of sign-up form
   const onSignUpPress = async () => {
     if (!isLoaded) return;
 
+    if (!firstName || !lastName || !phoneNumber || !role || !emailAddress || !password) {
+      setError("Vui lòng nhập đầy đủ thông tin.");
+      return;
+    }
+
     // Start sign-up process using email and password provided
     try {
       await signUp.create({
+        firstName,
+        lastName,
         emailAddress,
         password,
+        unsafeMetadata: {
+          phone_number: phoneNumber,
+          role,
+        },
       });
 
       // Send user an email with verification code
@@ -59,6 +121,7 @@ export default function SignUpScreen() {
       // and redirect the user
       if (signUpAttempt.status === "complete") {
         await setActive({ session: signUpAttempt.createdSessionId });
+        await syncCustomerProfile(signUpAttempt.createdUserId);
         router.replace("/");
       } else {
         // If the status is not complete, check why. User may need to
@@ -110,7 +173,7 @@ export default function SignUpScreen() {
       enableAutomaticScroll={true}
     >
       <View style={styles.container}>
-        <Image source={require("../../assets/images/revenue-i2.png")} style={styles.illustration} />
+        <Image source={require("../../assets/images/welcome/Logo_welcome.svg")} style={styles.illustration} contentFit="contain" />
 
         <Text style={styles.title}>Create Account</Text>
 
@@ -123,6 +186,59 @@ export default function SignUpScreen() {
             </TouchableOpacity>
           </View>
         ) : null}
+
+        <TextInput
+          style={[styles.input, error && styles.errorInput]}
+          autoCapitalize="words"
+          value={lastName}
+          placeholderTextColor="#9A8478"
+          placeholder="Họ"
+          onChangeText={(text) => setLastName(text)}
+        />
+
+        <TextInput
+          style={[styles.input, error && styles.errorInput]}
+          autoCapitalize="words"
+          value={firstName}
+          placeholderTextColor="#9A8478"
+          placeholder="Tên"
+          onChangeText={(text) => setFirstName(text)}
+        />
+
+        <TextInput
+          style={[styles.input, error && styles.errorInput]}
+          value={phoneNumber}
+          placeholder="Số điện thoại"
+          placeholderTextColor="#9A8478"
+          keyboardType="phone-pad"
+          onChangeText={(text) => setPhoneNumber(text)}
+        />
+
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+          {['buyer', 'seller', 'shipper'].map((option) => {
+            const isSelected = role === option;
+            return (
+              <TouchableOpacity
+                key={option}
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: isSelected ? COLORS.primary : COLORS.border,
+                  backgroundColor: isSelected ? COLORS.primary : COLORS.white,
+                  alignItems: 'center',
+                  marginHorizontal: 4,
+                }}
+                onPress={() => setRole(option)}
+              >
+                <Text style={{ color: isSelected ? COLORS.white : COLORS.text, fontWeight: '700' }}>
+                  {option === 'buyer' ? 'Người mua' : option === 'seller' ? 'Người bán' : 'Shipper'}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
         <TextInput
           style={[styles.input, error && styles.errorInput]}

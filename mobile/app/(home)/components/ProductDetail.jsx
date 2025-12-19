@@ -16,27 +16,33 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { API_URL } from '../../../constants/api';
+import useCustomerProfile from '../../../utlis/useCustomerProfile';
 
 const { width, height } = Dimensions.get('window');
-const IMAGE_HEIGHT = height * 0.5;
+const IMAGE_HEIGHT = height * 0.48;
+const PRIMARY = '#FF4D79';
+const ACCENT = '#FFD6E8';
+const BG = '#FFF6FB';
+const TEXT = '#2A0E23';
+const MUTED = '#7A5368';
 
 const detailStyles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FFF6F5' },
+  safe: { flex: 1, backgroundColor: BG },
   header: {
     position: 'absolute',
     top: 50,
     left: 16,
     zIndex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 25,
-    padding: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 10,
+    shadowColor: '#FFB3CD',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    elevation: 5,
   },
-  backButton: { fontSize: 24, color: '#6D4C41' },
+  backButton: { fontSize: 22, color: PRIMARY },
   imagesContainer: {
     height: IMAGE_HEIGHT,
     position: 'relative',
@@ -44,7 +50,7 @@ const detailStyles = StyleSheet.create({
   imageItem: {
     width: width,
     height: IMAGE_HEIGHT,
-    resizeMode: 'contain',
+    resizeMode: 'cover',
   },
   // SỬA: Thêm dots indicator cho images
   dotsContainer: {
@@ -64,7 +70,7 @@ const detailStyles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
   activeDot: {
-    backgroundColor: '#FF8A65',
+    backgroundColor: PRIMARY,
   },
   content: {
     padding: 20,
@@ -73,38 +79,38 @@ const detailStyles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     flex: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowColor: '#FFB3CD',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 6,
   },
-  name: { fontSize: 24, fontWeight: 'bold', color: '#5B453F', marginBottom: 8, lineHeight: 28 },
+  name: { fontSize: 24, fontWeight: '800', color: TEXT, marginBottom: 8, lineHeight: 28 },
   priceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
   },
-  price: { fontSize: 22, fontWeight: 'bold', color: '#E64A19', marginRight: 8 },
+  price: { fontSize: 22, fontWeight: '800', color: PRIMARY, marginRight: 8 },
   priceBadge: {
-    backgroundColor: '#FF8A65',
+    backgroundColor: ACCENT,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
     alignSelf: 'flex-start',
   },
-  priceBadgeText: { fontSize: 12, color: '#fff', fontWeight: '600' },
-  category: { fontSize: 14, color: 'gray', marginBottom: 16 },
+  priceBadgeText: { fontSize: 12, color: PRIMARY, fontWeight: '700' },
+  category: { fontSize: 14, color: MUTED, marginBottom: 16 },
   section: {
     marginBottom: 24,
   },
   sectionTitle: { 
     fontSize: 18, 
     fontWeight: '600', 
-    color: '#6D4C41', 
+    color: TEXT, 
     marginBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0EDE8',
+    borderBottomColor: ACCENT,
     paddingBottom: 8,
   },
   row: {
@@ -117,46 +123,47 @@ const detailStyles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 25,
     borderWidth: 1,
-    borderColor: '#E5C9C4',
+    borderColor: ACCENT,
     marginRight: 12,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowColor: '#FFB3CD',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  selectorText: { fontSize: 14, color: '#6D4C41', fontWeight: '500' },
+  selectorText: { fontSize: 14, color: TEXT, fontWeight: '600' },
   activeSelector: {
-    backgroundColor: '#FF8A65',
-    borderColor: '#FF8A65',
-    shadowColor: '#FF8A65',
-    shadowOpacity: 0.2,
+    backgroundColor: PRIMARY,
+    borderColor: PRIMARY,
+    shadowColor: PRIMARY,
+    shadowOpacity: 0.22,
   },
-  activeText: { color: '#fff', fontWeight: '600' },
-  description: { 
-    fontSize: 14, 
-    color: '#8D6E63', 
-    lineHeight: 22,
-    textAlign: 'justify',
-  },
+  activeText: { color: '#fff', fontWeight: '700' },
   // SỬA: Format description sections
   descSection: {
     marginBottom: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    backgroundColor: '#F8F4F3',
-    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    backgroundColor: '#FFF0F7',
+    borderRadius: 14,
     borderLeftWidth: 4,
-    borderLeftColor: '#FF8A65',
+    borderLeftColor: PRIMARY,
+    shadowColor: '#FFB3CD',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
   },
   descTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6D4C41',
+    color: TEXT,
     marginBottom: 4,
   },
-  descText: { fontSize: 13, color: '#8D6E63', lineHeight: 20 },
+  descText: { fontSize: 13, color: MUTED, lineHeight: 20 },
+  descBullets: {
+    gap: 8,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -170,31 +177,31 @@ const detailStyles = StyleSheet.create({
   },
   errorText: { color: 'red', marginBottom: 10 },
   retryButton: {
-    backgroundColor: '#FF8A65',
+    backgroundColor: PRIMARY,
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 10,
   },
   retryText: { color: '#fff', fontWeight: 'bold' },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FFF0F7',
     borderRadius: 25,
     paddingHorizontal: 12,
     marginTop: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowColor: '#FFB3CD',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 2,
   },
   qtyButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#FF8A65',
+    backgroundColor: PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -205,8 +212,8 @@ const detailStyles = StyleSheet.create({
   },
   qtyNumber: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#5B453F',
+    fontWeight: '700',
+    color: TEXT,
     minWidth: 40,
     textAlign: 'center',
     marginHorizontal: 16,
@@ -220,20 +227,20 @@ const detailStyles = StyleSheet.create({
   },
   // Styles cho seller section (cải thiện)
   sellerContainer: {
-    backgroundColor: '#F8F4F3',
+    backgroundColor: '#FFF0F7',
     padding: 16,
     borderRadius: 16,
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowColor: '#FFB3CD',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
   },
   sellerTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#6D4C41',
+    fontWeight: '700',
+    color: TEXT,
     marginBottom: 12,
   },
   sellerInfo: {
@@ -247,7 +254,7 @@ const detailStyles = StyleSheet.create({
     borderRadius: 24,
     marginRight: 16,
   },
-  sellerName: { fontSize: 16, fontWeight: '600', color: '#5B453F' },
+  sellerName: { fontSize: 16, fontWeight: '700', color: TEXT },
   // THÊM: Styles cho row icons dưới cùng
   actionRow: {
     flexDirection: 'row',
@@ -261,14 +268,14 @@ const detailStyles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#FF8A65',
+    backgroundColor: PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowColor: '#FFB3CD',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.22,
+    shadowRadius: 10,
+    elevation: 5,
   },
   actionIcon: {
     fontSize: 28,
@@ -306,6 +313,7 @@ export default function ProductDetail() {
 
   // Get user from Clerk (giữ nguyên)
   const { user, isSignedIn } = useUser();
+  const { profile: customerProfile, refreshProfile } = useCustomerProfile();
   const customerId = user?.id;
 
   useEffect(() => {
@@ -550,6 +558,24 @@ export default function ProductDetail() {
       return;
     }
 
+    if (!customerProfile || customerProfile.role !== 'buyer') {
+      await refreshProfile();
+      Alert.alert(
+        'Cần cập nhật hồ sơ',
+        'Bạn cần chọn vai trò Buyer để chat với người bán.',
+        [
+          { text: 'Hủy', style: 'cancel' },
+          { text: 'Cập nhật ngay', onPress: () => navigation.navigate('(profile)/components/updateProfile') },
+        ]
+      );
+      return;
+    }
+
+    if (seller && seller.role && seller.role !== 'seller') {
+      Alert.alert('Thông báo', 'Người bán chưa có vai trò seller hợp lệ.');
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/chat`, {
         method: 'POST',
@@ -570,7 +596,7 @@ export default function ProductDetail() {
 
       const convData = JSON.parse(responseText);
 
-      navigation.navigate('(home)/components/ChatScreen', { 
+      navigation.navigate('(chat)/ChatScreen', { 
         conversationId: convData.id, 
         sellerName: `${(seller.first_name || '').trim()} ${(seller.last_name || '')}` 
       });
@@ -583,12 +609,22 @@ export default function ProductDetail() {
   // SỬA: Format description sections từ \n\n
   const formattedDescription = () => {
     if (!product.description) return null;
-    return product.description.split('\n\n').map((sec, i) => (
-      <View key={i} style={detailStyles.descSection}>
-        <Text style={detailStyles.descTitle}>Phần {i + 1}</Text>
-        <Text style={detailStyles.descText}>{sec}</Text>
+    const parts = product.description
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    return (
+      <View style={detailStyles.descSection}>
+        <View style={detailStyles.descBullets}>
+          {parts.map((sec, i) => (
+            <Text key={i} style={detailStyles.descText}>
+              • {sec}
+            </Text>
+          ))}
+        </View>
       </View>
-    ));
+    );
   };
 
   if (loading) {
@@ -635,13 +671,13 @@ export default function ProductDetail() {
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => (
               <Image 
-                source={{ uri: item || 'https://via.placeholder.com/300' }} 
+                source={item ? { uri: item } : require('../../../assets/images/welcome/Logo_welcome.svg')} 
                 style={detailStyles.imageItem} 
               />
             )}
             ListEmptyComponent={
               <Image 
-                source={{ uri: 'https://via.placeholder.com/300' }} 
+                source={require('../../../assets/images/welcome/Logo_welcome.svg')} 
                 style={detailStyles.imageItem} 
               />
             }

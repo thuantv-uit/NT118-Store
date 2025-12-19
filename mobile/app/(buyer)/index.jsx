@@ -4,8 +4,8 @@ import { ActivityIndicator, FlatList, SafeAreaView, Text, TouchableOpacity, View
 import Icon from 'react-native-vector-icons/Ionicons';
 import CartItem from './components/CartItem';
 import CartSummary from './components/CartSummary';
-import { useCart } from './hook/useCart';
-import { buyerStyles } from './styles/BuyerStyles';
+import { useCart } from './_hook/useCart';
+import { buyerStyles } from './_styles/BuyerStyles';
 
 export default function CartScreen() {
   const { user } = useUser();
@@ -36,14 +36,14 @@ export default function CartScreen() {
   if (loading) {
     return (
       <SafeAreaView style={buyerStyles.safe}>
-        <View style={buyerStyles.container}>
-          <View style={[buyerStyles.header, { justifyContent: 'center' }]}>
-            <Text style={buyerStyles.headerTitle}>Đang tải giỏ hàng...</Text>
-          </View>
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <ActivityIndicator size="large" color="#6D4C41" />
-          </View>
+      <View style={buyerStyles.container}>
+        <View style={[buyerStyles.header, { justifyContent: 'center' }]}>
+        <Text style={[buyerStyles.headerTitle, { fontSize: 14 }]}>Đang tải giỏ hàng...</Text>
         </View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="small" color="#6D4C41" />
+        </View>
+      </View>
       </SafeAreaView>
     );
   }

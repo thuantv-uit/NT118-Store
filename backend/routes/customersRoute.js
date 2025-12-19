@@ -2,7 +2,8 @@ import express from "express";
 import {
     createCustomer,
     getCustomerById,
-    updateCustomer
+    updateCustomer,
+    syncEmailFromClerk
 } from "../controllers/customersController.js"
 import multer from 'multer';
 const storage = multer.memoryStorage();
@@ -22,5 +23,6 @@ const router = express.Router();
 router.get("/:id", getCustomerById)
 router.post("/", upload.single('avatar'), createCustomer)
 router.put("/:id",upload.single('avatar'), updateCustomer)
+router.patch("/sync-email", syncEmailFromClerk)
 
 export default router;

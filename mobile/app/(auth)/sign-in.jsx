@@ -2,7 +2,8 @@ import { useSignIn } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
-import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { styles } from "../../assets/styles/auth.styles";
 import { COLORS } from "../../constants/colors";
@@ -54,7 +55,7 @@ export default function Page() {
       extraScrollHeight={30}
     >
       <View style={styles.container}>
-        <Image source={require("../../assets/images/revenue-i4.png")} style={styles.illustration} />
+        <Image source={require("../../assets/images/welcome/Logo_welcome.svg")} style={styles.illustration} contentFit="contain" />
         <Text style={styles.title}>Welcome Back</Text>
 
         {error ? (

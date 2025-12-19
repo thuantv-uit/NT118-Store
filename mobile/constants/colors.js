@@ -51,12 +51,28 @@ const oceanTheme = {
   shadow: "#000000",
 };
 
+const pinkTheme = {
+  primary: "#FF4D79",
+  background: "#FFF6FB",
+  text: "#2A0E23",
+  border: "#FFD6E8",
+  white: "#FFFFFF",
+  textLight: "#7A5368",
+  expense: "#FF4D79",
+  income: "#35C2A3",
+  card: "#FFFFFF",
+  shadow: "#FFB3CD",
+  gradientStart: "#FF8FB1",
+  gradientEnd: "#FF4D79",
+};
+
 export const THEMES = {
   coffee: coffeeTheme,
   forest: forestTheme,
   purple: purpleTheme,
   ocean: oceanTheme,
+  pink: pinkTheme,
 };
 
 // 👇 change this to switch theme
-export const COLORS = THEMES.forest;
+export const COLORS = THEMES.pink;

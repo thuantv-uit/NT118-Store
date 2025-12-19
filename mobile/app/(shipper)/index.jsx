@@ -16,7 +16,7 @@ import OrderDetailModal from './components/OrderDetailModal';
 import OrderItem from './components/OrderItem';
 import UpdateLocationModal from './components/UpdateLocationModal';
 import UpdateStatusModal from './components/UpdateStatusModal';
-import { shipperStyles } from './styles/shipperStyles';
+import { shipperStyles } from './_styles/shipperStyles';
 
 const API_BASE_URL = API_URL;
 

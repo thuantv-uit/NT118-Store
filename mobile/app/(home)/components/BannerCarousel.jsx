@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { FlatList, Image, View } from 'react-native';
-import { banners } from '../data/homeData';
-import { styles } from '../styles/HomeStyles';
+import { banners } from '../_data/homeData';
+import { styles } from '../_styles/HomeStyles';
 
 export default function BannerCarousel() {
   const [activeBanner, setActiveBanner] = useState(0);
@@ -12,9 +12,10 @@ export default function BannerCarousel() {
   });
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 50 });
 
-  const renderBanner = ({ item }) => (
-    <Image source={{ uri: item.image || 'https://via.placeholder.com/300x150' }} style={styles.bannerImage} />
-  );
+  const renderBanner = ({ item }) => {
+    const source = typeof item.image === 'string' ? { uri: item.image } : item.image;
+    return <Image source={source} style={styles.bannerImage} />;
+  };
 
   return (
     <View style={styles.bannerWrapper}>

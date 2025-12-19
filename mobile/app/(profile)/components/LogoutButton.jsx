@@ -1,5 +1,5 @@
 import { Text, TouchableOpacity } from 'react-native';
-import { styles } from '../styles/ProfileStyles';
+import { styles } from '../_styles/ProfileStyles';
 
 const LogoutButton = ({ onPress }) => (
   <TouchableOpacity style={styles.logoutBtn} onPress={onPress}>

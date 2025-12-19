@@ -53,7 +53,7 @@ const WishlistScreen = () => {
                 id: item.id, // wishlist_id
                 product_id: item.product_id, // Giữ để navigate
                 name: productData.name || 'Sản phẩm không tên',
-                image: productData.images?.[0] || 'https://via.placeholder.com/150', // Hình ảnh đầu tiên
+                image: productData.images?.[0] || require('../../../assets/images/welcome/Logo_welcome.svg'), // Hình ảnh đầu tiên
               };
             }
             return null; // Skip nếu fetch fail
