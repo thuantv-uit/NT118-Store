@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { SafeAreaView, ScrollView } from 'react-native';
+import { styles } from './_styles/HomeStyles';
 import BannerCarousel from './components/BannerCarousel';
 import BottomNav from './components/BottomNav';
 import Categories from './components/Categories';
@@ -7,7 +8,6 @@ import FlashSale from './components/FlashSale';
 import Header from './components/Header';
 import ProductsGrid from './components/ProductsGrid';
 import PromoCard from './components/PromoCard';
-import { styles } from './styles/HomeStyles';
 
 export default function HomeScreen({ navigation }) {
   const username = 'Thuan';
@@ -16,7 +16,7 @@ export default function HomeScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safe}>
       <Header 
-        username={username || 'User'} // Fallback để tránh lỗi nếu undefined
+        username={username || 'User'}
         searchQuery={searchQuery} 
         onSearchChange={setSearchQuery} 
       />

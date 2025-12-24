@@ -22,18 +22,31 @@ export default function BottomNav() {
       { key: 'account', route: '/(profile)', icon: 'person', label: 'Account', activeColor: '#FF4D79' },
     ];
 
-    const isSeller = profile?.role === 'seller';
-    if (!isSeller) return base;
-
-    // Chèn nút thêm sản phẩm ở giữa (sau Cart)
+    const role = profile?.role;
     const cloned = [...base];
+
+    // 👉 Seller: Add Product
+  if (role === 'seller') {
     cloned.splice(2, 0, {
       key: 'addProduct',
-      route: '/(seller)/components/product-create',
+      route: '/(seller)',
       icon: 'add',
       activeColor: '#FF4D79',
       isAddAction: true,
     });
+  }
+
+  // 👉 Shipper: Orders / Delivery
+  if (role === 'shipper') {
+    cloned.splice(2, 0, {
+      key: 'shipperOrders',
+      route: '/(shipper)',
+      icon: 'bicycle',
+      activeColor: '#4CAF50',
+      isAddAction: true,
+    });
+  }
+
     return cloned;
   }, [profile?.role]);
 

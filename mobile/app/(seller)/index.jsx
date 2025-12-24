@@ -338,7 +338,7 @@ export default function HomeSeller() {
         showsVerticalScrollIndicator={false}
       >
         <FlashSaleBanner />
-        <RevenueOverview onPress={() => {}} />
+        <RevenueOverview onPress={goTo("/dashboard")} />
         <ProductCreationCard onPress={goTo("/(seller)/components/product-create")} />
         <NotificationFeed onPress={() => {}} />
         <MessageSection onPress={() => {}} />
