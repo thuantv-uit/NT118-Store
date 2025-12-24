@@ -1,12 +1,34 @@
 import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
-import { categories } from '../data/homeData';
-import { styles } from '../styles/HomeStyles';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { categories } from '../_data/homeData';
+import { primary, styles } from '../_styles/HomeStyles';
 
-export default function Categories() {
+export default function Categories({ onCategorySelect }) {
+  const router = useRouter();
+  
+  const handleCategoryPress = (category) => {
+    // Navigate đến màn hình hiển thị sản phẩm theo category
+    router.push({
+      pathname: '/(home)/category-products',
+      params: {
+        categoryId: category.id,
+        categoryName: category.name
+      }
+    });
+  };
+  
   const renderCategory = ({ item }) => (
-    <TouchableOpacity style={styles.categoryItem}>
+    <TouchableOpacity 
+      style={styles.categoryItem}
+      onPress={() => handleCategoryPress(item)}
+    >
       <View style={styles.categoryIconWrapper}>
-        <Image source={{ uri: item.image || 'https://via.placeholder.com/50' }} style={styles.categoryIcon} />
+        {item.icon ? (
+          <Ionicons name={item.icon} size={30} color={primary} />
+        ) : (
+          <Image source={item.image ? { uri: item.image } : require('../../../assets/images/welcome/Logo_welcome.svg')} style={styles.categoryIcon} />
+        )}
       </View>
       <Text style={styles.categoryLabel} numberOfLines={1}>{item.name || 'Danh mục'}</Text>
     </TouchableOpacity>

@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
   Alert,
@@ -49,6 +50,7 @@ const MAX_IMAGES = 5;
 const MAX_VARIANTS = 10;
 
 export default function SellerProductCreate({ navigation }) {
+  const router = useRouter();
   const [formData, setFormData] = useState(
     { ...BASIC_FIELDS.reduce((acc, field) => { acc[field.id] = field.value; return acc; }, {}),
       ...DESCRIPTION_SECTIONS.reduce((acc, field) => { acc[field.id] = field.value; return acc; }, {}),
@@ -57,6 +59,7 @@ export default function SellerProductCreate({ navigation }) {
   const [categories, setCategories] = useState([]);
   const [originalCategories, setOriginalCategories] = useState([]); // Lưu data gốc cho table
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [showCategories, setShowCategories] = useState(false); // Toggle category table
   const [shippingData, setShippingData] = useState({
     method: SHIPPING_OPTIONS[0],
     processing_time: "1-2",
@@ -363,165 +366,270 @@ export default function SellerProductCreate({ navigation }) {
 
   return (
     <SellerScreenLayout title="Tạo sản phẩm mới" subtitle="Hoàn tất thông tin để lên kệ">
-      <ScrollView style={styles.scrollContainer}>
-        {/* THÊM: Preview multiple images */}
-        {images.length > 0 && (
-          <View style={styles.imagesPreview}>
-            <Text style={styles.sectionTitle}>Ảnh đã chọn ({images.length}/{MAX_IMAGES})</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {images.map((uri, index) => (
-                <View key={index} style={styles.imageItem}>
-                  <Image source={{ uri }} style={styles.previewImage} />
-                  <Pressable style={styles.removeImageButton} onPress={() => removeImage(index)}>
-                    <Ionicons name="close-circle" size={20} color="#FF0000" />
-                  </Pressable>
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-
-        {/* Upload card for multiple images */}
-        <LinearGradient
-          colors={["#FFE5EA", "#FAD4D6"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.uploadCard}
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        
+        {/* Quick Action Card - Quản lý sản phẩm */}
+        <Pressable
+          onPress={() => router.push('/(seller)/(search)/manage-products')}
+          style={({ pressed }) => [styles.quickActionCard, pressed && { opacity: 0.85 }]}
         >
-          <View style={styles.uploadIcon}>
-            <Ionicons name="cloud-upload-outline" size={hp("3%")} color="#BE123C" />
-          </View>
-          <View style={styles.uploadTexts}>
-            <Text style={styles.uploadTitle}>Thêm hình ảnh sản phẩm (tối đa {MAX_IMAGES})</Text>
-            <Text style={styles.uploadSubtitle}>Chọn nhiều ảnh để hiển thị chi tiết.</Text>
-          </View>
-          <Pressable
-            style={({ pressed }) => [styles.uploadButton, pressed && styles.uploadButtonPressed]}
-            onPress={pickImages}
-            disabled={loading || images.length >= MAX_IMAGES}
+          <LinearGradient
+            colors={["#FFD1E3", "#FFF0F7"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.quickActionGradient}
           >
-            <Text style={styles.uploadButtonText}>Tải lên</Text>
-          </Pressable>
-        </LinearGradient>
+            <View style={styles.quickActionLeft}>
+              <View style={styles.quickActionIcon}>
+                <Ionicons name="cube-outline" size={hp("2.8%") } color="#FF3B80" />
+              </View>
+              <View style={styles.quickActionText}>
+                <Text style={styles.quickActionTitle}>Quản lý kho</Text>
+                <Text style={styles.quickActionSubtitle}>Xem & chỉnh sửa sản phẩm</Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={hp("2.4%") } color="#FF3B80" />
+          </LinearGradient>
+        </Pressable>
 
-        {/* THÊM: Section Variants */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Biến thể sản phẩm</Text>
-            <Pressable style={styles.addVariantButton} onPress={addVariant} disabled={variants.length >= MAX_VARIANTS}>
-              <Ionicons name="add-circle" size={24} color="#BE123C" />
-              <Text style={styles.addVariantText}>Thêm</Text>
+        {/* Step 1: Thông tin cơ bản */}
+        <View style={styles.stepContainer}>
+          <View style={styles.stepHeader}>
+            <View style={styles.stepNumber}>
+              <Text style={styles.stepNumberText}>1</Text>
+            </View>
+            <Text style={styles.stepTitle}>Thông tin cơ bản</Text>
+          </View>
+          <View style={styles.stepContent}>
+            {BASIC_FIELDS.map((item) => (
+              <View key={item.id} style={styles.inputGroup}>
+                <Text style={styles.label}>
+                  {item.label} <Text style={styles.required}>*</Text>
+                </Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder={item.placeholder}
+                  placeholderTextColor="#94a3b8"
+                  value={formData[item.id]}
+                  onChangeText={(value) => handleInputChange(item.id, value)}
+                  keyboardType={item.keyboardType || "default"}
+                />
+              </View>
+            ))}
+            
+            {/* Category Lookup Table */}
+            <View style={styles.categoryLookup}>
+              <Pressable 
+                onPress={() => setShowCategories(!showCategories)}
+                style={styles.categoryToggle}
+              >
+                <Ionicons 
+                  name={showCategories ? "chevron-down" : "chevron-forward"} 
+                  size={hp("2%")} 
+                  color="#0f766e" 
+                />
+                <Text style={styles.categoryToggleText}>
+                  {showCategories ? "Ẩn danh sách danh mục" : "Xem danh sách danh mục"}
+                </Text>
+              </Pressable>
+              
+              {showCategories && (
+                loadingCategories ? (
+                  <ActivityIndicator size="small" color="#f7729a" style={{ marginTop: hp("2%") }} />
+                ) : (
+                  <ScrollView style={styles.categoryTableWrapper} nestedScrollEnabled={true}>
+                    <View style={styles.categoryTableHeader}>
+                      <Text style={[styles.categoryHeaderCell, { flex: 0.6 }]}>ID</Text>
+                      <Text style={[styles.categoryHeaderCell, { flex: 2 }]}>Danh mục</Text>
+                      <Text style={[styles.categoryHeaderCell, { flex: 0.8 }]}>Giới tính</Text>
+                    </View>
+                    {categories.map((cat, index) => (
+                      <View key={cat.id} style={[styles.categoryRow, index % 2 === 0 && styles.categoryRowAlt]}>
+                        <Text style={[styles.categoryCell, { flex: 0.6 }]}>{cat.id}</Text>
+                        <Text style={[styles.categoryCell, { flex: 2 }]} numberOfLines={2}>{cat.displayName}</Text>
+                        <Text style={[styles.categoryCell, { flex: 0.8 }]}>{cat.gender_type || '-'}</Text>
+                      </View>
+                    ))}
+                  </ScrollView>
+                )
+              )}
+            </View>
+          </View>
+        </View>
+
+        {/* Step 2: Hình ảnh sản phẩm */}
+        <View style={styles.stepContainer}>
+          <View style={styles.stepHeader}>
+            <View style={styles.stepNumber}>
+              <Text style={styles.stepNumberText}>2</Text>
+            </View>
+            <Text style={styles.stepTitle}>Hình ảnh sản phẩm</Text>
+          </View>
+          <View style={styles.stepContent}>
+            <Pressable
+              onPress={pickImages}
+              disabled={loading || images.length >= MAX_IMAGES}
+              style={({ pressed }) => [
+                styles.uploadArea,
+                pressed && { opacity: 0.7 },
+                images.length >= MAX_IMAGES && styles.uploadAreaDisabled
+              ]}
+            >
+              <View style={styles.uploadIconWrapper}>
+                <Ionicons name="cloud-upload-outline" size={hp("4%") } color="#FF3B80" />
+              </View>
+              <Text style={styles.uploadText}>
+                {images.length >= MAX_IMAGES ? "Đã đạt giới hạn" : "Chọn ảnh sản phẩm"}
+              </Text>
+              <Text style={styles.uploadHint}>Tối đa {MAX_IMAGES} ảnh • {images.length}/{MAX_IMAGES}</Text>
+            </Pressable>
+
+            {images.length > 0 && (
+              <View style={styles.imageGrid}>
+                {images.map((uri, index) => (
+                  <View key={index} style={styles.imageCard}>
+                    <Image source={{ uri }} style={styles.imagePreview} />
+                    <Pressable
+                      onPress={() => removeImage(index)}
+                      style={styles.imageRemoveBtn}
+                    >
+                      <Ionicons name="close-circle" size={hp("2.6%")} color="#ef4444" />
+                    </Pressable>
+                    <View style={styles.imageIndexBadge}>
+                      <Text style={styles.imageIndexText}>{index + 1}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Step 3: Mô tả chi tiết */}
+        <View style={styles.stepContainer}>
+          <View style={styles.stepHeader}>
+            <View style={styles.stepNumber}>
+              <Text style={styles.stepNumberText}>3</Text>
+            </View>
+            <Text style={styles.stepTitle}>Mô tả chi tiết</Text>
+          </View>
+          <View style={styles.stepContent}>
+            {DESCRIPTION_SECTIONS.map((item) => (
+              <View key={item.id} style={styles.inputGroup}>
+                <Text style={styles.label}>{item.label}</Text>
+                <TextInput
+                  style={[styles.textInput, styles.textArea]}
+                  placeholder={item.placeholder}
+                  placeholderTextColor="#94a3b8"
+                  value={formData[item.id]}
+                  onChangeText={(value) => handleInputChange(item.id, value)}
+                  multiline={true}
+                  numberOfLines={item.lines}
+                  textAlignVertical="top"
+                />
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Step 4: Biến thể sản phẩm */}
+        <View style={styles.stepContainer}>
+          <View style={styles.stepHeader}>
+            <View style={styles.stepNumber}>
+              <Text style={styles.stepNumberText}>4</Text>
+            </View>
+            <Text style={styles.stepTitle}>Biến thể sản phẩm</Text>
+            <Pressable
+              onPress={addVariant}
+              disabled={variants.length >= MAX_VARIANTS}
+              style={({ pressed }) => [
+                styles.addVariantBtn,
+                pressed && { opacity: 0.7 },
+                variants.length >= MAX_VARIANTS && styles.addVariantBtnDisabled
+              ]}
+            >
+              <Ionicons name="add-circle-outline" size={hp("2%")} color="#fff" />
+              <Text style={styles.addVariantBtnText}>Thêm</Text>
             </Pressable>
           </View>
-          {variants.map((variant, index) => (
-            <View key={variant.id} style={styles.variantContainer}>
-              <View style={styles.variantHeader}>
-                <Text style={styles.variantTitle}>Biến thể {index + 1}</Text>
-                {variants.length > 1 && (
-                  <Pressable onPress={() => removeVariant(variant.id)} style={styles.removeVariantButton}>
-                    <Ionicons name="trash-outline" size={20} color="#FF0000" />
-                  </Pressable>
-                )}
-              </View>
-              {VARIANT_FIELDS.map((item) => (
-                <View key={item.id} style={styles.inputShell}>
-                  <Text style={styles.inputLabel}>{item.label}</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder={item.placeholder}
-                    value={variant[item.id]}
-                    onChangeText={(value) => handleVariantChange(variant.id, item.id, value)}
-                    keyboardType={item.keyboardType}
-                    multiline={item.id === "dimensions"}
-                    numberOfLines={item.id === "dimensions" ? 2 : 1}
-                  />
+          
+          <View style={styles.stepContent}>
+            {variants.map((variant, index) => (
+              <View key={variant.id} style={styles.variantCard}>
+                <View style={styles.variantCardHeader}>
+                  <View style={styles.variantBadge}>
+                    <Text style={styles.variantBadgeText}>#{index + 1}</Text>
+                  </View>
+                  {variants.length > 1 && (
+                    <Pressable
+                      onPress={() => removeVariant(variant.id)}
+                      style={({ pressed }) => [
+                        styles.variantRemoveBtn,
+                        pressed && { opacity: 0.6 }
+                      ]}
+                    >
+                      <Ionicons name="trash-outline" size={hp("2%")} color="#ef4444" />
+                    </Pressable>
+                  )}
                 </View>
-              ))}
-            </View>
-          ))}
-        </View>
-
-        {/* MỚI: Section Bảng danh mục (hiển thị ID, Tên, Giới tính với indent cho hierarchy) */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Danh sách danh mục</Text>
-          {loadingCategories ? (
-            <ActivityIndicator size="large" color="#BE123C" style={{ alignSelf: "center", marginTop: hp("2%") }} />
-          ) : categories.length > 0 ? (
-            <ScrollView style={styles.categoryTable} nestedScrollEnabled={true}>
-              <View style={styles.tableHeader}>
-                <Text style={styles.tableHeaderText}>ID</Text>
-                <Text style={[styles.tableHeaderText, { flex: 2 }]}>Tên danh mục</Text>
-                <Text style={styles.tableHeaderText}>Giới tính</Text>
-              </View>
-              {categories.map((cat, index) => (
-                <View key={cat.id} style={[
-                  styles.tableRow,
-                  index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd
-                ]}>
-                  <Text style={styles.tableCell}>{cat.id}</Text>
-                  <Text style={[styles.tableCell, { flex: 2 }]}>{cat.displayName}</Text>
-                  <Text style={styles.tableCell}>{cat.gender_type || 'N/A'}</Text>
+                
+                <View style={styles.variantFields}>
+                  {VARIANT_FIELDS.map((field) => (
+                    <View key={field.id} style={styles.variantInputGroup}>
+                      <Text style={styles.variantLabel}>
+                        {field.label} <Text style={styles.required}>*</Text>
+                      </Text>
+                      <TextInput
+                        style={styles.variantInput}
+                        placeholder={field.placeholder}
+                        placeholderTextColor="#94a3b8"
+                        value={variant[field.id]}
+                        onChangeText={(value) => handleVariantChange(variant.id, field.id, value)}
+                        keyboardType={field.keyboardType || "default"}
+                        multiline={field.id === "dimensions"}
+                        numberOfLines={field.id === "dimensions" ? 2 : 1}
+                      />
+                    </View>
+                  ))}
                 </View>
-              ))}
-            </ScrollView>
-          ) : (
-            <Text style={styles.input}>Không có dữ liệu danh mục.</Text>
-          )}
+              </View>
+            ))}
+          </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Thông tin cơ bản</Text>
-          {BASIC_FIELDS.map((item) => (
-            <View key={item.id} style={styles.inputShell}>
-              <Text style={styles.inputLabel}>{item.label}</Text>
-              <TextInput
-                style={styles.input}
-                placeholder={item.placeholder}
-                value={formData[item.id]}
-                onChangeText={(value) => handleInputChange(item.id, value)}
-                keyboardType={item.keyboardType}
-              />
-            </View>
-          ))}
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
+          <Pressable
+            onPress={handleCreateProduct}
+            disabled={loading}
+            style={({ pressed }) => [
+              styles.primaryButton,
+              pressed && { opacity: 0.85 },
+              loading && styles.primaryButtonDisabled
+            ]}
+          >
+            {loading ? (
+              <ActivityIndicator color="#FFF" size="small" />
+            ) : (
+              <>
+                <Ionicons name="checkmark-circle" size={hp("2.2%")} color="#fff" />
+                <Text style={styles.primaryButtonText}>Đăng sản phẩm</Text>
+              </>
+            )}
+          </Pressable>
+          
+          <Pressable
+            onPress={handleSaveDraft}
+            disabled={loading}
+            style={({ pressed }) => [
+              styles.secondaryButton,
+              pressed && { opacity: 0.7 }
+            ]}
+          >
+            <Ionicons name="bookmark-outline" size={hp("2%")} color="#0f766e" />
+            <Text style={styles.secondaryButtonText}>Lưu nháp</Text>
+          </Pressable>
         </View>
-
-        {/* THÊM: Section Mô tả chi tiết (4 phần, multiline lớn hơn) */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mô tả sản phẩm</Text>
-          {DESCRIPTION_SECTIONS.map((item) => (
-            <View key={item.id} style={styles.inputShell}>
-              <Text style={styles.inputLabel}>{item.label}</Text>
-              <TextInput
-                style={[styles.input, styles.multilineInput]}
-                placeholder={item.placeholder}
-                value={formData[item.id]}
-                onChangeText={(value) => handleInputChange(item.id, value)} // Giữ string
-                multiline={item.multiline}
-                numberOfLines={item.lines}
-                textAlignVertical="top"
-              />
-            </View>
-          ))}
-        </View>
-
-        <Pressable
-          style={({ pressed }) => [styles.publishButton, pressed && styles.publishButtonPressed]}
-          onPress={handleCreateProduct}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#FFF" />
-          ) : (
-            <Text style={styles.publishButtonText}>Đăng sản phẩm</Text>
-          )}
-        </Pressable>
-        <Pressable
-          style={({ pressed }) => [styles.draftButton, pressed && styles.draftButtonPressed]}
-          onPress={handleSaveDraft}
-          disabled={loading}
-        >
-          <Text style={styles.draftButtonText}>Lưu nháp</Text>
-        </Pressable>
       </ScrollView>
     </SellerScreenLayout>
   );
@@ -530,207 +638,411 @@ export default function SellerProductCreate({ navigation }) {
 const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
-    paddingBottom: hp("10%"),
+    paddingBottom: hp("3%"),
+    backgroundColor: "#fff",
   },
-  // THÊM: Styles cho multiple images preview
-  imagesPreview: {
+  
+  // Quick Action Card
+  quickActionCard: {
     marginBottom: hp("2%"),
+    borderRadius: 18,
+    overflow: 'hidden',
+    shadowColor: '#FF6B9D',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 8,
   },
-  imageItem: {
-    width: wp("25%"),
-    height: wp("25%"),
-    marginRight: wp("2%"),
-    position: "relative",
-    borderRadius: 8,
-    overflow: "hidden",
-  },
-  previewImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  removeImageButton: {
-    position: "absolute",
-    top: 2,
-    right: 2,
-    backgroundColor: "rgba(255,255,255,0.8)",
-    borderRadius: 10,
-    padding: 2,
-  },
-  // THÊM: Styles cho variants section
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: hp("1.5%"),
-  },
-  addVariantButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(190, 18, 60, 0.1)",
-    paddingHorizontal: wp("3%"),
-    paddingVertical: hp("0.5%"),
-    borderRadius: 20,
-  },
-  addVariantText: {
-    marginLeft: wp("1%"),
-    color: "#BE123C",
-    fontWeight: "600",
-    fontSize: hp("1.6%"),
-  },
-  variantContainer: {
-    backgroundColor: "#F9FAFB",
-    borderRadius: 16,
-    padding: wp("4%"),
-    marginBottom: hp("2%"),
-    borderWidth: 1,
-    borderColor: "rgba(190, 18, 60, 0.1)",
-  },
-  variantHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: hp("1%"),
-  },
-  variantTitle: {
-    fontSize: hp("2%"),
-    fontWeight: "700",
-    color: "#BE123C",
-  },
-  removeVariantButton: {
-    padding: 5,
-  },
-  // MỚI: Styles cho bảng danh mục (cải thiện UI)
-  categoryTable: {
-    maxHeight: hp("30%"), // Tăng chiều cao một chút
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 12,
-    backgroundColor: "#FFF",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    marginBottom: hp("1%"),
-  },
-  tableHeader: {
-    flexDirection: "row",
-    backgroundColor: "#BE123C",
+  quickActionGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: wp("4%"),
-    paddingVertical: hp("1.5%"),
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    paddingVertical: hp("2%"),
   },
-  tableHeaderText: {
+  quickActionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
-    fontSize: hp("1.8%"),
-    fontWeight: "700",
-    color: "#FFF",
-    textAlign: "center",
   },
-  tableRow: {
-    flexDirection: "row",
-    paddingHorizontal: wp("4%"),
-    paddingVertical: hp("1.2%"),
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-  },
-  tableRowEven: {
-    backgroundColor: "#F9FAFB",
-  },
-  tableRowOdd: {
-    backgroundColor: "#FFF",
-  },
-  tableCell: {
-    flex: 1,
-    fontSize: hp("1.7%"),
-    color: "#374151",
-    textAlign: "center",
-    fontWeight: "500",
-  },
-  // THÊM: Styles cho multiline description (lớn hơn)
-  multilineInput: {
-    minHeight: hp("8%"), // Lớn hơn để dễ nhập
-    maxHeight: hp("15%"),
-  },
-
-  uploadCard: {
-    borderRadius: 22,
-    paddingVertical: hp("1.8%"),
-    paddingHorizontal: wp("4%"),
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: hp("2.4%"),
-  },
-  uploadIcon: {
+  quickActionIcon: {
     width: wp("12%"),
     height: wp("12%"),
     borderRadius: wp("6%"),
-    backgroundColor: "rgba(255,255,255,0.7)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: wp("3%"),
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: wp("3.5%"),
+    shadowColor: '#FF6B9D',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  uploadTexts: { flex: 1 },
-  uploadTitle: { fontSize: hp("2%"), fontWeight: "700", color: "#7F1D1D" },
-  uploadSubtitle: {
-    fontSize: hp("1.7%"),
-    color: "#4B5563",
-    marginTop: hp("0.2%"),
+  quickActionText: {
+    flex: 1,
   },
-  uploadButton: {
-    backgroundColor: "#FFF",
-    paddingHorizontal: wp("4%"),
-    paddingVertical: hp("0.8%"),
-    borderRadius: 999,
-  },
-  uploadButtonPressed: { backgroundColor: "rgba(255,255,255,0.75)" },
-  uploadButtonText: { fontSize: hp("1.7%"), color: "#BE123C", fontWeight: "700" },
-  section: { marginBottom: hp("2.6%") },
-  sectionTitle: {
+  quickActionTitle: {
     fontSize: hp("2.1%"),
-    fontWeight: "700",
-    color: "#BE123C",
+    fontWeight: '900',
+    color: '#1a1a1a',
+    marginBottom: 3,
+  },
+  quickActionSubtitle: {
+    fontSize: hp("1.6%"),
+    color: '#4a4a4a',
+    fontWeight: '600',
+  },
+
+  // Step Container
+  stepContainer: {
+    marginBottom: hp("2.4%"),
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: wp("4.5%"),
+    shadowColor: '#FFB6C1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#FFE4E8',
+  },
+  stepHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: hp("1.8%"),
+    paddingBottom: hp("1.2%"),
+    borderBottomWidth: 2,
+    borderBottomColor: 'rgba(247,114,154,0.15)',
+  },
+  stepNumber: {
+    width: wp("10%"),
+    height: wp("10%"),
+    borderRadius: wp("5%"),
+    backgroundColor: '#FF6B9D',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: wp("3.5%"),
+    shadowColor: '#FF6B9D',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  stepNumberText: {
+    fontSize: hp("2.3%"),
+    fontWeight: '900',
+    color: '#fff',
+  },
+  stepTitle: {
+    fontSize: hp("2.2%"),
+    fontWeight: '900',
+    color: '#1a1a1a',
+    flex: 1,
+  },
+  stepContent: {
+    gap: hp("1.5%"),
+  },
+
+  // Input Groups
+  inputGroup: {
     marginBottom: hp("1.2%"),
   },
-  inputShell: {
-    backgroundColor: "#FFF",
-    borderRadius: 16,
-    paddingVertical: hp("1.2%"),
-    paddingHorizontal: wp("4%"),
-    marginBottom: hp("1%"),
-    borderWidth: 1,
-    borderColor: "rgba(204,120,97,0.2)",
+  label: {
+    fontSize: hp("1.7%"),
+    fontWeight: '800',
+    color: '#FF6B9D',
+    marginBottom: hp("0.7%"),
   },
-  inputLabel: {
+  required: {
+    color: '#ef4444',
+    fontSize: hp("1.8%"),
+  },
+  textInput: {
+    backgroundColor: '#FFF5F7',
+    borderWidth: 1.5,
+    borderColor: '#FFD6E0',
+    borderRadius: 14,
+    paddingHorizontal: wp("3.5%"),
+    paddingVertical: hp("1.3%"),
+    fontSize: hp("1.8%"),
+    color: '#1a1a1a',
+    fontWeight: '600',
+  },
+  textArea: {
+    minHeight: hp("10%"),
+    maxHeight: hp("18%"),
+    textAlignVertical: 'top',
+    paddingTop: hp("1.2%"),
+  },
+
+  // Category Lookup
+  categoryLookup: {
+    marginTop: hp("1%"),
+  },
+  categoryToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: hp("1%"),
+  },
+  categoryToggleText: {
+    fontSize: hp("1.7%"),
+    color: '#0f766e',
+    fontWeight: '700',
+    marginLeft: wp("2%"),
+  },
+  categoryTableWrapper: {
+    maxHeight: hp("28%"),
+    marginTop: hp("1%"),
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(154,214,223,0.3)',
+    backgroundColor: '#fff',
+  },
+  categoryTableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#FF6B9D',
+    paddingHorizontal: wp("3.5%"),
+    paddingVertical: hp("1.3%"),
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  categoryHeaderCell: {
     fontSize: hp("1.6%"),
-    color: "#9F1239",
-    fontWeight: "600",
+    fontWeight: '800',
+    color: '#fff',
+    textAlign: 'center',
+  },
+  categoryRow: {
+    flexDirection: 'row',
+    paddingHorizontal: wp("3%"),
+    paddingVertical: hp("1%"),
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  categoryRowAlt: {
+    backgroundColor: '#f8fafc',
+  },
+  categoryCell: {
+    fontSize: hp("1.5%"),
+    color: '#334155',
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+
+  // Upload Area
+  uploadArea: {
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: '#FF9FC4',
+    borderRadius: 18,
+    paddingVertical: hp("3.5%"),
+    alignItems: 'center',
+    backgroundColor: '#FFF0F7',
+  },
+  uploadAreaDisabled: {
+    opacity: 0.5,
+    borderColor: '#cbd5e1',
+  },
+  uploadIconWrapper: {
+    width: wp("15%"),
+    height: wp("15%"),
+    borderRadius: wp("7.5%"),
+    backgroundColor: '#FFD6E8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: hp("1.2%"),
+  },
+  uploadText: {
+    fontSize: hp("1.9%"),
+    fontWeight: '800',
+    color: '#0f172a',
+    marginTop: hp("0.5%"),
+  },
+  uploadHint: {
+    fontSize: hp("1.5%"),
+    color: '#FF6B9D',
+    marginTop: hp("0.4%"),
+    fontWeight: '600',
+  },
+
+  // Image Grid
+  imageGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: wp("3%"),
+    marginTop: hp("1.5%"),
+  },
+  imageCard: {
+    width: wp("27%"),
+    height: wp("27%"),
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#f1f5f9',
+    position: 'relative',
+    borderWidth: 2,
+    borderColor: 'rgba(154,214,223,0.3)',
+  },
+  imagePreview: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  imageRemoveBtn: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: 999,
+    padding: 2,
+  },
+  imageIndexBadge: {
+    position: 'absolute',
+    bottom: 4,
+    left: 4,
+    backgroundColor: 'rgba(255,107,157,0.95)',
+    paddingHorizontal: wp("2.5%"),
+    paddingVertical: hp("0.4%"),
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  imageIndexText: {
+    fontSize: hp("1.4%"),
+    fontWeight: '800',
+    color: '#fff',
+  },
+
+  // Variant Section
+  addVariantBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FF6B9D',
+    paddingHorizontal: wp("3.5%"),
+    paddingVertical: hp("0.8%"),
+    borderRadius: 20,
+    gap: wp("1.5%"),
+    shadowColor: '#FF6B9D',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  addVariantBtnDisabled: {
+    opacity: 0.4,
+  },
+  addVariantBtnText: {
+    fontSize: hp("1.6%"),
+    fontWeight: '800',
+    color: '#fff',
+  },
+  variantCard: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 14,
+    padding: wp("3.5%"),
+    borderWidth: 1.5,
+    borderColor: 'rgba(154,214,223,0.35)',
+    marginTop: hp("1%"),
+  },
+  variantCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: hp("1.2%"),
+    paddingBottom: hp("0.8%"),
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(154,214,223,0.25)',
+  },
+  variantBadge: {
+    backgroundColor: '#FF6B9D',
+    paddingHorizontal: wp("3.5%"),
+    paddingVertical: hp("0.5%"),
+    borderRadius: 10,
+    shadowColor: '#FF6B9D',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  variantBadgeText: {
+    fontSize: hp("1.6%"),
+    fontWeight: '900',
+    color: '#fff',
+  },
+  variantRemoveBtn: {
+    padding: hp("0.6%"),
+  },
+  variantFields: {
+    gap: hp("1%"),
+  },
+  variantInputGroup: {
+    marginBottom: hp("0.6%"),
+  },
+  variantLabel: {
+    fontSize: hp("1.5%"),
+    fontWeight: '700',
+    color: '#475569',
     marginBottom: hp("0.4%"),
   },
-  input: {
-    fontSize: hp("1.8%"),
-    color: "#000",
-    padding: 0,
-  },
-  publishButton: {
-    backgroundColor: "#CC7861",
-    borderRadius: 18,
-    paddingVertical: hp("1.6%"),
-    alignItems: "center",
-    marginBottom: hp("1%"),
-  },
-  publishButtonPressed: { backgroundColor: "#B35E48" },
-  publishButtonText: { color: "#FFF", fontSize: hp("2%"), fontWeight: "700" },
-  draftButton: {
-    borderRadius: 18,
-    paddingVertical: hp("1.4%"),
-    alignItems: "center",
+  variantInput: {
+    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: "rgba(204,120,97,0.4)",
-    marginBottom: hp("1%"),
+    borderColor: 'rgba(154,214,223,0.35)',
+    borderRadius: 10,
+    paddingHorizontal: wp("3%"),
+    paddingVertical: hp("1%"),
+    fontSize: hp("1.7%"),
+    color: '#0f172a',
+    fontWeight: '600',
   },
-  draftButtonPressed: { backgroundColor: "rgba(204,120,97,0.1)" },
-  draftButtonText: { color: "#CC7861", fontSize: hp("1.9%"), fontWeight: "700" },
+
+  // Action Buttons
+  actionButtons: {
+    gap: hp("1.2%"),
+    marginTop: hp("1%"),
+    marginBottom: hp("2%"),
+  },
+  primaryButton: {
+    backgroundColor: '#FF6B9D',
+    borderRadius: 18,
+    paddingVertical: hp("2%"),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: wp("2%"),
+    shadowColor: '#FF6B9D',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  primaryButtonDisabled: {
+    backgroundColor: '#D1D5DB',
+    shadowOpacity: 0,
+  },
+  primaryButtonText: {
+    fontSize: hp("2.1%"),
+    fontWeight: '900',
+    color: '#fff',
+  },
+  secondaryButton: {
+    backgroundColor: '#FFF5F7',
+    borderWidth: 2,
+    borderColor: '#FFB6D9',
+    borderRadius: 18,
+    paddingVertical: hp("1.8%"),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: wp("2%"),
+  },
+  secondaryButtonText: {
+    fontSize: hp("1.9%"),
+    fontWeight: '800',
+    color: '#FF6B9D',
+  },
 });

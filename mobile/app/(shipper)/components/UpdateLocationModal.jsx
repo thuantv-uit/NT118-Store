@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { API_URL } from '../../../constants/api';
-import { shipperStyles } from '../styles/shipperStyles';
+import { shipperStyles } from '../_styles/shipperStyles';
 
 const API_BASE_URL = API_URL;
 

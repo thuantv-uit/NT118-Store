@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { API_URL } from "../../../constants/api";
-import { styles } from '../styles/ProfileStyles';
+import { styles } from '../_styles/ProfileStyles';
 
 const UpdateProfileScreen = () => {
   const router = useRouter();
@@ -25,6 +25,7 @@ const UpdateProfileScreen = () => {
     first_name: '',
     phone_number: '',
     role: 'buyer',
+    email: '',
   });
   const [loading, setLoading] = useState(false);
   const [profileExists, setProfileExists] = useState(false);
@@ -34,8 +35,10 @@ const UpdateProfileScreen = () => {
   useEffect(() => {
     if (userId) {
       loadProfile();
+    } else if (user?.primaryEmailAddress?.emailAddress) {
+      setFormData((prev) => ({ ...prev, email: user.primaryEmailAddress.emailAddress }));
     }
-  }, [userId]);
+  }, [userId, user]);
 
   const loadProfile = async () => {
     try {
@@ -48,6 +51,7 @@ const UpdateProfileScreen = () => {
           first_name: data.first_name || '',
           phone_number: data.phone_number || '',
           role: data.role || 'buyer',
+          email: data.email || data.emaiil || user?.primaryEmailAddress?.emailAddress || '',
         });
         if (data.avatar) {
           setSelectedAvatar(data.avatar);
@@ -90,8 +94,9 @@ const UpdateProfileScreen = () => {
     }
 
     // Validation
-    if (!formData.last_name || !formData.first_name || !formData.phone_number || !formData.role) {
-      Alert.alert('Error', 'Please fill full information.');
+    const emailValue = formData.email || user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress || '';
+    if (!formData.last_name || !formData.first_name || !formData.phone_number || !formData.role || !emailValue) {
+      Alert.alert('Error', 'Please fill full information (email, họ, tên, số điện thoại, vai trò).');
       return;
     }
 
@@ -102,6 +107,10 @@ const UpdateProfileScreen = () => {
       formPayload.append("last_name", formData.last_name);
       formPayload.append("phone_number", formData.phone_number);
       formPayload.append("role", formData.role);
+      formPayload.append("email", emailValue);
+      formPayload.append("emaiil", emailValue); // some backends use a misspelled column, send both
+      // backend yêu cầu avatar not null → fallback default nếu chưa chọn
+      const fallbackAvatar = selectedAvatar || user?.imageUrl || 'https://res.cloudinary.com/demo/image/upload/v1699999999/default-avatar.png';
 
       if (selectedAvatar && !selectedAvatar.startsWith('http')) {
         const fileName = selectedAvatar.split('/').pop();
@@ -111,15 +120,15 @@ const UpdateProfileScreen = () => {
           type: fileType,
           name: fileName,
         });
-      } else if (selectedAvatar && selectedAvatar.startsWith('http')) {
-        formPayload.append("avatar", selectedAvatar);
+      } else {
+        formPayload.append("avatar", fallbackAvatar);
       }
 
       let response;
       if (!profileExists) {
         // First: POST create with id
         formPayload.append("id", userId);
-        formPayload.append("email", user?.emailAddresses[0]?.emailAddress || '');
+        formPayload.append("email", formData.email || user?.emailAddresses[0]?.emailAddress || '');
         formPayload.append("password", 'default');
         formPayload.append("address", '');
 
@@ -142,6 +151,22 @@ const UpdateProfileScreen = () => {
       }
 
       if (response.ok) {
+        // Đồng bộ lên Clerk để giữ thông tin nhất quán
+        try {
+          await user.update({
+            firstName: formData.first_name,
+            lastName: formData.last_name,
+            primaryEmailAddressId: user?.primaryEmailAddressId,
+            publicMetadata: {
+              phone_number: formData.phone_number,
+              role: formData.role,
+            },
+          });
+        } catch (clerkErr) {
+          console.warn('Không thể đồng bộ Clerk:', clerkErr);
+        }
+
+        setProfileExists(true);
         Alert.alert('Success', 'Update profile!');
         router.back();
       } else {
@@ -182,7 +207,7 @@ const UpdateProfileScreen = () => {
         {/* Header: Back + Title + Lưu */}
         <View style={styles.updateHeader}>
           <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
-            <Icon name="arrow-back" size={24} color="#FF6B9D" />
+            <Icon name="arrow-back" size={24} color="#FF4D79" />
           </TouchableOpacity>
           <Text style={styles.updateTitle}>Sửa hồ sơ</Text>
           <TouchableOpacity onPress={handleSave} disabled={loading} style={styles.saveBtnHeader}>
@@ -194,7 +219,7 @@ const UpdateProfileScreen = () => {
         <View style={styles.formGroup}>
           <Text style={styles.label}>Avatar</Text>
           <TouchableOpacity onPress={pickAvatar} disabled={loading} style={styles.avatarUploadButton}>
-            <Icon name="camera-outline" size={24} color="#FF6B9D" />
+            <Icon name="camera-outline" size={24} color="#FF4D79" />
             <Text style={styles.avatarUploadText}>Chọn ảnh avatar</Text>
           </TouchableOpacity>
           {selectedAvatar && (
@@ -248,7 +273,7 @@ const UpdateProfileScreen = () => {
                 style={[
                   styles.inputHalf,
                   {
-                    backgroundColor: formData.role === r ? '#FF6B9D' : '#E0E0E0',
+                    backgroundColor: formData.role === r ? '#FF4D79' : '#E0E0E0',
                     borderRadius: 8,
                     justifyContent: 'center',
                     alignItems: 'center',

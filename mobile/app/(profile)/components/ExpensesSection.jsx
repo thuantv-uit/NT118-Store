@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Dimensions, ScrollView, Text, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { API_URL } from '../../../constants/api';
-import { styles } from '../styles/ProfileStyles';
+import { styles } from '../_styles/ProfileStyles';
 
 const { width } = Dimensions.get('window');
 
@@ -60,14 +60,14 @@ const ExpensesSection = () => {
             title: 'Tiết kiệm tháng',
             value: '1.200.000 VND',
             icon: 'trending-up-outline',
-            color: '#FF9800', // Orange
+            color: '#FF7BAC',
             trend: '+15%',
           },
           {
             title: 'Chi tiêu khác',
             value: '450.000 VND',
             icon: 'trending-down-outline',
-            color: '#F44336', // Red
+            color: '#C2185B',
             trend: '-3%',
           },
         ];
@@ -77,10 +77,10 @@ const ExpensesSection = () => {
         console.error('Error fetching expenses:', error);
         // Fallback data nếu API lỗi
         setExpenses([
-          { title: 'Tổng đơn hàng', value: '0 đơn', icon: 'cart-outline', color: '#4CAF50', trend: '+0%' },
-          { title: 'Tổng chi tiêu', value: '0 VND', icon: 'wallet-outline', color: '#2196F3', trend: '+0%' },
-          { title: 'Tiết kiệm tháng', value: '0 VND', icon: 'trending-up-outline', color: '#FF9800', trend: '+0%' },
-          { title: 'Chi tiêu khác', value: '0 VND', icon: 'trending-down-outline', color: '#F44336', trend: '+0%' },
+          { title: 'Tổng đơn hàng', value: '0 đơn', icon: 'cart-outline', color: '#FF4D79', trend: '+0%' },
+          { title: 'Tổng chi tiêu', value: '0 VND', icon: 'wallet-outline', color: '#FF7BAC', trend: '+0%' },
+          { title: 'Tiết kiệm tháng', value: '0 VND', icon: 'trending-up-outline', color: '#FF9FC3', trend: '+0%' },
+          { title: 'Chi tiêu khác', value: '0 VND', icon: 'trending-down-outline', color: '#C2185B', trend: '+0%' },
         ]);
       } finally {
         setLoading(false);
@@ -95,7 +95,7 @@ const ExpensesSection = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Quản lý chi tiêu</Text>
         <View style={styles.expenseScroll}>
-          <ActivityIndicator size="large" color="#0000ff" />
+          <ActivityIndicator size="large" color="#FF4D79" />
         </View>
       </View>
     );
@@ -113,13 +113,7 @@ const ExpensesSection = () => {
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Quản lý chi tiêu</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.expenseScroll}
-        snapToInterval={width * 0.9}
-        decelerationRate="fast"
-      >
+      <View style={styles.expenseGrid}>
         {expenses.map((item, index) => (
           <View
             key={index}
@@ -128,13 +122,12 @@ const ExpensesSection = () => {
               {
                 backgroundColor:
                   index === 1
-                    ? '#E8F5E8'
+                    ? '#FFE6F0'
                     : index === 2
-                    ? '#FFF3E0'
+                    ? '#FFF1F7'
                     : index === 3
-                    ? '#FFEBEE'
-                    : '#FFF0F5',
-                marginRight: 12,
+                    ? '#FFE5EE'
+                    : '#FFF7FB',
               },
             ]}
           >
@@ -147,7 +140,7 @@ const ExpensesSection = () => {
             {index === 2 && <Text style={styles.expenseSub}>Áo nữ</Text>}
           </View>
         ))}
-      </ScrollView>
+      </View>
     </View>
   );
 };

@@ -19,6 +19,7 @@ import bankAccountRoutes from './routes/bankAccountRoutes.js';
 import walletTransactionRoutes from './routes/walletTransactionRoutes.js'
 import orderStatusRoutes from './routes/orderStatusRoutes.js'
 import chatRoute from './routes/chatRoutes.js'
+import assistantRoutes from './routes/assistantRoutes.js'
 // import rateLimiter from "./middleware/rateLimiter.js";
 
 dotenv.config();
@@ -53,6 +54,11 @@ io.on("connection", (socket) => {
 
 // Middleware
 // app.use(rateLimiter)
+app.use(cors({
+  origin: "*", // Allow all origins for development
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  credentials: true
+}));
 app.use(express.json());
 
 const PORT = process.env.PORT;
@@ -76,9 +82,20 @@ app.use('/api/bank_accounts', bankAccountRoutes);
 app.use('/api/wallet_transaction', walletTransactionRoutes);
 app.use('/api/order_status', orderStatusRoutes);
 app.use('/api/chat', chatRoute);
+app.use('/api/assistant', assistantRoutes);
 
-initDB().then(() => {
-    app.listen(PORT, () => {
+// Initialize database with retry logic
+initDB().catch((error) => {
+    console.error("Error initializing DB", error);
+    console.log("Server will start anyway. Please check your database connection.");
+    console.log("You may need to:");
+    console.log("  1. Check your internet connection");
+    console.log("  2. Verify DATABASE_URL in .env file");
+    console.log("  3. Ensure Neon database is active (free tier auto-pauses)");
+});
+
+// Start server regardless of DB connection status
+server.listen(PORT, () => {
     console.log("Server is up and running on PORT:", PORT);
-    });
+    console.log(`API available at: http://localhost:${PORT}`);
 });

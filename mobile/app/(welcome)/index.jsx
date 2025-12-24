@@ -20,7 +20,7 @@ export default function Welcome1() {
             <SafeAreaView style={styles.fill}>
                 <View style={styles.content}>
                     {/* Logo */}
-                    <Image source={require("../../assets/images/welcome/Logo1.png")} style={styles.logo} />
+                    <Image source={require("../../assets/images/welcome/Logo_welcome.svg")} style={styles.logo} contentFit="contain" />
                      {/* <Logo width={wp("50%")} height={hp("25%")} /> // Cách dùng component SVG trực tiếp */}
                     {/* <Logo style={styles.logo} /> */}
 

@@ -16,7 +16,7 @@ import {
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from "react-native-responsive-screen";
 
 const FLASH_IMAGES = [
-  require("../../assets/images/home_seller/flash_sale/Flast sale.png"),
+  require("../../assets/images/home_seller/flash_sale/flash_sale.png"),
   require("../../assets/images/home_seller/flash_sale/fl2.png"),
   require("../../assets/images/home_seller/flash_sale/fl3.png"),
 ];
@@ -48,25 +48,14 @@ const NOTIFICATIONS = [
 
 /* ===== Header ===== */
 const Header = ({
-  onShopPress,
   onSearchPress,
-  onNotificationsPress,
-  onMessagesPress,
-  onSettingsPress,
 }) => {
   return (
     <View style={sx.headerContainer}>
       <View style={sx.header}>
         <View>
           <Text style={sx.headerGreeting}>Xin chào,</Text>
-          <Pressable
-            onPress={onShopPress}
-            style={({ pressed }) => [sx.shopNamePressable, pressed && sx.pressed]}
-            accessibilityRole="button"
-            accessibilityLabel="Đi đến hồ sơ cửa hàng"
-          >
-            <Text style={sx.headerTitle}>Siny Shop!</Text>
-          </Pressable>
+          <Text style={sx.headerTitle}>Siny Shop!</Text>
         </View>
         <View style={sx.headerRight}>
           <Pressable
@@ -77,37 +66,13 @@ const Header = ({
           >
             <Ionicons name="search" size={hp("3%")} color="#FFF5F2" />
           </Pressable>
-          <Pressable
-            onPress={onNotificationsPress}
-            style={({ pressed }) => [sx.headerIconButton, pressed && sx.pressedIcon]}
-            accessibilityRole="button"
-            accessibilityLabel="Thông báo"
-          >
-            <Ionicons name="notifications-outline" size={hp("3%")} color="#FFF5F2" />
-          </Pressable>
-          <Pressable
-            onPress={onMessagesPress}
-            style={({ pressed }) => [sx.headerIconButton, pressed && sx.pressedIcon]}
-            accessibilityRole="button"
-            accessibilityLabel="Tin nhắn"
-          >
-            <Ionicons name="chatbubble-ellipses-outline" size={hp("3%")} color="#FFF5F2" />
-          </Pressable>
-          <Pressable
-            onPress={onSettingsPress}
-            style={({ pressed }) => [sx.headerIconButton, pressed && sx.pressedIcon]}
-            accessibilityRole="button"
-            accessibilityLabel="Cài đặt"
-          >
-            <Ionicons name="settings-outline" size={hp("3%")} color="#FFF5F2" />
-          </Pressable>
         </View>
       </View>
     </View>
   );
 };
 
-/* ===== Flash sale ===== */
+/* ===== FlashSaleBanner ===== */
 const FlashSaleBanner = () => {
   const [activeSlide, setActiveSlide] = useState(0);
 
@@ -365,11 +330,7 @@ export default function HomeSeller() {
   return (
     <SafeAreaView style={sx.safe}>
       <Header
-        onShopPress={goTo("/profile")}
-        onSearchPress={goTo("/search")}
-        onNotificationsPress={goTo("/notifications")}
-        onMessagesPress={goTo("/messages")}
-        onSettingsPress={goTo("/settings")}
+        onSearchPress={goTo("/(seller)/(search)/search")}
       />
       <ScrollView
         style={sx.scroll}
@@ -379,8 +340,8 @@ export default function HomeSeller() {
         <FlashSaleBanner />
         <RevenueOverview onPress={goTo("/dashboard")} />
         <ProductCreationCard onPress={goTo("/(seller)/components/product-create")} />
-        <NotificationFeed onPress={goTo("/notifications")} />
-        <MessageSection onPress={goTo("/messages")} />
+        <NotificationFeed onPress={() => {}} />
+        <MessageSection onPress={() => {}} />
       </ScrollView>
       <NavigationBar />
     </SafeAreaView>

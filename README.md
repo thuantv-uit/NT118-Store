@@ -1,82 +1,167 @@
-# Project Name
+# NT118-Store
 
-## Introduction
-Project Name is an Android application developed using **Android Studio**, the official integrated development environment (IDE) for Android applications. This project [brief description of the project’s purpose, e.g., builds a note-taking app, an e-commerce platform, or an educational tool].
+## 📱 E-Commerce Mobile Application
+Ứng dụng thương mại điện tử đa vai trò với giao diện hiện đại, hỗ trợ người mua, người bán và shipper.
 
-### Key Features
-- [Feature 1: Brief description]
-- [Feature 2: Brief description]
-- [Feature 3: Brief description]
+## ✨ Tính năng chính
 
-## System Requirements
-To run this project in Android Studio, you need:
-- **Operating System**: Windows 10/11, macOS 10.14 or later, or Linux (Ubuntu recommended).
-- **RAM**: Minimum 8GB, recommended 16GB.
-- **Disk Space**: At least 10GB of free space.
-- **JDK**: Java Development Kit version 17 or higher.
-- **Android Studio**: Latest version (recommended [version name, e.g., Android Studio Iguana | 2023.2.1]).
-- **Android SDK**: API Level [specify level, e.g., 34] and required build tools.
+### 🤖 Trợ lý AI Shopping Assistant
+- 💬 Chat với AI (Gemini/GPT-4) - tư vấn mua sắm thông minh
+- 🎯 Hiểu ngữ cảnh đơn hàng & giỏ hàng
+- ⚡ Bubble icon floating có thể kéo thả
 
-## Installation and Setup
-### 1. Install Android Studio
-1. Visit the [official Android Studio website](https://developer.android.com/studio).
-2. Download the version compatible with your operating system.
-3. Run the installer and follow the prompts to install Android Studio and the Android SDK.
+### 👤 Người mua (Buyer)
+- 🏠 Trang chủ với banner carousel & flash sale
+- 🔍 Tìm kiếm và lọc sản phẩm theo danh mục
+- 🛒 Giỏ hàng với variant (size, color)
+- ❤️ Danh sách yêu thích
+- 📦 Theo dõi đơn hàng real-time
+- 💰 Ví điện tử & lịch sử giao dịch
+- 💬 Chat với người bán
 
-### 2. Clone the Project
-1. Clone this repository using the command:
+### 🏪 Người bán (Seller)
+- 📊 Dashboard doanh thu & thống kê
+- ➕ Tạo sản phẩm với nhiều variant & hình ảnh
+- ✏️ Quản lý & chỉnh sửa sản phẩm
+- 📦 Quản lý đơn hàng
+- 💬 Chat với khách hàng
+- 🎨 Giao diện pink theme hiện đại
+
+### 🚚 Shipper
+- 📋 Danh sách đơn hàng cần giao
+- 📍 Cập nhật vị trí & trạng thái đơn hàng
+- ✅ Xác nhận giao hàng thành công
+
+## 🛠️ Tech Stack
+
+### Frontend (Mobile)
+- **Framework**: React Native + Expo Router
+- **UI**: React Native components, Expo Linear Gradient
+- **Auth**: Clerk Authentication
+- **State**: React Hooks
+- **API**: Fetch API, Socket.io client
+- **Icons**: Ionicons, Vector Icons
+
+### Backend
+- **Runtime**: Node.js + Express
+- **Database**: PostgreSQL (Neon)
+- **Cache**: Redis (Upstash)
+- **Image**: Cloudinary
+- **AI**: Google Gemini API, OpenAI API
+- **Real-time**: Socket.io
+
+## 📚 Hướng dẫn Setup
+
+### 1. Clone Repository
 ```bash
-   git clone https://github.com/thuantv-uit/NT118-Store.git
+git clone https://github.com/thuantv-uit/NT118-Store.git
+cd NT118-Store
 ```
 
-2. Open Android Studio, select File > Open, and navigate to the project folder.
-
-3. Configure the Environment
-    1. Install JDK:
-    - Ensure JDK 17 or higher is installed. Download from Oracle or use OpenJDK.
-    - In Android Studio, go to File > Project Structure > SDK Location and select the JDK path.
-
-    2. Configure Android SDK:
-    - Navigate to File > Settings > Appearance & Behavior > System Settings > Android SDK.
-    - Install API Level [e.g., 34] and necessary build tools (Build Tools, Platform Tools).
-
-    3. Install Dependencies:
-    - Open the build.gradle file (app module) and ensure listed libraries are synchronized.
-    - Click Sync Project with Gradle Files in Android Studio.
-
-4. Run the Application
-Connect an Android device (with developer mode enabled) or set up an emulator in AVD Manager. and Click ***Run > Run 'app'*** to build and run the application on the device or emulator.
-
-## Basic Workflow Principles
-To ensure a consistent and collaborative development process, contributors should follow these fundamental principles when working on the project:
-- **Pull the Main Branch First**: Before starting work on a new feature, always pull the latest changes from the `main` branch to your local repository to ensure your work is based on the most up-to-date codebase. Use the command:
+### 2. Backend Setup
 ```bash
-   git pull origin main
+cd backend
+npm install
 ```
 
-- **Create a Feature Branch**: When adding a new feature, create a dedicated branch from main for your changes. Name the branch descriptively (e.g., feature/add-login-screen). Use:
-```bash
-   git checkout -b feature/your-feature-name
+Tạo file `.env` trong folder `backend/`:
+```env
+PORT=5001
+DATABASE_URL=your_postgres_url
+UPSTASH_REDIS_REST_URL=your_redis_url
+UPSTASH_REDIS_REST_TOKEN=your_redis_token
+API_URL=http://localhost:5001
+CLOUDINARY_CLOUD_NAME=your_cloudinary_name
+CLOUDINARY_API_KEY=your_cloudinary_key
+CLOUDINARY_API_SECRET=your_cloudinary_secret
+GEMINI_API_KEY=your_gemini_key
+OPENAI_API_KEY=your_openai_key
 ```
 
-- **Push Completed Features to Your Branch**: After completing the feature implementation, commit your changes with clear and descriptive messages, then push the branch to the remote repository:
+Chạy backend:
 ```bash
-   git commit -m "Add [feature description]"
-   git push origin feature/your-feature-name
+npm start
 ```
 
-- **Create a Pull Request**: Submit a Pull Request (PR) on GitHub to merge your feature branch into the main branch. Ensure the PR includes a clear description of the changes and passes any automated tests or code reviews.
-
-- **Sync with Main After Completion**: Once your PR is merged, pull the updated main branch again to your local repository to continue working on new features:
+### 3. Mobile Setup
 ```bash
-   git checkout main
-   git pull origin main
+cd mobile
+npm install
 ```
 
-## Contributing
-- **Ho Thi Huynh My - 22520897**
-- **Tran Thu Ngan - 22520937**
-- **Tran Van Thuan - 22521448**
+Tạo file `.env` trong folder `mobile/`:
+```env
+EXPO_PUBLIC_API_URL=http://your-ip:5001/api
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
+```
 
-## Acknowledgements
-Thanks to the course instructor **Tran Hong Nghi** and peers for their support.
+Chạy app:
+```bash
+npx expo start
+```
+
+### 4. AI Assistant Setup
+**📚 Chi tiết:** [QUICK_AI_SETUP.md](./QUICK_AI_SETUP.md)
+
+## 🔄 Git Workflow
+
+### Pull trước khi code
+```bash
+git pull origin main
+```
+
+### Tạo branch cho feature mới
+```bash
+git checkout -b feature/your-feature-name
+```
+
+### Commit và push
+```bash
+git add .
+git commit -m "feat: add your feature"
+git push origin feature/your-feature-name
+```
+
+### Tạo Pull Request
+- Mở PR trên GitHub
+- Review code
+- Merge vào main sau khi approve
+
+### Sync sau khi merge
+```bash
+git checkout main
+git pull origin main
+```
+
+## 📁 Cấu trúc Project
+
+```
+NT118-Store/
+├── backend/
+│   ├── controllers/        # API controllers
+│   ├── routes/            # API routes
+│   ├── services/          # Business logic
+│   ├── config/            # Config files
+│   └── server.js
+├── mobile/
+│   ├── app/
+│   │   ├── (auth)/        # Đăng nhập/đăng ký
+│   │   ├── (home)/        # Trang chủ buyer
+│   │   ├── (buyer)/       # Buyer screens
+│   │   ├── (seller)/      # Seller screens
+│   │   ├── (shipper)/     # Shipper screens
+│   │   ├── (chat)/        # Chat screens
+│   │   └── (profile)/     # Profile screens
+│   ├── components/        # Shared components
+│   ├── constants/         # Constants & API config
+│   └── assets/           # Images & fonts
+└── start-dev.ps1         # Quick start script
+```
+
+## 👥 Nhóm Phát Triển
+- **Hồ Thị Huỳnh My - 22520897**
+- **Trần Thu Ngân - 22520937** 
+- **Trần Văn Thuận - 22521448**
+
+## 📄 License
+MIT License - UIT NT118 Course Project

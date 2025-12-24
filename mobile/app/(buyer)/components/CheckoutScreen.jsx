@@ -14,9 +14,9 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { API_URL } from '../../../constants/api';
-import { useCart } from '../hook/useCart';
-import { useCheckout } from '../hook/useCheckout';
-import { buyerStyles, checkoutStyles } from '../styles/BuyerStyles';
+import { useCart } from '../_hook/useCart';
+import { useCheckout } from '../_hook/useCheckout';
+import { buyerStyles, checkoutStyles } from '../_styles/BuyerStyles';
 
 const API_BASE_URL = API_URL;
 
@@ -494,7 +494,7 @@ export default function CheckoutScreen() {
           <View style={checkoutStyles.section}>
             <Text style={checkoutStyles.sectionTitle}>Giỏ hàng của bạn ({cartItems.length} sản phẩm)</Text>
             <FlatList
-              data={cartItems}  // SỬA: Dùng cartItems trực tiếp [{ cart, product, variant }]
+              data={cartItems}
               renderItem={({ item }) => (
                 <View style={{
                   backgroundColor: '#FFF',
@@ -507,7 +507,7 @@ export default function CheckoutScreen() {
                   shadowOffset: { width: 0, height: 1 },
                   shadowOpacity: 0.1,
                   shadowRadius: 2,
-                  elevation: 2, // Cho Android
+                  elevation: 2, 
                 }}>
                   <Text style={checkoutStyles.itemName}>{item.product?.name || 'Sản phẩm'}</Text>
                   <View style={checkoutStyles.itemDetails}>

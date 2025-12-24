@@ -1,20 +1,41 @@
 import { useAuth } from '@clerk/clerk-expo';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
+import { useCallback } from 'react';
 import { SafeAreaView, ScrollView } from 'react-native';
 import ExpensesSection from './components/ExpensesSection';
 import Header from './components/Header';
 import LogoutButton from './components/LogoutButton';
+import ProfileInfoCard from './components/ProfileInfoCard';
 import OrdersSection from './components/OrdersSection';
 import UtilitiesSection from './components/UtilitiesSection';
-import { mockExpenses, mockOrdersTabs, mockUser, mockUtilities } from './data/mockData';
-import { styles } from './styles/ProfileStyles';
+import { styles } from './_styles/ProfileStyles';
+import useCustomerProfile from '../../utlis/useCustomerProfile';
 
 const ProfileScreen = () => {
   const router = useRouter();
   const { signOut } = useAuth();
+  const {
+    profile,
+    user,
+    loading,
+    refreshProfile,
+    isProfileComplete,
+  } = useCustomerProfile();
 
-  const handleTabPress = (label) => {
-    console.log(`Navigate to ${label}`);
+  const utilities = [
+    { icon: 'favorite', label: 'Yêu thích', route: '/(buyer)/components/WishListScreen' },
+    { icon: 'account-balance-wallet', label: 'Ví', route: '/(profile)/components/WalletScreen' },
+  ];
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshProfile();
+    }, [refreshProfile])
+  );
+
+  const handleEditProfile = () => {
+    router.push('/(profile)/components/updateProfile');
   };
 
   const handleLogout = async () => {
@@ -29,10 +50,18 @@ const ProfileScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <Header user={mockUser} />
-        <OrdersSection tabs={mockOrdersTabs} onTabPress={handleTabPress} />
-        <UtilitiesSection utilities={mockUtilities} />
-        <ExpensesSection expenses={mockExpenses} />
+        <Header profile={profile} loadingProfile={loading} onEdit={handleEditProfile} />
+        <ProfileInfoCard
+          profile={profile}
+          clerkUser={user}
+          loading={loading}
+          onEdit={handleEditProfile}
+          onRefresh={refreshProfile}
+          isComplete={isProfileComplete}
+        />
+        <OrdersSection />
+        <UtilitiesSection utilities={utilities} />
+        <ExpensesSection />
         <LogoutButton onPress={handleLogout} />
       </ScrollView>
       {/* <BottomNav /> */}

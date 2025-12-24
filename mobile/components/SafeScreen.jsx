@@ -1,3 +1,4 @@
+import { StatusBar } from "expo-status-bar";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -11,9 +12,10 @@ const SafeScreen = ({ children }) => {
         paddingBottom: insets.bottom,
         paddingLeft: insets.left,
         paddingRight: insets.right,
-        backgroundColor: "#b0480cff",
+        backgroundColor: "#FFF6FB",
       }}
     >
+      <StatusBar style="dark" backgroundColor="#FFF6FB" />
       {children}
     </View>
   );

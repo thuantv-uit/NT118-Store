@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { shipperStyles } from '../styles/shipperStyles';
+import { shipperStyles } from '../_styles/shipperStyles';
 
 const statusLabels = {
   pending: 'Chờ xác nhận',

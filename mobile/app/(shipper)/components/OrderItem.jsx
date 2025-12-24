@@ -1,6 +1,6 @@
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { shipperStyles } from '../styles/shipperStyles';
+import { shipperStyles } from '../_styles/shipperStyles';
 
 const statusSteps = {
   pending: { label: 'Chờ xác nhận', icon: 'time-outline', color: '#FF6B00' },

@@ -1,20 +1,21 @@
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { styles } from '../styles/HomeStyles';
+import { primary, styles, text } from '../_styles/HomeStyles';
 
 export default function Header({ username, searchQuery, onSearchChange }) {
   return (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
-        <Text style={styles.hello}>Hi, <Text style={styles.username}>{username || 'User'}</Text></Text>
+        <Text style={styles.hello}>Xin chào,</Text>
+        <Text style={styles.username} numberOfLines={1}>{username || 'User'}</Text>
       </View>
 
       <View style={styles.headerCenter}>
         <View style={styles.searchBox}>
-          <Icon name="search-outline" size={18} color="#BDAAA8" />
+          <Icon name="search-outline" size={18} color={primary} />
           <TextInput
-            placeholder="Clothing"
-            placeholderTextColor="#BDAAA8"
+            placeholder="Tìm deal hot, thương hiệu, danh mục..."
+            placeholderTextColor={text + '80'}
             style={styles.searchInput}
             value={searchQuery}
             onChangeText={onSearchChange}
@@ -22,8 +23,8 @@ export default function Header({ username, searchQuery, onSearchChange }) {
         </View>
       </View>
 
-      <TouchableOpacity style={styles.headerRight}>
-        <Icon name="camera-outline" size={22} color="#6D4C41" />
+      <TouchableOpacity style={styles.quickAction}>
+        <Icon name="camera-outline" size={20} color="white" />
       </TouchableOpacity>
     </View>
   );

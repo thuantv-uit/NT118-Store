@@ -31,7 +31,7 @@ export default function RootLayout() {
 return (
     <ClerkProvider tokenCache={tokenCache} publishableKey={process.env.EXPO_PUBLIC_CLERK_KEY}>
       <SafeScreen>
-        <Slot /> {/* Quan trọng: render route con */}
+        <Slot />
       </SafeScreen>
     </ClerkProvider>
   );

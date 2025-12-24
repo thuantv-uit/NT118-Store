@@ -1,6 +1,6 @@
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { buyerStyles } from '../styles/BuyerStyles';
+import { buyerStyles } from '../_styles/BuyerStyles';
 
 export default function CartItem({ item, onUpdateQuantity, onRemove }) {
   // SỬA: Destructure từ { cart, product, variant }
@@ -10,7 +10,7 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }) {
   const { price = 0, size = 'N/A', color = 'N/A', stock = 0 } = variant || {};  // SỬA: Dùng variant
 
   const formattedPrice = parseFloat(price).toLocaleString('vi-VN'); // Parse string from API
-  const imageUri = product?.images?.[0] || product?.image || 'https://via.placeholder.com/80x80/BDAAA8/FFFFFF?text=No+Image';
+  const imageUri = product?.images?.[0] || product?.image || require('../../../assets/images/welcome/Logo_welcome.svg');
 
   // console.log(`CartItem for cart ${cartId}: variant=`, variant, 'uri=', imageUri); // Debug
 
@@ -36,7 +36,6 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }) {
         source={{ uri: imageUri }} 
         style={buyerStyles.itemImage}
         resizeMode="cover"
-        defaultSource={{ uri: 'https://via.placeholder.com/80x80/BDAAA8/FFFFFF?text=Loading...' }}
       />
       <View style={buyerStyles.itemInfo}>
         <Text style={buyerStyles.itemName} numberOfLines={2} ellipsizeMode="tail">
