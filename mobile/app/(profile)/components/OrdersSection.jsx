@@ -1,10 +1,22 @@
 import { useNavigation } from '@react-navigation/native';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import useCustomerProfile from '../../../utlis/useCustomerProfile';
 import { styles } from '../_styles/ProfileStyles';
 
 const OrdersSection = () => {
+  /* ===================== PROFILE HOOK ===================== */
+  const { profile } = useCustomerProfile();
+  const role = profile?.role ?? 'UNKNOWN_ROLE';
+
+  /* ===================== NAVIGATION HOOK ===================== */
+  // Gọi hook này LUÔN, trước if check (tuân thủ Rules of Hooks)
   const navigation = useNavigation();
+
+  // 🔐 Role check: Chỉ buyer mới HIỂN THỊ (không ảnh hưởng đến hooks)
+  if (role !== 'buyer') {
+    return null;  // Ẩn section nếu không phải buyer
+  }
 
   // Hardcode tabs với labels và icons mới, thêm "Hủy đơn"
   const tabs = [
@@ -36,6 +48,9 @@ const OrdersSection = () => {
   ];
 
   const handleTabPress = (label) => {
+    // Thêm log để track (có thể xóa ở production)
+    console.log(`[OrdersSection] Tab pressed: ${label} for role: ${role}`);
+
     switch (label) {
       case 'Đơn hàng mua':
         // Navigate đến màn hình hiển thị tất cả đơn hàng
