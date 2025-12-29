@@ -68,7 +68,7 @@ const navItems = useMemo(() => {
         key: 'list',
         route: '/(seller)/(dashboard)/dashboard',
         icon: 'list',
-        label: 'Products',
+        label: 'Orders',
         activeColor: '#FF4D79',
       },
       {
