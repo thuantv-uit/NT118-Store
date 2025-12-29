@@ -17,8 +17,12 @@ export default function BottomNav() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   /* -------------------- NAV ITEMS -------------------- */
-  const navItems = useMemo(() => {
-    const base = [
+const navItems = useMemo(() => {
+  const role = profile?.role;
+
+  // BUYER (giữ như cũ)
+  if (role === 'buyer') {
+    return [
       {
         key: 'home',
         route: '/(home)',
@@ -48,35 +52,85 @@ export default function BottomNav() {
         activeColor: '#FF4D79',
       },
     ];
+  }
 
-    const role = profile?.role;
-    const cloned = [...base];
-
-    // 👉 Seller: Add Product (button lớn)
-    if (role === 'seller') {
-      cloned.splice(2, 0, {
-        key: 'addProduct',
-        route: '/(seller)',
-        icon: 'list',
+  // SELLER → home, list, add, chat, account
+  if (role === 'seller') {
+    return [
+      {
+        key: 'home',
+        route: '/(home)',
+        icon: 'home',
+        label: 'Home',
         activeColor: '#FF4D79',
-        isAddAction: true,
-      });
-    }
+      },
+      {
+        key: 'list',
+        route: '/(seller)/(dashboard)/dashboard',
+        icon: 'list',
+        label: 'Products',
+        activeColor: '#FF4D79',
+      },
+      {
+        key: 'add',
+        route: '/(seller)/components/product-create',
+        icon: 'add',
+        activeColor: '#FF4D79',
+        isAddAction: true, // 🔥 button lớn
+      },
+      {
+        key: 'chat',
+        route: '/(chat)/Conversations',
+        icon: 'chatbubble-ellipses',
+        label: 'Chat',
+        activeColor: '#FF4D79',
+      },
+      {
+        key: 'account',
+        route: '/(profile)',
+        icon: 'person',
+        label: 'Account',
+        activeColor: '#FF4D79',
+      },
+    ];
+  }
 
-    // 👉 Shipper: Orders (button lớn)
-    if (role === 'shipper') {
-      cloned.splice(2, 0, {
+  // SHIPPER → home, bicycle, account
+  if (role === 'shipper') {
+    return [
+      {
+        key: 'home',
+        route: '/(home)',
+        icon: 'home',
+        label: 'Home',
+        activeColor: '#FF4D79',
+      },
+      {
         key: 'shipperOrders',
         route: '/(shipper)',
         icon: 'bicycle',
+        label: 'Orders',
         activeColor: '#4CAF50',
-        isAddAction: true,
-      });
-    }
+        isAddAction: true, // 🔥 button giữa
+      },
+      {
+        key: 'account',
+        route: '/(profile)',
+        icon: 'person',
+        label: 'Account',
+        activeColor: '#FF4D79',
+      },
+    ];
+  }
 
-    return cloned;
-  }, [profile?.role]);
+  return [];
+}, [profile?.role]);
 
+
+  /* -------------------- NAV HANDLER -------------------- */
+const handleNavPress = (route) => {
+  router.push(route);
+};
   /* -------------------- UNREAD CHAT -------------------- */
   useEffect(() => {
     if (!user?.id) return;
@@ -105,31 +159,6 @@ export default function BottomNav() {
     const interval = setInterval(fetchUnread, 15000);
     return () => clearInterval(interval);
   }, [user?.id]);
-
-  /* -------------------- NAV HANDLER -------------------- */
-  const handleNavPress = (route, key) => {
-    const role = profile?.role ?? 'UNKNOWN_ROLE';
-
-    // 🚫 Chặn Cart nếu không phải buyer
-    if (key === 'cart' && role !== 'buyer') {
-      Alert.alert(
-        'Không có quyền truy cập',
-        'Chỉ tài khoản người mua mới có thể truy cập giỏ hàng.'
-      );
-      return;
-    }
-
-    // 🚫 Chặn Chat nếu là shipper
-    if (key === 'chat' && role === 'shipper') {
-      Alert.alert(
-        'Không có quyền truy cập',
-        'Tài khoản shipper không thể truy cập chat.'
-      );
-      return;
-    }
-
-    router.push(route);
-  };
 
   /* -------------------- RENDER -------------------- */
   return (
