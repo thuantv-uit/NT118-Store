@@ -8,6 +8,7 @@ import FlashSale from './components/FlashSale';
 import Header from './components/Header';
 import ProductsGrid from './components/ProductsGrid';
 import PromoCard from './components/PromoCard';
+import ChatbotFloatingButton from './components/ChatbotFloatingButton';
 
 export default function HomeScreen({ navigation }) {
   const username = 'Thuan';
@@ -15,14 +16,13 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <Header 
+      <Header
         username={username || 'User'}
-        searchQuery={searchQuery} 
-        onSearchChange={setSearchQuery} 
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
       />
-
-      <ScrollView 
-        contentContainerStyle={{ paddingBottom: 90 }} 
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 120 }} // Tăng lên 120 để tránh che nội dung
         showsVerticalScrollIndicator={false}
       >
         <BannerCarousel />
@@ -30,10 +30,13 @@ export default function HomeScreen({ navigation }) {
         <FlashSale />
         <PromoCard />
         <ProductsGrid />
+        {/* Không đặt button ở đây nữa */}
       </ScrollView>
-
-      {/* Truyền navigation cho BottomNav nếu cần, nhưng code BottomNav dùng expo-router nên có thể bỏ */}
+      
       <BottomNav navigation={navigation} />
+      
+      {/* Floating button ở đây để cố định vị trí */}
+      <ChatbotFloatingButton />
     </SafeAreaView>
   );
 }
