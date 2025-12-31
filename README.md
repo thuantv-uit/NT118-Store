@@ -1,7 +1,7 @@
 # NT118-Store
 
 ## 📱 E-Commerce Mobile Application
-Ứng dụng thương mại điện tử đa vai trò với giao diện hiện đại, hỗ trợ người mua, người bán và shipper.
+Ứng dụng thương mại điện tử đa vai trò với giao diện hiện đại, hỗ trợ người mua, người bán và người giao hàng.
 
 ## ✨ Tính năng chính
 
@@ -27,7 +27,7 @@
 - 💬 Chat với khách hàng
 - 🎨 Giao diện pink theme hiện đại
 
-### 🚚 Shipper
+### 🚚 Người giao hàng (Shipper)
 - 📋 Danh sách đơn hàng cần giao
 - 📍 Cập nhật vị trí & trạng thái đơn hàng
 - ✅ Xác nhận giao hàng thành công
