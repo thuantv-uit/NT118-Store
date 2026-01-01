@@ -1,4 +1,3 @@
-// components/ChatbotModal.jsx
 import { useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -20,10 +19,23 @@ import { accent, muted, pastelBg, primary, text } from '../_styles/HomeStyles'; 
 // const BASE_API_URL = '${API_URL}/ask'; // URL server local mới
 
 export default function ChatbotModal({ visible, onClose }) {
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Xin chào! Tôi là trợ lý AI của bạn. Bạn cần giúp gì hôm nay?' }
-  ]);
-  const [inputText, setInputText] = useState('');
+const [messages, setMessages] = useState([
+  {
+    role: 'assistant',
+    content: `Hello! 👋 I'm your AI assistant for the ShinyCloth app.
+I'm here to help you understand and use the app's features more effectively.
+
+You can ask questions such as:
+• How can a user purchase a product?
+• What should I do if I forget my password?
+• How does a seller list a new item?
+• How can a buyer track an order?
+• How does a shipper accept a delivery job?
+
+Feel free to ask your question anytime! 😊`
+  }
+]);
+    const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const flatListRef = useRef();
 
@@ -98,7 +110,7 @@ export default function ChatbotModal({ visible, onClose }) {
           <TouchableOpacity onPress={onClose}>
             <Icon name="arrow-back" size={28} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Trợ lý ShinyCloth</Text>
+          <Text style={styles.headerTitle}>Assistant ShinyCloth</Text>
           <View style={{ width: 28 }} />
         </View>
 
