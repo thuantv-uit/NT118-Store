@@ -1,7 +1,7 @@
 # NT118-Store
 
 ## 📱 E-Commerce Mobile Application
-Ứng dụng thương mại điện tử đa vai trò với giao diện hiện đại, hỗ trợ người mua, người bán và người giao hàng.
+A modern multi-role e-commerce mobile application supporting buyers, sellers, and delivery drivers.
 
 ## 🚀 Running the Application
 
@@ -11,37 +11,37 @@
 ### AI Chatbot (Python)
 ![AI Chatbot Running](./screenshots/chatbot-running.png)
 
-### Frontend (Expo React Native)
-| ![Mobile Running](./screenshots/expo-start.png)
+### Mobile (Expo React Native)
+![Mobile Running](./screenshots/expo-start.png)
 
-## ✨ Tính năng chính
+## ✨ Key Feature
 
-### 🤖 Trợ lý AI Shopping Assistant
-- 💬 Chat với AI (Gemini/GPT-4) - tư vấn mua sắm thông minh
-- 🎯 Hiểu ngữ cảnh đơn hàng & giỏ hàng
-- ⚡ Bubble icon floating có thể kéo thả
+### 🤖 AI Shopping Assistant
+- 💬 Chat with local AI (powered by Ollama) – intelligent shopping recommendations
+- 🎯 Context-aware assistance based on orders and cart contents
+- ⚡ Draggable floating chat bubble
 
-### 👤 Người mua (Buyer)
-- 🏠 Trang chủ với banner carousel & flash sale
-- 🔍 Tìm kiếm và lọc sản phẩm theo danh mục
-- 🛒 Giỏ hàng với variant (size, color)
-- ❤️ Danh sách yêu thích
-- 📦 Theo dõi đơn hàng real-time
-- 💰 Ví điện tử & lịch sử giao dịch
-- 💬 Chat với người bán
+### 👤 Buyer Role
+- 🏠 Home screen with banner carousel & flash sale section
+- 🔍 Product search and filtering by category
+- 🛒 Shopping cart with product variants (size, color)
+- ❤️ Wishlist management
+- 📦 Real-time order tracking
+- 💰 E-wallet and transaction history
+- 💬 Direct chat with sellers
 
-### 🏪 Người bán (Seller)
-- 📊 Dashboard doanh thu & thống kê
-- ➕ Tạo sản phẩm với nhiều variant & hình ảnh
-- ✏️ Quản lý & chỉnh sửa sản phẩm
-- 📦 Quản lý đơn hàng
-- 💬 Chat với khách hàng
-- 🎨 Giao diện pink theme hiện đại
+### 🏪 Seller Role
+- 📊 Revenue dashboard and analytics
+- ➕ Create products with multiple variants & images
+- ✏️ Product management and editing
+- 📦 Order management
+- 💬 Chat with customers
+- 🎨 Modern pink-themed interface
 
-### 🚚 Người giao hàng (Shipper)
-- 📋 Danh sách đơn hàng cần giao
-- 📍 Cập nhật vị trí & trạng thái đơn hàng
-- ✅ Xác nhận giao hàng thành công
+### 🚚 Shipper Role
+- 📋 List of orders awaiting delivery
+- 📍 Real-time location updates and order status changes
+- ✅ Confirm successful delivery
 
 ## 🛠️ Tech Stack
 
@@ -58,10 +58,10 @@
 - **Database**: PostgreSQL (Neon)
 - **Cache**: Redis (Upstash)
 - **Image**: Cloudinary
-- **AI**: Google Gemini API, OpenAI API
+- **AI**: Ollama
 - **Real-time**: Socket.io
 
-## 📚 Hướng dẫn Setup
+## 📚 Setup Guide
 
 ### 1. Clone Repository
 ```bash
@@ -75,7 +75,7 @@ cd backend
 npm install
 ```
 
-Tạo file `.env` trong folder `backend/`:
+Create file `.env` in `backend/` folder:
 ```env
 PORT=5001
 DATABASE_URL=your_postgres_url
@@ -85,11 +85,9 @@ API_URL=http://localhost:5001
 CLOUDINARY_CLOUD_NAME=your_cloudinary_name
 CLOUDINARY_API_KEY=your_cloudinary_key
 CLOUDINARY_API_SECRET=your_cloudinary_secret
-GEMINI_API_KEY=your_gemini_key
-OPENAI_API_KEY=your_openai_key
 ```
 
-Chạy backend:
+Run the backend:
 ```bash
 npm start
 ```
@@ -100,51 +98,73 @@ cd mobile
 npm install
 ```
 
-Tạo file `.env` trong folder `mobile/`:
+Create a file `.env` in the `mobile/` folder:
 ```env
 EXPO_PUBLIC_API_URL=http://your-ip:5001/api
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
 ```
 
-Chạy app:
+Run the app:
 ```bash
-npx expo start
+npm start
 ```
 
 ### 4. AI Assistant Setup
-**📚 Chi tiết:** [QUICK_AI_SETUP.md](./QUICK_AI_SETUP.md)
+
+Install Ollama and pull model
+```bash
+ollama pull llama3.2
+```
+
+Setup the Python environment
+```bash
+cd ai/chatbot
+conda create -n nt118-ai python=3.11 -y
+conda activate nt118-ai
+pip install -r requirements.txt
+```
+
+Generate embeddings and build the vector database
+```bash
+python -m vector
+```
+
+Run the local AI chatbot
+```bash
+python -m main
+```
 
 ## 🔄 Git Workflow
 
-### Pull trước khi code
+### Pull lastest changes before coding
 ```bash
 git pull origin main
 ```
 
-### Tạo branch cho feature mới
+### Create a new feature branch
 ```bash
 git checkout -b feature/your-feature-name
 ```
 
-### Commit và push
+### Commit and push
 ```bash
 git add .
 git commit -m "feat: add your feature"
 git push origin feature/your-feature-name
 ```
 
-### Tạo Pull Request
-- Mở PR trên GitHub
-- Review code
-- Merge vào main sau khi approve
+### Create a Pull Request
+- Open a PR on GitHub
+- Request code review
+- Merge into main after approval
 
-### Sync sau khi merge
+### Sync after merge
 ```bash
 git checkout main
 git pull origin main
 ```
 
-## 📁 Cấu trúc Project
+## 📁 Project Structure
 
 ```
 NT118-Store/
@@ -157,8 +177,8 @@ NT118-Store/
 │
 ├── mobile/
 │   ├── app/
-│   │   ├── (auth)/         # Đăng nhập / đăng ký
-│   │   ├── (home)/         # Trang chủ buyer
+│   │   ├── (auth)/         # Authencation screens
+│   │   ├── (home)/         # Home Screens
 │   │   ├── (buyer)/        # Buyer screens
 │   │   ├── (seller)/       # Seller screens
 │   │   ├── (shipper)/      # Shipper screens
@@ -170,18 +190,18 @@ NT118-Store/
 │
 ├── ai/
 │   └── chatbot/
-│       ├── chroma_langchain_db/  # Vector DB (Chroma)
-│       ├── features.csv          # Dữ liệu sản phẩm / đặc trưng
-│       ├── vector.py             # Tạo embedding & lưu vào Chroma
-│       ├── main.py               # AI Chatbot entry (Gemini / GPT)
+│       ├── chroma_langchain_db/  # Chroma vector database
+│       ├── features.csv          # Product features data
+│       ├── vector.py             # Embedding generation script
+│       ├── main.py               # AI Chatbot entry point
 │       ├── requirements.txt      # Python dependencies
-│       └── .env                  # API keys (Nếu dùng các model của OPEN AI)
+│       └── .env                  # API keys
 │
 ├── start-dev.ps1                 # Quick start script
 └── README.md
 ```
 
-## 👥 Nhóm Phát Triển
+## 👥 Development Team
 - **Hồ Thị Huỳnh My - 22520897**
 - **Trần Thu Ngân - 22520937** 
 - **Trần Văn Thuận - 22521448**
