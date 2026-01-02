@@ -14,6 +14,58 @@ A modern multi-role e-commerce mobile application supporting buyers, sellers, an
 ### Mobile (Expo React Native)
 ![Mobile Running](./screenshots/expo-start.png)
 
+## 📸 App Demo
+
+Here are screenshots of the NT118-Store app running on a real mobile device (portrait mode).
+
+### Authentication
+<div align="center">
+  <img src="./screenshots/SignIn.jpg" alt="Login Screen" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+  <img src="./screenshots/SignUp.jpg" alt="Register Screen" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+</div>
+
+<br/>
+
+### Buyer Experience
+<div align="center">
+  <img src="./screenshots/buyer1.jpg" alt="Buyer Home with Carousel & Flash Sale" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+  <img src="./screenshots/buyer2.jpg" alt="Product Detail with Variants" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+  <img src="./screenshots/buyer3.jpg" alt="Shopping Cart" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+</div>
+
+<br/>
+
+### Seller Dashboard
+<div align="center">
+  <img src="./screenshots/seller1.jpg" alt="Seller Revenue Dashboard" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+  <img src="./screenshots/seller2.jpg" alt="Add New Product with Variants" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+  <img src="./screenshots/seller3.jpg" alt="Seller Order Management" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+</div>
+
+<br/>
+
+### Shipper View
+<div align="center">
+  <img src="./screenshots/shipper1.jpg" alt="Shipper Order List" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+  <img src="./screenshots/shipper2.jpg" alt="Delivery Details & Status Update" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+</div>
+
+<br/>
+
+### AI Shopping Assistant
+<div align="center">
+  <img src="./screenshots/chatbot.jpg" alt="AI Chatbot with Floating Bubble" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+</div>
+
+<br/>
+
+### Shared User Features
+<div align="center">
+  <img src="./screenshots/user_home.jpg" alt="User Profile" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+  <img src="./screenshots/user_profile1.jpg" alt="E-Wallet & Transactions" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+  <img src="./screenshots/user_profile2.jpg" alt="Order History & Tracking" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+</div>
+
 ## ✨ Key Feature
 
 ### 🤖 AI Shopping Assistant
