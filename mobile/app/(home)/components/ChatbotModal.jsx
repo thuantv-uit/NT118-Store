@@ -132,7 +132,7 @@ Feel free to ask your question anytime! 😊`
               style={styles.textInput}
               value={inputText}
               onChangeText={setInputText}
-              placeholder="Nhập tin nhắn..."
+              placeholder="Enter question..."
               placeholderTextColor={muted}
               multiline
               onSubmitEditing={sendMessage}
