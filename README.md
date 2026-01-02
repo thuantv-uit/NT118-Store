@@ -12,9 +12,7 @@
 ![AI Chatbot Running](./screenshots/chatbot-running.png)
 
 ### Frontend (Expo React Native)
-| Terminal Expo Start | App on Emulator/Simulator |
-|---------------------|---------------------------|
-| ![Expo Start](./screenshots/expo-start.png) | ![App Running](./screenshots/app-on-emulator.png) |
+| ![Mobile Running](./screenshots/expo-start.png)
 
 ## ✨ Tính năng chính
 
