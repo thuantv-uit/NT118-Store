@@ -3,6 +3,19 @@
 ## 📱 E-Commerce Mobile Application
 Ứng dụng thương mại điện tử đa vai trò với giao diện hiện đại, hỗ trợ người mua, người bán và người giao hàng.
 
+## 🚀 Running the Application
+
+### Backend (Node.js + Express)
+![Backend Running](./screenshots/backend-running.png)
+
+### AI Chatbot (Python)
+![AI Chatbot Running](./screenshots/chatbot-running.png)
+
+### Frontend (Expo React Native)
+| Terminal Expo Start | App on Emulator/Simulator |
+|---------------------|---------------------------|
+| ![Expo Start](./screenshots/expo-start.png) | ![App Running](./screenshots/app-on-emulator.png) |
+
 ## ✨ Tính năng chính
 
 ### 🤖 Trợ lý AI Shopping Assistant

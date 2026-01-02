@@ -3,11 +3,11 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { shipperStyles } from '../_styles/shipperStyles';
 
 const statusSteps = {
-  pending: { label: 'Chờ xác nhận', icon: 'time-outline', color: '#FF6B00' },
-  processing: { label: 'Đang xử lý', icon: 'construct-outline', color: '#FFA500' },
-  shipped: { label: 'Đang giao', icon: 'airplane-outline', color: '#00A651' },
-  delivered: { label: 'Đã nhận', icon: 'checkmark-circle-outline', color: '#00A651' },
-  cancelled: { label: 'Đã hủy', icon: 'close-circle-outline', color: '#FF4D4F' },
+  pending: { label: 'Chờ xác nhận', icon: 'time-outline', color: '#FF8FB1' },
+  processing: { label: 'Đang xử lý', icon: 'construct-outline', color: '#FFD6E8' },
+  shipped: { label: 'Đang giao', icon: 'airplane-outline', color: '#FF4D79' },
+  delivered: { label: 'Đã nhận', icon: 'checkmark-circle-outline', color: '#FF4D79' },
+  cancelled: { label: 'Đã hủy', icon: 'close-circle-outline', color: '#FF8FB1' },
 };
 
 export default function OrderItem({ order, onPressDetail, onUpdateLocation, onUpdateStatus, buyerInfo, shipmentInfo }) {
