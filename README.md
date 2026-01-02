@@ -139,23 +139,35 @@ git pull origin main
 NT118-Store/
 ├── backend/
 │   ├── controllers/        # API controllers
-│   ├── routes/            # API routes
-│   ├── services/          # Business logic
-│   ├── config/            # Config files
+│   ├── routes/             # API routes
+│   ├── services/           # Business logic
+│   ├── config/             # Config files
 │   └── server.js
+│
 ├── mobile/
 │   ├── app/
-│   │   ├── (auth)/        # Đăng nhập/đăng ký
-│   │   ├── (home)/        # Trang chủ buyer
-│   │   ├── (buyer)/       # Buyer screens
-│   │   ├── (seller)/      # Seller screens
-│   │   ├── (shipper)/     # Shipper screens
-│   │   ├── (chat)/        # Chat screens
-│   │   └── (profile)/     # Profile screens
-│   ├── components/        # Shared components
-│   ├── constants/         # Constants & API config
-│   └── assets/           # Images & fonts
-└── start-dev.ps1         # Quick start script
+│   │   ├── (auth)/         # Đăng nhập / đăng ký
+│   │   ├── (home)/         # Trang chủ buyer
+│   │   ├── (buyer)/        # Buyer screens
+│   │   ├── (seller)/       # Seller screens
+│   │   ├── (shipper)/      # Shipper screens
+│   │   ├── (chat)/         # Chat screens (Buyer ↔ Seller / AI)
+│   │   └── (profile)/      # Profile screens
+│   ├── components/         # Shared components
+│   ├── constants/          # Constants & API config
+│   └── assets/             # Images & fonts
+│
+├── ai/
+│   └── chatbot/
+│       ├── chroma_langchain_db/  # Vector DB (Chroma)
+│       ├── features.csv          # Dữ liệu sản phẩm / đặc trưng
+│       ├── vector.py             # Tạo embedding & lưu vào Chroma
+│       ├── main.py               # AI Chatbot entry (Gemini / GPT)
+│       ├── requirements.txt      # Python dependencies
+│       └── .env                  # API keys (Nếu dùng các model của OPEN AI)
+│
+├── start-dev.ps1                 # Quick start script
+└── README.md
 ```
 
 ## 👥 Nhóm Phát Triển
