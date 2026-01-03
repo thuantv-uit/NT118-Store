@@ -4,6 +4,7 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
+    "start_ci": "node server.js",
     "dev": "node server.js"
   },
   "keywords": [],
