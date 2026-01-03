@@ -63,7 +63,7 @@ jobs:
       - name: Verify Server Starts Successfully (CI Mode)
         run: |
           echo "Starting server using 'npm run start:ci'..."
-          npm run start:ci &
+          npm run start_ci &
           SERVER_PID=$!
 
           # Wait up to 20 seconds to detect early crashes
