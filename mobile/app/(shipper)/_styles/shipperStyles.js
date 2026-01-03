@@ -1,24 +1,32 @@
 import { StyleSheet } from 'react-native';
 
+const pastelBg = '#FFF6FB';
+const accent = '#FFD6E8';
+const primary = '#FF4D79';
+const gradientStart = '#FF8FB1';
+const gradientEnd = '#FF4D79';
+const text = '#2A0E23';
+const muted = '#7A5368';
+
 export const shipperStyles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: pastelBg,
   },
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: pastelBg,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#4A90E2',
+    backgroundColor: primary,
     elevation: 4,
-    shadowColor: '#000',
+    shadowColor: '#FFB3CD',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.12,
     shadowRadius: 4,
   },
   headerTitle: {
@@ -28,7 +36,7 @@ export const shipperStyles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    color: '#666',
+    color: muted,
     fontSize: 16,
   },
   errorText: {
@@ -38,7 +46,7 @@ export const shipperStyles = StyleSheet.create({
     fontSize: 16,
   },
   retryButton: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -55,7 +63,7 @@ export const shipperStyles = StyleSheet.create({
   headerSectionText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: text,
   },
   list: {
     flex: 1,
@@ -68,7 +76,7 @@ export const shipperStyles = StyleSheet.create({
   },
   emptyText: {
     marginTop: 8,
-    color: '#CCC',
+    color: muted,
     fontSize: 16,
   },
   refreshButton: {
@@ -76,7 +84,7 @@ export const shipperStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    backgroundColor: '#4A90E2',
+    backgroundColor: primary,
     margin: 8,
     borderRadius: 8,
   },
@@ -94,9 +102,9 @@ export const shipperStyles = StyleSheet.create({
     marginBottom: 8,
     borderRadius: 12,
     elevation: 3,
-    shadowColor: '#000',
+    shadowColor: '#FFB3CD',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.12,
     shadowRadius: 4,
   },
   orderAvatarContainer: {
@@ -132,18 +140,18 @@ export const shipperStyles = StyleSheet.create({
   },
   orderBuyer: {
     fontSize: 14,
-    color: '#333',
+    color: text,
     marginTop: 2,
     fontWeight: '600',
   },
   orderPhone: {
     fontSize: 12,
-    color: '#666',
+    color: muted,
     marginTop: 2,
   },
   orderLocation: {
     fontSize: 14,
-    color: '#00A651',
+    color: gradientStart,
     marginTop: 4,
     fontStyle: 'italic',
   },
@@ -160,10 +168,10 @@ export const shipperStyles = StyleSheet.create({
     marginLeft: 8,
   },
   locationButton: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: primary,
   },
   statusButton: {
-    backgroundColor: '#FF6B00',
+    backgroundColor: gradientStart,
   },
   modalOverlay: {
     flex: 1,
@@ -188,16 +196,16 @@ export const shipperStyles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: text,
   },
   modalDescription: {
     fontSize: 14,
-    color: '#666',
+    color: muted,
     marginBottom: 16,
   },
   locationInput: {
     borderWidth: 1,
-    borderColor: '#DDD',
+    borderColor: accent,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
@@ -206,13 +214,13 @@ export const shipperStyles = StyleSheet.create({
     marginBottom: 16,
   },
   updateModalButton: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: primary,
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
   updateModalButtonDisabled: {
-    backgroundColor: '#CCC',
+    backgroundColor: muted,
   },
   updateModalButtonText: {
     color: '#FFF',
@@ -229,7 +237,7 @@ export const shipperStyles = StyleSheet.create({
     marginBottom: 8,
   },
   statusOptionSelected: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: primary,
   },
   statusOptionDisabled: {
     opacity: 0.5,
@@ -237,7 +245,7 @@ export const shipperStyles = StyleSheet.create({
   statusOptionText: {
     marginLeft: 12,
     fontSize: 16,
-    color: '#333',
+    color: text,
     fontWeight: '500',
   },
   // Styles mới cho OrderDetailModal
@@ -248,12 +256,12 @@ export const shipperStyles = StyleSheet.create({
     marginBottom: 20,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEE',
+    borderBottomColor: accent,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: text,
     marginBottom: 12,
   },
   detailRow: {
@@ -274,26 +282,26 @@ export const shipperStyles = StyleSheet.create({
   detailName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: text,
   },
   detailPhone: {
     fontSize: 14,
-    color: '#666',
+    color: muted,
     marginTop: 2,
   },
   detailEmail: {
     fontSize: 14,
-    color: '#999',
+    color: muted,
     marginTop: 2,
   },
   detailAddress: {
     fontSize: 14,
-    color: '#333',
+    color: text,
     lineHeight: 20,
   },
   detailItem: {
     fontSize: 14,
-    color: '#666',
+    color: muted,
     marginBottom: 4,
   },
 });

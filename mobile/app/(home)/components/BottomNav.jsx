@@ -110,7 +110,7 @@ const navItems = useMemo(() => {
         route: '/(shipper)',
         icon: 'bicycle',
         label: 'Orders',
-        activeColor: '#4CAF50',
+        activeColor: '#FF4D79',
         isAddAction: true, // 🔥 button giữa
       },
       {
