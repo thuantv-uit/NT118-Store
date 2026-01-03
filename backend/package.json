@@ -6,10 +6,7 @@
     "start": "nodemon server.js",
     "start_ci": "node server.js",
     "dev": "node server.js",
-    "test:db:up": "docker compose -f test-db/docker-compose.yml up -d",
-    "test:db:down": "docker compose -f test-db/docker-compose.yml down",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
-    "test:integration": "npm run test:db:up && npm test && npm run test:db:down"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand"
   },
  
   "keywords": [],

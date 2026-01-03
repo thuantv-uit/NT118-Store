@@ -56,6 +56,21 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Verify Docker & Docker Compose
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Start PostgreSQL Test DB
+        run: make up
+
+      - name: Run Jest Tests
+        run: npm test
+
+      - name: Stop PostgreSQL Test DB
+        if: always()
+        run: make down
+
       # Uncomment if you have a build step (e.g., TypeScript compilation)
       # - name: Build Application
       #   run: npm run build
