@@ -62,14 +62,14 @@ jobs:
           docker compose version
 
       - name: Start PostgreSQL Test DB
-        run: make up
+        run: make db_up
 
       - name: Run Jest Tests
         run: npm test
 
       - name: Stop PostgreSQL Test DB
         if: always()
-        run: make down
+        run: make db_down
 
       # Uncomment if you have a build step (e.g., TypeScript compilation)
       # - name: Build Application
