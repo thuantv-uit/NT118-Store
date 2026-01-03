@@ -5,11 +5,16 @@
   "scripts": {
     "start": "nodemon server.js",
     "start_ci": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "test:db:up": "docker compose -f test-db/docker-compose.yml up -d",
+    "test:db:down": "docker compose -f test-db/docker-compose.yml down",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
+    "test:integration": "npm run test:db:up && npm test && npm run test:db:down"
   },
+ 
   "keywords": [],
   "type": "module",
-  "author": "",
+  "author": "thuantv-uit",
   "license": "ISC",
   "description": "",
   "dependencies": {
@@ -24,11 +29,16 @@
     "express": "^4.21.0",
     "multer": "^2.0.2",
     "openai": "^6.14.0",
+    "pg": "^8.16.3",
     "socket.io": "^4.8.1",
     "sql-template-tag": "^5.2.1",
     "streamifier": "^0.1.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "@types/supertest": "^6.0.3",
+    "jest": "^30.2.0",
+    "nodemon": "^3.1.10",
+    "pg-mem": "^3.0.5",
+    "supertest": "^7.1.4"
   }
 }
