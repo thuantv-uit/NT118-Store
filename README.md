@@ -1,9 +1,15 @@
 # NT118-Store
 
 ## 📱 E-Commerce Mobile Application
-A modern multi-role e-commerce mobile application supporting buyers, sellers, and delivery drivers.
+NT118-Store is a modern e-commerce platform designed for buyers, sellers, and delivery drivers, featuring a mobile application, a Node.js backend, and an AI shopping assistant.
 
-## 🚀 Running the Application
+The project is developed as a course project for UIT – NT118, with a strong focus on:
+- Clean architecture
+- Real-world backend practices
+- Automated testing
+- CI/CD integration
+
+## 🚀 Project Overview
 
 ### Backend (Node.js + Express)
 ![Backend Running](./screenshots/backend-running.png)
@@ -107,11 +113,49 @@ Here are screenshots of the NT118-Store app running on a real mobile device (por
 
 ### Backend
 - **Runtime**: Node.js + Express
-- **Database**: PostgreSQL (Neon)
+- **Database**: PostgreSQL
+  - Production: Neon
+  - Testing: Docker
 - **Cache**: Redis (Upstash)
 - **Image**: Cloudinary
-- **AI**: Ollama
 - **Real-time**: Socket.io
+
+### AI
+- **Language Model**: Ollama
+- **Vector DB**: Chroma
+- **Framework**: LangChain (Python)
+
+## 🧪 Testing & Quality Assurance
+
+### Unit Testing (Jest)
+- Unit tests focus on service layer
+- Controllers are intentionally excluded from unit tests
+- PostgreSQL runs in Docker during testing
+- Production database (Neon) is never touched
+
+### Run Test Locally
+```bash
+cd backend
+
+make up        # start PostgreSQL test DB
+npm test       # run Jest
+make down      # stop & clean up
+```
+
+## 🔄 Continuous Integration (CI)
+CI is powered by GitHub Actions and runs automatically on:
+- Push to `main`
+- Pull requests targeting `main`
+
+### Backend CI Pipeline
+1. Detect changes in `backend/`
+2. Setup Node.js (18.x, 20.x, 22.x)
+3. Install dependencies
+4. Start PostgreSQL (Docker)
+5. Run Jest unit tests
+6. Cleanup Docker resources
+
+GitHub Actions runners already include Docker & Docker Compose.
 
 ## 📚 Setup Guide
 
@@ -225,6 +269,13 @@ NT118-Store/
 │   ├── routes/             # API routes
 │   ├── services/           # Business logic
 │   ├── config/             # Config files
+│   ├── tests/                  # Jest unit tests
+│   │   ├── setup.js
+│   │   ├── user.test.js
+│   │   └── wallet.test.js
+│   ├── docker-compose.test.yml # PostgreSQL test environment
+│   ├── Makefile                # Docker helpers (up/down)
+│   ├── jest.config.js
 │   └── server.js
 │
 ├── mobile/
@@ -248,8 +299,11 @@ NT118-Store/
 │       ├── main.py               # AI Chatbot entry point
 │       ├── requirements.txt      # Python dependencies
 │       └── .env                  # API keys
-│
-├── start-dev.ps1                 # Quick start script
+|
+├── .github/
+│   └── workflows/
+│       └── node-ci.yml
+|
 └── README.md
 ```
 

@@ -62,14 +62,14 @@ jobs:
           docker compose version
 
       - name: Start PostgreSQL Test DB
-        run: make db_up
+        run: make db_test_up
 
       - name: Run Jest Tests
         run: npm test
 
       - name: Stop PostgreSQL Test DB
         if: always()
-        run: make db_down
+        run: make db_test_down
 
       # Uncomment if you have a build step (e.g., TypeScript compilation)
       # - name: Build Application
@@ -78,7 +78,7 @@ jobs:
       - name: Verify Server Starts Successfully (CI Mode)
         run: |
           echo "Starting server using 'npm run start:ci'..."
-          npm run start_ci &
+          npm run start:ci &
           SERVER_PID=$!
 
           # Wait up to 20 seconds to detect early crashes

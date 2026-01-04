@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: shop-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: shopuser
+      POSTGRES_PASSWORD: shoppass123
+      POSTGRES_DB: shopdb
+    ports:
+      - "5432:5432"   # cho phép connect từ host (DBeaver, psql)
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopuser -d shopdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shop-backend
+    restart: unless-stopped
+    command: npm run start:local
+    environment:
+      NODE_ENV: development
+      USE_LOCAL_DB: "true"
+      IS_DOCKER: "true"
+      PORT: 5001
+      DATABASE_URL_LOCAL: postgresql://shopuser:shoppass123@db:5432/shopdb
+    ports:
+      - "5001:5001"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  pgdata:
