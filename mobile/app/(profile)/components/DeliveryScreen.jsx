@@ -14,7 +14,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import { API_URL } from '../../../constants/api';
 
 const API_BASE_URL = API_URL;
@@ -157,7 +158,7 @@ export default function DeliveryScreen() {
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', padding: 15, backgroundColor: '#f8f8f8', borderBottomWidth: 1, borderBottomColor: '#ddd' }}>
           <TouchableOpacity onPress={handleBack} style={{ marginRight: 10 }}>
-            <Icon name="arrow-back" size={24} color="#6D4C41" />
+            <Ionicons name="arrow-back" size={24} color="#6D4C41" />
           </TouchableOpacity>
           <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1 }}>Thông tin giao hàng</Text>
           <View style={{ width: 24 }} />

@@ -6,7 +6,8 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import { API_URL } from '../../../constants/api';
 import { shipperStyles } from '../_styles/shipperStyles';
 
@@ -68,7 +69,7 @@ export default function UpdateStatusModal({ visible, order, shipperId, onClose }
           <View style={shipperStyles.modalHeader}>
             <Text style={shipperStyles.modalTitle}>Cập nhật trạng thái đơn hàng</Text>
             <TouchableOpacity onPress={onClose}>
-              <Icon name="close" size={24} color="#666" />
+              <Ionicons name="close" size={24} color="#666" />
             </TouchableOpacity>
           </View>
           <Text style={shipperStyles.modalDescription}>Chọn trạng thái mới cho đơn hàng:</Text>
@@ -83,7 +84,7 @@ export default function UpdateStatusModal({ visible, order, shipperId, onClose }
                 updating && shipperStyles.statusOptionDisabled
               ]}
             >
-              <Icon name={option.icon} size={20} color="#FFF" />
+              <Ionicons name={option.icon} size={20} color="#FFF" />
               <Text style={shipperStyles.statusOptionText}>{option.label}</Text>
             </TouchableOpacity>
           ))}

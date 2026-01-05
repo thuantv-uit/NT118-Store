@@ -1,15 +1,7 @@
-// components/ChatbotFloatingButton.jsx
-<<<<<<< HEAD
-import React, { useState } from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // npm i react-native-vector-icons nếu chưa có
-import { primary, accent } from '../_styles/HomeStyles'; // Import từ HomeStyles (điều chỉnh path nếu cần)
-=======
 import { useState } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // npm i react-native-vector-icons nếu chưa có
-import { accent, primary } from '../_styles/HomeStyles'; // Import từ HomeStyles (điều chỉnh path nếu cần)
->>>>>>> 955e13622b36a19c06316802e6f536acee8d087a
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { accent, primary } from '../_styles/HomeStyles';
 import ChatbotModal from './ChatbotModal';
 
 export default function ChatbotFloatingButton() {

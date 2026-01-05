@@ -1,5 +1,6 @@
 import { Image, Text, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import { shipperStyles } from '../_styles/shipperStyles';
 
 const statusSteps = {
@@ -45,14 +46,14 @@ export default function OrderItem({ order, onPressDetail, onUpdateLocation, onUp
           <Image source={{ uri: buyerInfo.avatar }} style={shipperStyles.buyerAvatar} />
         ) : (
           <View style={[shipperStyles.buyerAvatar, { backgroundColor: '#E0E0E0' }]}>
-            <Icon name="person-outline" size={24} color="#999" />
+            <Ionicons name="person-outline" size={24} color="#999" />
           </View>
         )}
       </View>
       <View style={shipperStyles.orderInfo}>
         <View style={shipperStyles.orderHeader}>
           <View style={[shipperStyles.statusIcon, { backgroundColor: step.color }]}>
-            <Icon name={step.icon} size={20} color="#FFF" />
+            <Ionicons name={step.icon} size={20} color="#FFF" />
           </View>
           <Text style={[shipperStyles.orderStatus, { color: step.color }]}>{step.label}</Text>
         </View>
@@ -68,10 +69,10 @@ export default function OrderItem({ order, onPressDetail, onUpdateLocation, onUp
       </View>
       <View style={shipperStyles.orderActions}>
         <TouchableOpacity onPress={handlePressUpdateLocation} style={[shipperStyles.actionButton, shipperStyles.locationButton]}>
-          <Icon name="location" size={16} color="#FFF" />
+          <Ionicons name="location" size={16} color="#FFF" />
         </TouchableOpacity>
         <TouchableOpacity onPress={handlePressUpdateStatus} style={[shipperStyles.actionButton, shipperStyles.statusButton]}>
-          <Icon name="refresh" size={16} color="#FFF" />
+          <Ionicons name="refresh" size={16} color="#FFF" />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>

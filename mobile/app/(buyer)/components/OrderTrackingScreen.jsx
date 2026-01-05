@@ -9,7 +9,8 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import { API_URL } from '../../../constants/api';
 import { buyerStyles } from '../_styles/BuyerStyles';
 
@@ -166,7 +167,7 @@ export default function OrderTrackingScreen() {
         <View style={buyerStyles.container}>
           <View style={buyerStyles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Icon name="arrow-back" size={24} color="#6D4C41" />
+              <Ionicons name="arrow-back" size={24} color="#6D4C41" />
             </TouchableOpacity>
             <Text style={buyerStyles.headerTitle}>Theo dõi đơn hàng</Text>
             <View style={{ width: 24 }} />
@@ -186,7 +187,7 @@ export default function OrderTrackingScreen() {
         <View style={buyerStyles.container}>
           <View style={buyerStyles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Icon name="arrow-back" size={24} color="#6D4C41" />
+              <Ionicons name="arrow-back" size={24} color="#6D4C41" />
             </TouchableOpacity>
             <Text style={buyerStyles.headerTitle}>Theo dõi đơn hàng</Text>
             <View style={{ width: 24 }} />
@@ -229,7 +230,7 @@ export default function OrderTrackingScreen() {
             justifyContent: 'center',
             marginRight: 12,
           }}>
-            <Icon name={step.icon} size={20} color="#FFF" />
+            <Ionicons name={step.icon} size={20} color="#FFF" />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 16, fontWeight: 'bold', color: step.color }}>{step.label}</Text>
@@ -249,7 +250,7 @@ export default function OrderTrackingScreen() {
       <View style={buyerStyles.container}>
         <View style={buyerStyles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Icon name="arrow-back" size={24} color="#6D4C41" />
+            <Ionicons name="arrow-back" size={24} color="#6D4C41" />
           </TouchableOpacity>
           <Text style={buyerStyles.headerTitle}>Theo dõi đơn hàng</Text>
           <View style={{ width: 24 }} />

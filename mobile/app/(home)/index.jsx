@@ -9,7 +9,6 @@ import FlashSale from './components/FlashSale';
 import Header from './components/Header';
 import ProductsGrid from './components/ProductsGrid';
 import PromoCard from './components/PromoCard';
-import ChatbotFloatingButton from './components/ChatbotFloatingButton';
 
 export default function HomeScreen({ navigation }) {
   const username = 'Thuan';

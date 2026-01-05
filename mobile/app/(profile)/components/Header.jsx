@@ -1,7 +1,8 @@
 import { useUser } from "@clerk/clerk-expo";
 import { useRouter } from 'expo-router';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import { styles } from '../_styles/ProfileStyles';
 
 const Header = ({ profile, loadingProfile, onEdit }) => {
@@ -36,7 +37,7 @@ const Header = ({ profile, loadingProfile, onEdit }) => {
     if (loadingProfile) {
       return (
         <View style={[styles.avatar, styles.avatarPlaceholder]}>
-          <Icon name="person-outline" size={40} color="#E0E0E0" />
+          <Ionicons name="person-outline" size={40} color="#E0E0E0" />
         </View>
       );
     }
@@ -47,7 +48,7 @@ const Header = ({ profile, loadingProfile, onEdit }) => {
     }
     return (
       <View style={[styles.avatar, styles.avatarPlaceholder]}>
-        <Icon name="person-outline" size={40} color="#E0E0E0" />
+        <Ionicons name="person-outline" size={40} color="#E0E0E0" />
       </View>
     );
   };
@@ -55,7 +56,7 @@ const Header = ({ profile, loadingProfile, onEdit }) => {
   return (
     <View style={styles.header}>
       <TouchableOpacity onPress={handleGoBack} style={styles.backButtonContainer}>
-        <Icon name="arrow-back" size={22} color="#FF4D79" />
+        <Ionicons name="arrow-back" size={22} color="#FF4D79" />
       </TouchableOpacity>
 
       <View style={styles.userInfoLeft}>

@@ -12,7 +12,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import { API_URL } from "../../../constants/api";
 import { styles } from '../_styles/ProfileStyles';
 
@@ -200,7 +201,7 @@ const UpdateProfileScreen = () => {
         {/* Header */}
         <View style={styles.updateHeader}>
           <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
-            <Icon name="arrow-back" size={24} color="#FF4D79" />
+            <Ionicons name="arrow-back" size={24} color="#FF4D79" />
           </TouchableOpacity>
           <Text style={styles.updateTitle}>Sửa hồ sơ</Text>
           <TouchableOpacity onPress={handleSave} disabled={loading} style={styles.saveBtnHeader}>
@@ -212,7 +213,7 @@ const UpdateProfileScreen = () => {
         <View style={styles.formGroup}>
           <Text style={styles.label}>Avatar</Text>
           <TouchableOpacity onPress={pickAvatar} disabled={loading} style={styles.avatarUploadButton}>
-            <Icon name="camera-outline" size={24} color="#FF4D79" />
+            <Ionicons name="camera-outline" size={24} color="#FF4D79" />
             <Text style={styles.avatarUploadText}>Chọn ảnh avatar</Text>
           </TouchableOpacity>
 
@@ -220,7 +221,7 @@ const UpdateProfileScreen = () => {
             <View style={styles.avatarPreview}>
               <Image source={{ uri: selectedAvatar }} style={styles.avatarImage} />
               <TouchableOpacity onPress={removeAvatar} style={styles.removeAvatarButton}>
-                <Icon name="close-circle" size={24} color="#FF0000" />
+                <Ionicons name="close-circle" size={24} color="#FF0000" />
               </TouchableOpacity>
             </View>
           )}

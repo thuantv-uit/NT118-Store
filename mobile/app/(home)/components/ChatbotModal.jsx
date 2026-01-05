@@ -1,30 +1,3 @@
-<<<<<<< HEAD
-// components/ChatbotModal.jsx
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  FlatList,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  ActivityIndicator,
-  Modal,
-  SafeAreaView,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import { primary, accent, pastelBg, text, muted } from '../_styles/HomeStyles'; // Import theme từ HomeStyles
-
-const API_URL = 'http://192.168.100.142:8000/ask'; // URL server local mới
-
-export default function ChatbotModal({ visible, onClose }) {
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Xin chào! Tôi là trợ lý AI của bạn. Bạn cần giúp gì hôm nay?' }
-  ]);
-  const [inputText, setInputText] = useState('');
-=======
 import { useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -41,9 +14,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { API_URL1 } from '../../../constants/api';
-import { accent, muted, pastelBg, primary, text } from '../_styles/HomeStyles'; // Import theme từ HomeStyles
-
-// const BASE_API_URL = '${API_URL}/ask'; // URL server local mới
+import { accent, muted, pastelBg, primary, text } from '../_styles/HomeStyles';
 
 export default function ChatbotModal({ visible, onClose }) {
 const [messages, setMessages] = useState([
@@ -63,7 +34,6 @@ Feel free to ask your question anytime! 😊`
   }
 ]);
     const [inputText, setInputText] = useState('');
->>>>>>> 955e13622b36a19c06316802e6f536acee8d087a
   const [loading, setLoading] = useState(false);
   const flatListRef = useRef();
 
@@ -78,11 +48,7 @@ Feel free to ask your question anytime! 😊`
 
     try {
       // Gọi API với body { question: userQuestion }
-<<<<<<< HEAD
-      const response = await fetch(API_URL, {
-=======
       const response = await fetch(`${API_URL1}/ask`, {
->>>>>>> 955e13622b36a19c06316802e6f536acee8d087a
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -142,11 +108,7 @@ Feel free to ask your question anytime! 😊`
           <TouchableOpacity onPress={onClose}>
             <Icon name="arrow-back" size={28} color="#fff" />
           </TouchableOpacity>
-<<<<<<< HEAD
-          <Text style={styles.headerTitle}>Trợ lý ShinyCloth</Text>
-=======
           <Text style={styles.headerTitle}>Assistant ShinyCloth</Text>
->>>>>>> 955e13622b36a19c06316802e6f536acee8d087a
           <View style={{ width: 28 }} />
         </View>
 
@@ -168,11 +130,7 @@ Feel free to ask your question anytime! 😊`
               style={styles.textInput}
               value={inputText}
               onChangeText={setInputText}
-<<<<<<< HEAD
-              placeholder="Nhập tin nhắn..."
-=======
               placeholder="Enter question..."
->>>>>>> 955e13622b36a19c06316802e6f536acee8d087a
               placeholderTextColor={muted}
               multiline
               onSubmitEditing={sendMessage}
@@ -249,8 +207,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-<<<<<<< HEAD
 });
-=======
-});
->>>>>>> 955e13622b36a19c06316802e6f536acee8d087a

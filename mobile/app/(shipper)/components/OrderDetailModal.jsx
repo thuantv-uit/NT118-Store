@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import { shipperStyles } from '../_styles/shipperStyles';
 
 const statusLabels = {
@@ -55,7 +56,7 @@ export default function OrderDetailModal({ visible, order, buyerInfo, productInf
           <View style={shipperStyles.modalHeader}>
             <Text style={shipperStyles.modalTitle}>Chi tiết đơn hàng</Text>
             <TouchableOpacity onPress={onClose}>
-              <Icon name="close" size={24} color="#666" />
+              <Ionicons name="close" size={24} color="#666" />
             </TouchableOpacity>
           </View>
           <ScrollView style={shipperStyles.detailScroll}>
@@ -67,7 +68,7 @@ export default function OrderDetailModal({ visible, order, buyerInfo, productInf
                     <Image source={{ uri: buyerInfo.avatar }} style={shipperStyles.detailAvatar} />
                   ) : (
                     <View style={[shipperStyles.detailAvatar, { backgroundColor: '#E0E0E0' }]}>
-                      <Icon name="person-outline" size={32} color="#999" />
+                      <Ionicons name="person-outline" size={32} color="#999" />
                     </View>
                   )}
                 </View>

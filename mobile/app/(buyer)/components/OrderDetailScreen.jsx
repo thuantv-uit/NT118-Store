@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import { API_URL } from '../../../constants/api';
 import { buyerStyles } from '../_styles/BuyerStyles';
 
@@ -226,7 +227,7 @@ export default function OrderDetailScreen() {
         <View style={buyerStyles.container}>
           <View style={buyerStyles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Icon name="arrow-back" size={24} color="#6D4C41" />
+              <Ionicons name="arrow-back" size={24} color="#6D4C41" />
             </TouchableOpacity>
             <Text style={buyerStyles.headerTitle}>Chi tiết đơn hàng</Text>
             <View style={{ width: 24 }} />
@@ -246,7 +247,7 @@ export default function OrderDetailScreen() {
         <View style={buyerStyles.container}>
           <View style={buyerStyles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Icon name="arrow-back" size={24} color="#6D4C41" />
+              <Ionicons name="arrow-back" size={24} color="#6D4C41" />
             </TouchableOpacity>
             <Text style={buyerStyles.headerTitle}>Chi tiết đơn hàng</Text>
             <View style={{ width: 24 }} />
@@ -264,7 +265,7 @@ export default function OrderDetailScreen() {
       <View style={buyerStyles.container}>
         <View style={buyerStyles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Icon name="arrow-back" size={24} color="#6D4C41" />
+            <Ionicons name="arrow-back" size={24} color="#6D4C41" />
           </TouchableOpacity>
           <Text style={buyerStyles.headerTitle}>Chi tiết đơn hàng</Text>
           <View style={{ width: 24 }} />
@@ -287,7 +288,7 @@ export default function OrderDetailScreen() {
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              <Icon name={step.icon} size={28} color="#FFF" />
+              <Ionicons name={step.icon} size={28} color="#FFF" />
             </View>
             <Text style={{ fontSize: 18, fontWeight: 'bold', color: step.color, marginTop: 8 }}>{step.label}</Text>
           </View>

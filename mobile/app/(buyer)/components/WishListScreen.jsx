@@ -13,7 +13,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import { API_URL } from '../../../constants/api';
 
 const WishlistScreen = () => {
@@ -112,7 +113,7 @@ const WishlistScreen = () => {
           style={styles.removeButton}
           onPress={() => handleRemoveFromWishlist(item.id)} // Xóa với wishlist_id
         >
-          <Icon name="trash-outline" size={20} color="#FF0000" />
+          <Ionicons name="trash-outline" size={20} color="#FF0000" />
           <Text style={styles.removeText}>Xóa</Text>
         </TouchableOpacity>
       </View>
@@ -132,7 +133,7 @@ const WishlistScreen = () => {
       <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Icon name="arrow-back" size={24} color="#FF8A65" />
+            <Ionicons name="arrow-back" size={24} color="#FF8A65" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Danh sách yêu thích</Text>
           <View style={styles.headerSpacer} />
@@ -148,13 +149,13 @@ const WishlistScreen = () => {
       <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Icon name="arrow-back" size={24} color="#FF8A65" />
+            <Ionicons name="arrow-back" size={24} color="#FF8A65" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Danh sách yêu thích</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.center}>
-          <Icon name="alert-circle-outline" size={64} color="#FF8A65" />
+          <Ionicons name="alert-circle-outline" size={64} color="#FF8A65" />
           <Text style={styles.errorText}>Lỗi: {error}</Text>
           <TouchableOpacity
             style={styles.retryButton}
@@ -171,7 +172,7 @@ const WishlistScreen = () => {
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Icon name="arrow-back" size={24} color="#FF8A65" />
+          <Ionicons name="arrow-back" size={24} color="#FF8A65" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Danh sách yêu thích</Text>
         <View style={styles.headerSpacer} />
@@ -190,7 +191,7 @@ const WishlistScreen = () => {
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Icon name="heart-outline" size={80} color="#FF8A65" />
+            <Ionicons name="heart-outline" size={80} color="#FF8A65" />
             <Text style={styles.emptyText}>Danh sách yêu thích trống</Text>
             <Text style={styles.emptySubText}>Thêm sản phẩm yêu thích để xem ở đây!</Text>
           </View>

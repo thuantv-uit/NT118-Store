@@ -6,7 +6,8 @@ import {
   Text,
   View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 
 import { API_URL } from '../../../constants/api';
 import { styles } from '../_styles/ProfileStyles';
@@ -148,7 +149,7 @@ const ExpensesSection = () => {
             ]}
           >
             <View style={styles.expenseHeader}>
-              <Icon name={item.icon} size={20} color={item.color} />
+              <Ionicons name={item.icon} size={20} color={item.color} />
               <Text style={styles.expenseTitle}>{item.title}</Text>
             </View>
 

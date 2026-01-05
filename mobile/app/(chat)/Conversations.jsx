@@ -13,8 +13,9 @@ import {
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Icon from 'react-native-vector-icons/Ionicons';
-import { API_URL } from '../../constants/api'; // http://192.168.1.254:5001/api
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
+import { API_URL } from '../../constants/api';
 
 const ConversationsScreen = () => {
   const router = useRouter();
@@ -112,7 +113,7 @@ const ConversationsScreen = () => {
             <Image source={{ uri: avatarUrl }} style={styles.avatar} />
           ) : (
             <View style={[styles.avatar, { backgroundColor: '#E5C9C4' }]}>
-              <Icon name="person" size={24} color="#6D4C41" />
+              <Ionicons name="person" size={24} color="#6D4C41" />
             </View>
           )}
         </View>
@@ -171,11 +172,11 @@ const ConversationsScreen = () => {
         {/* Header với button back */}
         <View style={styles.header}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
-            <Icon name="arrow-back" size={24} color="#6D4C41" />
+            <Ionicons name="arrow-back" size={24} color="#6D4C41" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Cuộc trò chuyện của tôi</Text>
           <TouchableOpacity style={styles.refreshButton} onPress={fetchConversations}>
-            <Icon name="refresh" size={20} color="#FF8A65" />
+            <Ionicons name="refresh" size={20} color="#FF8A65" />
           </TouchableOpacity>
         </View>
         <FlatList
@@ -188,7 +189,7 @@ const ConversationsScreen = () => {
         />
         {conversations.length === 0 && (
           <View style={styles.emptyContainer}>
-            <Icon name="chatbubble-outline" size={64} color="#E5C9C4" />
+            <Ionicons name="chatbubble-outline" size={64} color="#E5C9C4" />
             <Text style={styles.emptyText}>Chưa có cuộc trò chuyện nào</Text>
             <Text style={styles.emptySubtext}>Bắt đầu bằng cách liên hệ với người bán</Text>
           </View>
