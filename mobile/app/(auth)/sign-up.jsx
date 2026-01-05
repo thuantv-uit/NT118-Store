@@ -9,6 +9,8 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { COLORS } from "../../constants/colors";
 import { API_URL } from "../../constants/api";
 
+const DEFAULT_AVATAR ="https://res.cloudinary.com/dprqatuel/image/upload/v1767608216/customer_avatars/acf4wplrbnvg3x2rumsj.jpg";
+
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
   const router = useRouter();
@@ -22,27 +24,27 @@ export default function SignUpScreen() {
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+
   const API_BASE = API_URL;
 
+  // Chỉ gửi đúng 6 trường theo cấu trúc bảng customer
   const syncCustomerProfile = async (userId) => {
     if (!userId) return;
+
     const formPayload = new FormData();
     formPayload.append("id", userId);
-    formPayload.append("first_name", firstName);
-    formPayload.append("last_name", lastName);
-    formPayload.append("phone_number", phoneNumber);
+    formPayload.append("first_name", firstName.trim());
+    formPayload.append("last_name", lastName.trim());
+    formPayload.append("phone_number", phoneNumber.trim());
+    formPayload.append("avatar", DEFAULT_AVATAR);
     formPayload.append("role", role);
-    formPayload.append("email", emailAddress);
-    formPayload.append("password", "default");
-    formPayload.append("address", "");
-    formPayload.append("avatar", "https://res.cloudinary.com/demo/image/upload/v1699999999/default-avatar.png");
-    formPayload.append("emaiil", emailAddress); // backend typo-safe
 
     const postCustomer = async () => {
       return fetch(`${API_BASE}/customers`, {
         method: "POST",
         body: formPayload,
-        headers: { "Content-Type": "multipart/form-data" },
+        // Không cần set header Content-Type khi dùng FormData trên React Native
+        // Browser/Fetch sẽ tự set đúng với boundary
       });
     };
 
@@ -50,95 +52,82 @@ export default function SignUpScreen() {
       return fetch(`${API_BASE}/customers/${userId}`, {
         method: "PUT",
         body: formPayload,
-        headers: { "Content-Type": "multipart/form-data" },
       });
     };
 
     try {
       let response = await postCustomer();
       if (response.status === 409) {
-        // hồ sơ đã tồn tại → cập nhật thay vì tạo
+        // Đã tồn tại → cập nhật
         response = await putCustomer();
       }
+
       if (!response.ok) {
         const message = await response.text();
         console.warn("Không thể đồng bộ hồ sơ khách hàng:", message);
+        // Có thể thêm thông báo lỗi cho user nếu cần
       }
-    } catch (syncErr) {
-      console.warn("Sync profile failed", syncErr);
+    } catch (err) {
+      console.warn("Sync profile failed:", err);
     }
   };
 
-  // Handle submission of sign-up form
   const onSignUpPress = async () => {
     if (!isLoaded) return;
 
-    if (!firstName || !lastName || !phoneNumber || !role || !emailAddress || !password) {
+    if (!firstName || !lastName || !phoneNumber || !emailAddress || !password) {
       setError("Vui lòng nhập đầy đủ thông tin.");
       return;
     }
 
-    // Start sign-up process using email and password provided
     try {
       await signUp.create({
-        firstName,
-        lastName,
         emailAddress,
         password,
-        unsafeMetadata: {
-          phone_number: phoneNumber,
-          role,
-        },
       });
 
-      // Send user an email with verification code
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
 
-      // Set 'pendingVerification' to true to display second form
-      // and capture OTP code
       setPendingVerification(true);
+      setError("");
     } catch (err) {
+      console.error("Sign up error:", err);
       if (err.errors?.[0]?.code === "form_identifier_exists") {
-        setError("That email address is already in use. Please try another.");
+        setError("Email này đã được sử dụng. Vui lòng thử email khác.");
       } else {
-        setError("An error occurred. Please try again.");
+        setError("Đã xảy ra lỗi. Vui lòng thử lại.");
       }
-      console.log(err);
     }
   };
 
-  // Handle submission of verification form
   const onVerifyPress = async () => {
     if (!isLoaded) return;
 
     try {
-      // Use the code the user provided to attempt verification
       const signUpAttempt = await signUp.attemptEmailAddressVerification({
         code,
       });
 
-      // If verification was completed, set the session to active
-      // and redirect the user
       if (signUpAttempt.status === "complete") {
         await setActive({ session: signUpAttempt.createdSessionId });
+
+        // Đồng bộ profile về backend chỉ sau khi verify thành công
         await syncCustomerProfile(signUpAttempt.createdUserId);
+
         router.replace("/");
       } else {
-        // If the status is not complete, check why. User may need to
-        // complete further steps.
-        console.error(JSON.stringify(signUpAttempt, null, 2));
+        setError("Mã xác thực không đúng. Vui lòng thử lại.");
       }
     } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
-      console.error(JSON.stringify(err, null, 2));
+      console.error("Verification error:", err);
+      setError("Mã xác thực không hợp lệ. Vui lòng kiểm tra lại.");
     }
   };
 
   if (pendingVerification) {
     return (
       <View style={styles.verificationContainer}>
-        <Text style={styles.verificationTitle}>Verify your email</Text>
+        <Text style={styles.verificationTitle}>Xác minh email</Text>
 
         {error ? (
           <View style={styles.errorBox}>
@@ -153,13 +142,14 @@ export default function SignUpScreen() {
         <TextInput
           style={[styles.verificationInput, error && styles.errorInput]}
           value={code}
-          placeholder="Enter your verification code"
+          placeholder="Nhập mã xác thực"
           placeholderTextColor="#9A8478"
-          onChangeText={(code) => setCode(code)}
+          keyboardType="number-pad"
+          onChangeText={setCode}
         />
 
         <TouchableOpacity onPress={onVerifyPress} style={styles.button}>
-          <Text style={styles.buttonText}>Verify</Text>
+          <Text style={styles.buttonText}>Xác minh</Text>
         </TouchableOpacity>
       </View>
     );
@@ -173,9 +163,13 @@ export default function SignUpScreen() {
       enableAutomaticScroll={true}
     >
       <View style={styles.container}>
-        <Image source={require("../../assets/images/welcome/Logo_welcome.svg")} style={styles.illustration} contentFit="contain" />
+        <Image
+          source={require("../../assets/images/welcome/Logo_welcome.svg")}
+          style={styles.illustration}
+          contentFit="contain"
+        />
 
-        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.title}>Tạo tài khoản</Text>
 
         {error ? (
           <View style={styles.errorBox}>
@@ -191,18 +185,18 @@ export default function SignUpScreen() {
           style={[styles.input, error && styles.errorInput]}
           autoCapitalize="words"
           value={lastName}
-          placeholderTextColor="#9A8478"
           placeholder="Họ"
-          onChangeText={(text) => setLastName(text)}
+          placeholderTextColor="#9A8478"
+          onChangeText={setLastName}
         />
 
         <TextInput
           style={[styles.input, error && styles.errorInput]}
           autoCapitalize="words"
           value={firstName}
-          placeholderTextColor="#9A8478"
           placeholder="Tên"
-          onChangeText={(text) => setFirstName(text)}
+          placeholderTextColor="#9A8478"
+          onChangeText={setFirstName}
         />
 
         <TextInput
@@ -211,11 +205,11 @@ export default function SignUpScreen() {
           placeholder="Số điện thoại"
           placeholderTextColor="#9A8478"
           keyboardType="phone-pad"
-          onChangeText={(text) => setPhoneNumber(text)}
+          onChangeText={setPhoneNumber}
         />
 
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-          {['buyer', 'seller', 'shipper'].map((option) => {
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
+          {["buyer", "seller", "shipper"].map((option) => {
             const isSelected = role === option;
             return (
               <TouchableOpacity
@@ -227,13 +221,13 @@ export default function SignUpScreen() {
                   borderWidth: 1,
                   borderColor: isSelected ? COLORS.primary : COLORS.border,
                   backgroundColor: isSelected ? COLORS.primary : COLORS.white,
-                  alignItems: 'center',
+                  alignItems: "center",
                   marginHorizontal: 4,
                 }}
                 onPress={() => setRole(option)}
               >
-                <Text style={{ color: isSelected ? COLORS.white : COLORS.text, fontWeight: '700' }}>
-                  {option === 'buyer' ? 'Người mua' : option === 'seller' ? 'Người bán' : 'Shipper'}
+                <Text style={{ color: isSelected ? COLORS.white : COLORS.text, fontWeight: "700" }}>
+                  {option === "buyer" ? "Người mua" : option === "seller" ? "Người bán" : "Shipper"}
                 </Text>
               </TouchableOpacity>
             );
@@ -244,28 +238,29 @@ export default function SignUpScreen() {
           style={[styles.input, error && styles.errorInput]}
           autoCapitalize="none"
           value={emailAddress}
+          placeholder="Email"
           placeholderTextColor="#9A8478"
-          placeholder="Enter email"
-          onChangeText={(email) => setEmailAddress(email)}
+          keyboardType="email-address"
+          onChangeText={setEmailAddress}
         />
 
         <TextInput
           style={[styles.input, error && styles.errorInput]}
           value={password}
-          placeholder="Enter password"
+          placeholder="Mật khẩu"
           placeholderTextColor="#9A8478"
           secureTextEntry={true}
-          onChangeText={(password) => setPassword(password)}
+          onChangeText={setPassword}
         />
 
         <TouchableOpacity style={styles.button} onPress={onSignUpPress}>
-          <Text style={styles.buttonText}>Sign Up</Text>
+          <Text style={styles.buttonText}>Đăng ký</Text>
         </TouchableOpacity>
 
         <View style={styles.footerContainer}>
-          <Text style={styles.footerText}>Already have an account?</Text>
+          <Text style={styles.footerText}>Đã có tài khoản?</Text>
           <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.linkText}>Sign in</Text>
+            <Text style={styles.linkText}>Đăng nhập</Text>
           </TouchableOpacity>
         </View>
       </View>

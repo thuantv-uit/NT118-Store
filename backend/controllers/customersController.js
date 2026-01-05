@@ -64,7 +64,7 @@ export async function getCustomerById(req, res) {
 // Create profile for user
 export async function createCustomer(req, res) {
   try {
-    const { first_name, last_name, phone_number, role, id, avatar: avatarFromBody, email } = req.body;
+    const { first_name, last_name, phone_number, role, id, avatar: avatarFromBody } = req.body;
 
     if (!first_name || !last_name || !id || !phone_number || !role) {
       return res.status(400).json({ message: "All fields are required" });
@@ -80,8 +80,8 @@ export async function createCustomer(req, res) {
     }
 
     const transaction = await sql`
-      INSERT INTO customer(id, first_name, last_name, phone_number, role, avatar, email)
-      VALUES (${id},${first_name},${last_name},${phone_number},${role}, ${avatarUrl}, ${email || null})
+      INSERT INTO customer(id, first_name, last_name, phone_number, role, avatar)
+      VALUES (${id},${first_name},${last_name},${phone_number},${role}, ${avatarUrl})
       RETURNING *
     `;
 

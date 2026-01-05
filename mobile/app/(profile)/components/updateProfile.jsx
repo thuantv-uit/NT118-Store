@@ -20,30 +20,31 @@ const UpdateProfileScreen = () => {
   const router = useRouter();
   const { user } = useUser();
   const userId = user?.id;
+
   const [formData, setFormData] = useState({
     last_name: '',
     first_name: '',
     phone_number: '',
     role: 'buyer',
-    email: '',
   });
+
   const [loading, setLoading] = useState(false);
   const [profileExists, setProfileExists] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(null);
+
   const baseURL = API_URL;
 
   useEffect(() => {
     if (userId) {
       loadProfile();
-    } else if (user?.primaryEmailAddress?.emailAddress) {
-      setFormData((prev) => ({ ...prev, email: user.primaryEmailAddress.emailAddress }));
     }
-  }, [userId, user]);
+  }, [userId]);
 
   const loadProfile = async () => {
     try {
       setLoading(true);
       const response = await fetch(`${baseURL}/customers/${userId}`);
+
       if (response.ok) {
         const data = await response.json();
         setFormData({
@@ -51,8 +52,8 @@ const UpdateProfileScreen = () => {
           first_name: data.first_name || '',
           phone_number: data.phone_number || '',
           role: data.role || 'buyer',
-          email: data.email || data.emaiil || user?.primaryEmailAddress?.emailAddress || '',
         });
+
         if (data.avatar) {
           setSelectedAvatar(data.avatar);
         }
@@ -61,7 +62,7 @@ const UpdateProfileScreen = () => {
         setProfileExists(false);
       }
     } catch (error) {
-      Alert.alert('Error', 'Do not load profile. Please try.');
+      Alert.alert('Error', 'Không thể tải hồ sơ. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -70,11 +71,11 @@ const UpdateProfileScreen = () => {
   const pickAvatar = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Lỗi", "Cần quyền truy cập thư viện ảnh để chọn avatar!");
+      Alert.alert("Lỗi", "Cần quyền truy cập thư viện ảnh!");
       return;
     }
 
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
@@ -83,38 +84,39 @@ const UpdateProfileScreen = () => {
 
     if (!result.canceled) {
       setSelectedAvatar(result.assets[0].uri);
-      Alert.alert("Thành công", "Đã chọn ảnh avatar! Sẽ được upload khi lưu.");
+      Alert.alert("Thành công", "Đã chọn avatar!");
     }
   };
 
   const handleSave = async () => {
     if (!userId) {
-      Alert.alert('Error', 'User do not authentic. Please try.');
+      Alert.alert('Error', 'User chưa đăng nhập.');
       return;
     }
 
-    // Validation
-    const emailValue = formData.email || user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress || '';
-    if (!formData.last_name || !formData.first_name || !formData.phone_number || !formData.role || !emailValue) {
-      Alert.alert('Error', 'Please fill full information (email, họ, tên, số điện thoại, vai trò).');
+    if (!formData.first_name || !formData.last_name || !formData.phone_number || !formData.role) {
+      Alert.alert('Error', 'Vui lòng nhập đầy đủ thông tin.');
       return;
     }
 
     setLoading(true);
+
     try {
       const formPayload = new FormData();
       formPayload.append("first_name", formData.first_name);
       formPayload.append("last_name", formData.last_name);
       formPayload.append("phone_number", formData.phone_number);
       formPayload.append("role", formData.role);
-      formPayload.append("email", emailValue);
-      formPayload.append("emaiil", emailValue); // some backends use a misspelled column, send both
-      // backend yêu cầu avatar not null → fallback default nếu chưa chọn
-      const fallbackAvatar = selectedAvatar || user?.imageUrl || 'https://res.cloudinary.com/demo/image/upload/v1699999999/default-avatar.png';
+
+      const fallbackAvatar =
+        selectedAvatar ||
+        user?.imageUrl ||
+        'https://res.cloudinary.com/demo/image/upload/v1699999999/default-avatar.png';
 
       if (selectedAvatar && !selectedAvatar.startsWith('http')) {
         const fileName = selectedAvatar.split('/').pop();
-        const fileType = fileName.includes('.png') ? 'image/png' : 'image/jpeg';
+        const fileType = fileName?.includes('.png') ? 'image/png' : 'image/jpeg';
+
         formPayload.append("avatar", {
           uri: selectedAvatar,
           type: fileType,
@@ -126,9 +128,7 @@ const UpdateProfileScreen = () => {
 
       let response;
       if (!profileExists) {
-        // First: POST create with id
         formPayload.append("id", userId);
-        formPayload.append("email", formData.email || user?.emailAddresses[0]?.emailAddress || '');
         formPayload.append("password", 'default');
         formPayload.append("address", '');
 
@@ -140,7 +140,6 @@ const UpdateProfileScreen = () => {
           },
         });
       } else {
-        // After: PUT update
         response = await fetch(`${baseURL}/customers/${userId}`, {
           method: 'PUT',
           body: formPayload,
@@ -151,12 +150,10 @@ const UpdateProfileScreen = () => {
       }
 
       if (response.ok) {
-        // Đồng bộ lên Clerk để giữ thông tin nhất quán
         try {
           await user.update({
             firstName: formData.first_name,
             lastName: formData.last_name,
-            primaryEmailAddressId: user?.primaryEmailAddressId,
             publicMetadata: {
               phone_number: formData.phone_number,
               role: formData.role,
@@ -167,30 +164,26 @@ const UpdateProfileScreen = () => {
         }
 
         setProfileExists(true);
-        Alert.alert('Success', 'Update profile!');
+        Alert.alert('Success', 'Cập nhật hồ sơ thành công!');
         router.back();
       } else {
-        const errorData = await response.json();
-        Alert.alert('Error', errorData.message || 'Have error happen.');
+        const err = await response.json();
+        Alert.alert('Error', err.message || 'Có lỗi xảy ra.');
       }
     } catch (error) {
-      Alert.alert('Error', 'Do not connect serve. Please try.');
+      Alert.alert('Error', 'Không thể kết nối server.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleBack = () => {
-    router.back();
-  };
+  const handleBack = () => router.back();
 
-  // Function delete avatar
   const removeAvatar = () => {
     setSelectedAvatar(null);
     Alert.alert("Đã xóa", "Avatar sẽ được xóa khi lưu.");
   };
 
-  // If user has not loaded yet, show loading
   if (!user) {
     return (
       <SafeAreaView style={styles.updateContainer}>
@@ -204,7 +197,7 @@ const UpdateProfileScreen = () => {
   return (
     <SafeAreaView style={styles.updateContainer}>
       <ScrollView contentContainerStyle={styles.updateScroll}>
-        {/* Header: Back + Title + Lưu */}
+        {/* Header */}
         <View style={styles.updateHeader}>
           <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
             <Icon name="arrow-back" size={24} color="#FF4D79" />
@@ -215,13 +208,14 @@ const UpdateProfileScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Part upload avatar */}
+        {/* Avatar */}
         <View style={styles.formGroup}>
           <Text style={styles.label}>Avatar</Text>
           <TouchableOpacity onPress={pickAvatar} disabled={loading} style={styles.avatarUploadButton}>
             <Icon name="camera-outline" size={24} color="#FF4D79" />
             <Text style={styles.avatarUploadText}>Chọn ảnh avatar</Text>
           </TouchableOpacity>
+
           {selectedAvatar && (
             <View style={styles.avatarPreview}>
               <Image source={{ uri: selectedAvatar }} style={styles.avatarImage} />
@@ -232,32 +226,32 @@ const UpdateProfileScreen = () => {
           )}
         </View>
 
-        {/* Form: Firstname and Lastname */}
+        {/* Name */}
         <View style={styles.formGroup}>
           <Text style={styles.label}>Họ và Tên</Text>
           <View style={styles.rowInput}>
             <TextInput
               style={[styles.input, styles.inputHalf]}
               value={formData.last_name}
-              onChangeText={(text) => setFormData({ ...formData, last_name: text })}
+              onChangeText={(t) => setFormData({ ...formData, last_name: t })}
               placeholder="Họ"
             />
             <TextInput
               style={[styles.input, styles.inputHalf]}
               value={formData.first_name}
-              onChangeText={(text) => setFormData({ ...formData, first_name: text })}
+              onChangeText={(t) => setFormData({ ...formData, first_name: t })}
               placeholder="Tên"
             />
           </View>
         </View>
 
-        {/* SDT */}
+        {/* Phone */}
         <View style={styles.formGroup}>
           <Text style={styles.label}>Số điện thoại</Text>
           <TextInput
             style={styles.input}
             value={formData.phone_number}
-            onChangeText={(text) => setFormData({ ...formData, phone_number: text })}
+            onChangeText={(t) => setFormData({ ...formData, phone_number: t })}
             placeholder="Nhập số điện thoại"
             keyboardType="phone-pad"
           />
@@ -275,21 +269,20 @@ const UpdateProfileScreen = () => {
                   {
                     backgroundColor: formData.role === r ? '#FF4D79' : '#E0E0E0',
                     borderRadius: 8,
+                    margin: 2,
                     justifyContent: 'center',
                     alignItems: 'center',
-                    margin: 2,
-                  }
+                  },
                 ]}
                 onPress={() => setFormData({ ...formData, role: r })}
               >
                 <Text
                   style={{
                     color: formData.role === r ? '#FFF' : '#000',
-                    fontSize: 14,
                     fontWeight: formData.role === r ? 'bold' : 'normal',
                   }}
                 >
-                  {r.charAt(0).toUpperCase() + r.slice(1)} {/* Capitalize label */}
+                  {r.charAt(0).toUpperCase() + r.slice(1)}
                 </Text>
               </TouchableOpacity>
             ))}
