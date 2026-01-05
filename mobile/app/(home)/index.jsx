@@ -4,6 +4,7 @@ import { styles } from './_styles/HomeStyles';
 import BannerCarousel from './components/BannerCarousel';
 import BottomNav from './components/BottomNav';
 import Categories from './components/Categories';
+import ChatbotFloatingButton from './components/ChatbotFloatingButton';
 import FlashSale from './components/FlashSale';
 import Header from './components/Header';
 import ProductsGrid from './components/ProductsGrid';

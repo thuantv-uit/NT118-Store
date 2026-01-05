@@ -6,13 +6,13 @@ import cors from "cors";
 import { initDB } from "./config/database.js";
 import customerRoutes from "./routes/customersRoute.js";
 import shipmentRoutes from "./routes/shipmentsRoute.js"
-import paymentRoutes from "./routes/paymentsRoute.js"
-import orderRoutes from "./routes/ordersRoute.js"
-import categoryRoutes from "./routes/categoriesRoutes.js"
-import productRoutes from "./routes/productsRoutes.js"
-import cartRoutes from "./routes/cartsRoutes.js"
-import orderItemsRoutes from "./routes/orderItemsRoutes.js"
-import wishListRoutes from "./routes/wishListRoutes.js"
+import paymentRoutes from "./routes/paymentsRoute.js";
+import orderRoutes from "./routes/ordersRoute.js";
+import categoryRoutes from "./routes/categoriesRoutes.js";
+import productRoutes from "./routes/productsRoutes.js";
+import cartRoutes from "./routes/cartsRoutes.js";
+import orderItemsRoutes from "./routes/orderItemsRoutes.js";
+import wishListRoutes from "./routes/wishListRoutes.js";
 import shippingAddressRouter from './routes/shippingAddressRoute.js';
 import walletRoutes from './routes/walletRoutes.js';
 import bankAccountRoutes from './routes/bankAccountRoutes.js';
@@ -27,10 +27,10 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Tạo Socket.io instance
+// Create Socket.io instance
 const io = new Server(server, {
   cors: {
-    origin: "*", // Thay bằng domain frontend của bạn (ví dụ: "http://localhost:3000") để bảo mật hơn
+    origin: "*",
     methods: ["GET", "POST"]
   }
 });
@@ -40,7 +40,7 @@ global.io = io;
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  // Join room dựa trên conversation_id (client emit 'join_conversation' với conversation_id)
+  // Join room by on conversation_id (client emit 'join_conversation' với conversation_id)
   socket.on("join_conversation", (conversation_id) => {
     socket.join(`conversation_${conversation_id}`);
     console.log(`User ${socket.id} joined conversation ${conversation_id}`);
@@ -55,7 +55,7 @@ io.on("connection", (socket) => {
 // Middleware
 // app.use(rateLimiter)
 app.use(cors({
-  origin: "*", // Allow all origins for development
+  origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true
 }));
@@ -65,6 +65,10 @@ const PORT = process.env.PORT;
 
 app.get("/", (req, res) => {
     res.send("It's working")
+})
+
+app.get("/api", (req, res) => {
+  res.send("It's working")
 })
 
 app.use("/api/customers", customerRoutes);
@@ -89,9 +93,9 @@ initDB().catch((error) => {
     console.error("Error initializing DB", error);
     console.log("Server will start anyway. Please check your database connection.");
     console.log("You may need to:");
-    console.log("  1. Check your internet connection");
-    console.log("  2. Verify DATABASE_URL in .env file");
-    console.log("  3. Ensure Neon database is active (free tier auto-pauses)");
+    console.log("  1. Check your internet connection (for cloud)");
+    console.log("  2. Verify DATABASE_URL or DATABASE_URL_LOCAL in .env file");
+    console.log("  3. Ensure Neon database is active (free tier auto-pauses) or local DB is running (Docker)");
 });
 
 // Start server regardless of DB connection status

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // components/ChatbotModal.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import {
@@ -23,6 +24,46 @@ export default function ChatbotModal({ visible, onClose }) {
     { role: 'assistant', content: 'Xin chào! Tôi là trợ lý AI của bạn. Bạn cần giúp gì hôm nay?' }
   ]);
   const [inputText, setInputText] = useState('');
+=======
+import { useRef, useState } from 'react';
+import {
+    ActivityIndicator,
+    FlatList,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { API_URL1 } from '../../../constants/api';
+import { accent, muted, pastelBg, primary, text } from '../_styles/HomeStyles'; // Import theme từ HomeStyles
+
+// const BASE_API_URL = '${API_URL}/ask'; // URL server local mới
+
+export default function ChatbotModal({ visible, onClose }) {
+const [messages, setMessages] = useState([
+  {
+    role: 'assistant',
+    content: `Hello! 👋 I'm your AI assistant for the ShinyCloth app.
+I'm here to help you understand and use the app's features more effectively.
+
+You can ask questions such as:
+• How can a user purchase a product?
+• What should I do if I forget my password?
+• How does a seller list a new item?
+• How can a buyer track an order?
+• How does a shipper accept a delivery job?
+
+Feel free to ask your question anytime! 😊`
+  }
+]);
+    const [inputText, setInputText] = useState('');
+>>>>>>> 955e13622b36a19c06316802e6f536acee8d087a
   const [loading, setLoading] = useState(false);
   const flatListRef = useRef();
 
@@ -37,7 +78,11 @@ export default function ChatbotModal({ visible, onClose }) {
 
     try {
       // Gọi API với body { question: userQuestion }
+<<<<<<< HEAD
       const response = await fetch(API_URL, {
+=======
+      const response = await fetch(`${API_URL1}/ask`, {
+>>>>>>> 955e13622b36a19c06316802e6f536acee8d087a
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -97,7 +142,11 @@ export default function ChatbotModal({ visible, onClose }) {
           <TouchableOpacity onPress={onClose}>
             <Icon name="arrow-back" size={28} color="#fff" />
           </TouchableOpacity>
+<<<<<<< HEAD
           <Text style={styles.headerTitle}>Trợ lý ShinyCloth</Text>
+=======
+          <Text style={styles.headerTitle}>Assistant ShinyCloth</Text>
+>>>>>>> 955e13622b36a19c06316802e6f536acee8d087a
           <View style={{ width: 28 }} />
         </View>
 
@@ -119,7 +168,11 @@ export default function ChatbotModal({ visible, onClose }) {
               style={styles.textInput}
               value={inputText}
               onChangeText={setInputText}
+<<<<<<< HEAD
               placeholder="Nhập tin nhắn..."
+=======
+              placeholder="Enter question..."
+>>>>>>> 955e13622b36a19c06316802e6f536acee8d087a
               placeholderTextColor={muted}
               multiline
               onSubmitEditing={sendMessage}
@@ -196,4 +249,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> 955e13622b36a19c06316802e6f536acee8d087a

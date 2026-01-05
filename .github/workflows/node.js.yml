@@ -1,9 +1,11 @@
 name: Node.js CI
+
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -11,15 +13,16 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       mobile: ${{ steps.filter.outputs.mobile }}
     steps:
-    - uses: actions/checkout@v4
-    - name: Check Repository Structure
-      run: ls -la # Debug: In danh sách file ở root
-    - uses: dorny/paths-filter@v3
-      id: filter
-      with:
-        filters: |
-          backend: 'backend/**'
-          mobile: 'mobile/**'
+      - uses: actions/checkout@v4
+      - name: Debug - List Root Directory Contents
+        run: ls -la
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend: 'backend/**'
+            mobile: 'mobile/**'
+
   build-backend:
     needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' }}
@@ -31,57 +34,67 @@ jobs:
       matrix:
         node-version: [18.x, 20.x, 22.x]
     steps:
-    - uses: actions/checkout@v4
-    - name: Verify Backend Directory
-      run: ls -la # Debug: In danh sách file trong backend
-    - name: Check for package-lock.json
-      run: |
-        if [ ! -f package-lock.json ]; then
-          echo "Error: package-lock.json not found in backend"
-          exit 1
-        fi
-    - name: Use Node.js ${{ matrix.node-version }} for Backend
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: backend/package-lock.json
-    - name: Install Dependencies for Backend
-      run: npm install
-    - name: Run Backend Server for 2 Minutes
-      run: |
-        # Chạy npm start trong nền, ghi log vào file và in ra console
-        npm start 2>&1 | tee server.log &
-        # Lưu PID của process npm start
-        SERVER_PID=$!
-        # Chờ tối đa 120 giây
-        for ((i=0; i<30; i++)); do
-          # Kiểm tra nếu process đã dừng (crash)
-          if ! ps -p $SERVER_PID > /dev/null; then
-            echo "Server process stopped unexpectedly"
-            # Kiểm tra log để tìm lỗi nodemon crash
-            if grep -q "\[nodemon\] app crashed" server.log; then
-              echo "Error detected: [nodemon] app crashed - waiting for file changes before starting..."
-              cat server.log
+      - uses: actions/checkout@v4
+
+      - name: Debug - List Backend Directory Contents
+        run: ls -la
+
+      - name: Verify package-lock.json Exists
+        run: |
+          if [ ! -f package-lock.json ]; then
+            echo "Error: package-lock.json not found in backend directory"
+            exit 1
+          fi
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Verify Docker & Docker Compose
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Start PostgreSQL Test DB
+        run: make db_test_up
+
+      - name: Run Jest Tests
+        run: npm test
+
+      - name: Stop PostgreSQL Test DB
+        if: always()
+        run: make db_test_down
+
+      # Uncomment if you have a build step (e.g., TypeScript compilation)
+      # - name: Build Application
+      #   run: npm run build
+
+      - name: Verify Server Starts Successfully (CI Mode)
+        run: |
+          echo "Starting server using 'npm run start:ci'..."
+          npm run start:ci &
+          SERVER_PID=$!
+
+          # Wait up to 20 seconds to detect early crashes
+          for ((i = 0; i < 20; i++)); do
+            if ! kill -0 $SERVER_PID 2>/dev/null; then
+              echo "Server crashed shortly after startup"
+              wait $SERVER_PID
               exit 1
             fi
-            echo "Server crashed without nodemon error. Full log:"
-            cat server.log
-            exit 1
-          fi
-          # Kiểm tra log để tìm lỗi nodemon crash
-          if grep -q "\[nodemon\] app crashed" server.log; then
-            echo "Error detected: [nodemon] app crashed - waiting for file changes before starting..."
-            cat server.log
-            kill $SERVER_PID
-            exit 1
-          fi
-          sleep 1
-        done
-        # Nếu không có lỗi, dừng server sau 120 giây
-        kill $SERVER_PID
-        echo "Server ran successfully for 2 minutes"
-        cat server.log # In log để debug
+            sleep 1
+          done
+
+          echo "Server started successfully and remained stable for 20 seconds"
+          kill $SERVER_PID 2>/dev/null || true
+          wait $SERVER_PID 2>/dev/null || true
+
   build-mobile:
     needs: changes
     if: ${{ needs.changes.outputs.mobile == 'true' }}
@@ -93,32 +106,28 @@ jobs:
       matrix:
         node-version: [18.x, 20.x, 22.x]
     steps:
-    - uses: actions/checkout@v4
-    - name: Verify Mobile Directory
-      run: ls -la # Debug: In danh sách file trong mobile
-    - name: Check for package-lock.json
-      run: |
-        if [ ! -f package-lock.json ]; then
-          echo "Error: package-lock.json not found in mobile"
-          exit 1
-        fi
-    - name: Use Node.js ${{ matrix.node-version }} for Mobile
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: mobile/package-lock.json
-    - name: Install Dependencies for Mobile
-      run: npm install
-    - name: Run ESLint Check
-      run: |
-        # Chạy npm run lint và ghi log vào file và console
-        npm run lint 2>&1 | tee server.log
-        # Kiểm tra log để tìm lỗi chứa từ "error"
-        if grep -i "error" server.log; then
-          echo "Error detected in lint output"
-          cat server.log
-          exit 1
-        fi
-        echo "Lint check passed successfully"
-        cat server.log # In log để debug
+      - uses: actions/checkout@v4
+
+      - name: Debug - List Mobile Directory Contents
+        run: ls -la
+
+      - name: Verify package-lock.json Exists
+        run: |
+          if [ ! -f package-lock.json ]; then
+            echo "Error: package-lock.json not found in mobile directory"
+            exit 1
+          fi
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npm run lint
+        # ESLint will fail the job automatically if errors are found (non-zero exit code)

@@ -1,17 +1,20 @@
-# Sử dụng image Node.js 20
-FROM node:20
+# use image Node.js 20
+FROM node:20-alpine
 
-# Thiết lập thư mục làm việc
+# Setup folder work
 WORKDIR /app
 
-# Sao chép package.json và package-lock.json (nếu có)
+# Copy package.json and package-lock.json (if any)
 COPY package*.json ./
 
-# Cài đặt dependencies
+# Install dependencies
 RUN npm install
 
-# Sao chép toàn bộ mã nguồn
+# Copy entire code
 COPY . .
 
-# Lệnh khởi động
-CMD ["npm", "start"]
+# Port app
+EXPOSE 5001
+
+# Startup command
+CMD ["npm", "run", "start:local"]

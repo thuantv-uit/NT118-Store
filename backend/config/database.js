@@ -1,9 +1,54 @@
-import { neon } from "@neondatabase/serverless";
-
 import "dotenv/config";
+import { neon } from "@neondatabase/serverless";
+import pkg from "pg";
 
-// Creates a SQL connection using our DB URL
-export const sql = neon(process.env.DATABASE_URL);
+const { Pool } = pkg;
+
+const USE_LOCAL_DB = process.env.USE_LOCAL_DB === "true";
+const IS_DOCKER = process.env.IS_DOCKER === "true";
+
+let sql;
+let pool;
+
+if (USE_LOCAL_DB) {
+  let connectionString = process.env.DATABASE_URL_LOCAL;
+
+  if (!connectionString) {
+    connectionString =
+      "postgresql://shopuser:shoppass123@localhost:5432/shopdb";
+    console.warn("⚠️ DATABASE_URL_LOCAL not set, fallback to localhost");
+  }
+
+  // ⭐ FIX QUAN TRỌNG ⭐
+  if (!IS_DOCKER) {
+    connectionString = connectionString.replace("@db:", "@localhost:");
+  }
+
+  pool = new Pool({ connectionString });
+
+  sql = async (strings, ...values) => {
+    const text = strings.reduce(
+      (acc, str, i) => acc + str + (values[i] ?? ""),
+      ""
+    );
+    return pool.query(text);
+  };
+
+  console.log(
+    `🗄️ Using LOCAL PostgreSQL (${IS_DOCKER ? "docker" : "localhost"})`
+  );
+} else {
+  const connectionString = process.env.DATABASE_URL;
+
+  if (!connectionString) {
+    throw new Error("❌ DATABASE_URL not found for Neon Cloud");
+  }
+
+  sql = neon(connectionString);
+  console.log("☁️ Using NEON PostgreSQL (Cloud)");
+}
+
+export { sql };
 
 export async function initDB() {
   try {

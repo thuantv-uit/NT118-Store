@@ -1,36 +1,105 @@
 # NT118-Store
 
 ## 📱 E-Commerce Mobile Application
-Ứng dụng thương mại điện tử đa vai trò với giao diện hiện đại, hỗ trợ người mua, người bán và shipper.
+NT118-Store is a modern e-commerce platform designed for buyers, sellers, and delivery drivers, featuring a mobile application, a Node.js backend, and an AI shopping assistant.
 
-## ✨ Tính năng chính
+The project is developed as a course project for UIT – NT118, with a strong focus on:
+- Clean architecture
+- Real-world backend practices
+- Automated testing
+- CI/CD integration
 
-### 🤖 Trợ lý AI Shopping Assistant
-- 💬 Chat với AI (Gemini/GPT-4) - tư vấn mua sắm thông minh
-- 🎯 Hiểu ngữ cảnh đơn hàng & giỏ hàng
-- ⚡ Bubble icon floating có thể kéo thả
+## 🚀 Project Overview
 
-### 👤 Người mua (Buyer)
-- 🏠 Trang chủ với banner carousel & flash sale
-- 🔍 Tìm kiếm và lọc sản phẩm theo danh mục
-- 🛒 Giỏ hàng với variant (size, color)
-- ❤️ Danh sách yêu thích
-- 📦 Theo dõi đơn hàng real-time
-- 💰 Ví điện tử & lịch sử giao dịch
-- 💬 Chat với người bán
+### Backend (Node.js + Express)
+![Backend Running](./screenshots/backend-running.png)
 
-### 🏪 Người bán (Seller)
-- 📊 Dashboard doanh thu & thống kê
-- ➕ Tạo sản phẩm với nhiều variant & hình ảnh
-- ✏️ Quản lý & chỉnh sửa sản phẩm
-- 📦 Quản lý đơn hàng
-- 💬 Chat với khách hàng
-- 🎨 Giao diện pink theme hiện đại
+### AI Chatbot (Python)
+![AI Chatbot Running](./screenshots/chatbot-running.png)
 
-### 🚚 Shipper
-- 📋 Danh sách đơn hàng cần giao
-- 📍 Cập nhật vị trí & trạng thái đơn hàng
-- ✅ Xác nhận giao hàng thành công
+### Mobile (Expo React Native)
+![Mobile Running](./screenshots/expo-start.png)
+
+## 📸 App Demo
+
+Here are screenshots of the NT118-Store app running on a real mobile device (portrait mode).
+
+### Authentication
+<div align="center">
+  <img src="./screenshots/SignIn.jpg" alt="Login Screen" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+  <img src="./screenshots/SignUp.jpg" alt="Register Screen" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+</div>
+
+<br/>
+
+### Buyer Experience
+<div align="center">
+  <img src="./screenshots/buyer1.jpg" alt="Buyer Home with Carousel & Flash Sale" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+  <img src="./screenshots/buyer2.jpg" alt="Product Detail with Variants" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+  <img src="./screenshots/buyer3.jpg" alt="Shopping Cart" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+</div>
+
+<br/>
+
+### Seller Dashboard
+<div align="center">
+  <img src="./screenshots/seller1.jpg" alt="Seller Revenue Dashboard" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+  <img src="./screenshots/seller2.jpg" alt="Add New Product with Variants" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+  <img src="./screenshots/seller3.jpg" alt="Seller Order Management" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+</div>
+
+<br/>
+
+### Shipper View
+<div align="center">
+  <img src="./screenshots/shipper1.jpg" alt="Shipper Order List" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+  <img src="./screenshots/shipper2.jpg" alt="Delivery Details & Status Update" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+</div>
+
+<br/>
+
+### AI Shopping Assistant
+<div align="center">
+  <img src="./screenshots/chatbot.jpg" alt="AI Chatbot with Floating Bubble" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+</div>
+
+<br/>
+
+### Shared User Features
+<div align="center">
+  <img src="./screenshots/user_home.jpg" alt="User Profile" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+  <img src="./screenshots/user_profile1.jpg" alt="E-Wallet & Transactions" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+  <img src="./screenshots/user_profile2.jpg" alt="Order History & Tracking" width="300" style="border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-left: 20px;"/>
+</div>
+
+## ✨ Key Feature
+
+### 🤖 AI Shopping Assistant
+- 💬 Chat with local AI (powered by Ollama) – intelligent shopping recommendations
+- 🎯 Context-aware assistance based on orders and cart contents
+- ⚡ Draggable floating chat bubble
+
+### 👤 Buyer Role
+- 🏠 Home screen with banner carousel & flash sale section
+- 🔍 Product search and filtering by category
+- 🛒 Shopping cart with product variants (size, color)
+- ❤️ Wishlist management
+- 📦 Real-time order tracking
+- 💰 E-wallet and transaction history
+- 💬 Direct chat with sellers
+
+### 🏪 Seller Role
+- 📊 Revenue dashboard and analytics
+- ➕ Create products with multiple variants & images
+- ✏️ Product management and editing
+- 📦 Order management
+- 💬 Chat with customers
+- 🎨 Modern pink-themed interface
+
+### 🚚 Shipper Role
+- 📋 List of orders awaiting delivery
+- 📍 Real-time location updates and order status changes
+- ✅ Confirm successful delivery
 
 ## 🛠️ Tech Stack
 
@@ -44,13 +113,51 @@
 
 ### Backend
 - **Runtime**: Node.js + Express
-- **Database**: PostgreSQL (Neon)
+- **Database**: PostgreSQL
+  - Production: Neon
+  - Testing: Docker
 - **Cache**: Redis (Upstash)
 - **Image**: Cloudinary
-- **AI**: Google Gemini API, OpenAI API
 - **Real-time**: Socket.io
 
-## 📚 Hướng dẫn Setup
+### AI
+- **Language Model**: Ollama
+- **Vector DB**: Chroma
+- **Framework**: LangChain (Python)
+
+## 🧪 Testing & Quality Assurance
+
+### Unit Testing (Jest)
+- Unit tests focus on service layer
+- Controllers are intentionally excluded from unit tests
+- PostgreSQL runs in Docker during testing
+- Production database (Neon) is never touched
+
+### Run Test Locally
+```bash
+cd backend
+
+make up        # start PostgreSQL test DB
+npm test       # run Jest
+make down      # stop & clean up
+```
+
+## 🔄 Continuous Integration (CI)
+CI is powered by GitHub Actions and runs automatically on:
+- Push to `main`
+- Pull requests targeting `main`
+
+### Backend CI Pipeline
+1. Detect changes in `backend/`
+2. Setup Node.js (18.x, 20.x, 22.x)
+3. Install dependencies
+4. Start PostgreSQL (Docker)
+5. Run Jest unit tests
+6. Cleanup Docker resources
+
+GitHub Actions runners already include Docker & Docker Compose.
+
+## 📚 Setup Guide
 
 ### 1. Clone Repository
 ```bash
@@ -64,7 +171,7 @@ cd backend
 npm install
 ```
 
-Tạo file `.env` trong folder `backend/`:
+Create file `.env` in `backend/` folder:
 ```env
 PORT=5001
 DATABASE_URL=your_postgres_url
@@ -74,11 +181,9 @@ API_URL=http://localhost:5001
 CLOUDINARY_CLOUD_NAME=your_cloudinary_name
 CLOUDINARY_API_KEY=your_cloudinary_key
 CLOUDINARY_API_SECRET=your_cloudinary_secret
-GEMINI_API_KEY=your_gemini_key
-OPENAI_API_KEY=your_openai_key
 ```
 
-Chạy backend:
+Run the backend:
 ```bash
 npm start
 ```
@@ -89,76 +194,120 @@ cd mobile
 npm install
 ```
 
-Tạo file `.env` trong folder `mobile/`:
+Create a file `.env` in the `mobile/` folder:
 ```env
 EXPO_PUBLIC_API_URL=http://your-ip:5001/api
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
 ```
 
-Chạy app:
+Run the app:
 ```bash
-npx expo start
+npm start
 ```
 
 ### 4. AI Assistant Setup
-**📚 Chi tiết:** [QUICK_AI_SETUP.md](./QUICK_AI_SETUP.md)
+
+Install Ollama and pull model
+```bash
+ollama pull llama3.2
+```
+
+Setup the Python environment
+```bash
+cd ai/chatbot
+conda create -n nt118-ai python=3.11 -y
+conda activate nt118-ai
+pip install -r requirements.txt
+```
+
+Generate embeddings and build the vector database
+```bash
+python -m vector
+```
+
+Run the local AI chatbot
+```bash
+python -m main
+```
 
 ## 🔄 Git Workflow
 
-### Pull trước khi code
+### Pull lastest changes before coding
 ```bash
 git pull origin main
 ```
 
-### Tạo branch cho feature mới
+### Create a new feature branch
 ```bash
 git checkout -b feature/your-feature-name
 ```
 
-### Commit và push
+### Commit and push
 ```bash
 git add .
 git commit -m "feat: add your feature"
 git push origin feature/your-feature-name
 ```
 
-### Tạo Pull Request
-- Mở PR trên GitHub
-- Review code
-- Merge vào main sau khi approve
+### Create a Pull Request
+- Open a PR on GitHub
+- Request code review
+- Merge into main after approval
 
-### Sync sau khi merge
+### Sync after merge
 ```bash
 git checkout main
 git pull origin main
 ```
 
-## 📁 Cấu trúc Project
+## 📁 Project Structure
 
 ```
 NT118-Store/
 ├── backend/
 │   ├── controllers/        # API controllers
-│   ├── routes/            # API routes
-│   ├── services/          # Business logic
-│   ├── config/            # Config files
+│   ├── routes/             # API routes
+│   ├── services/           # Business logic
+│   ├── config/             # Config files
+│   ├── tests/                  # Jest unit tests
+│   │   ├── setup.js
+│   │   ├── user.test.js
+│   │   └── wallet.test.js
+│   ├── docker-compose.test.yml # PostgreSQL test environment
+│   ├── Makefile                # Docker helpers (up/down)
+│   ├── jest.config.js
 │   └── server.js
+│
 ├── mobile/
 │   ├── app/
-│   │   ├── (auth)/        # Đăng nhập/đăng ký
-│   │   ├── (home)/        # Trang chủ buyer
-│   │   ├── (buyer)/       # Buyer screens
-│   │   ├── (seller)/      # Seller screens
-│   │   ├── (shipper)/     # Shipper screens
-│   │   ├── (chat)/        # Chat screens
-│   │   └── (profile)/     # Profile screens
-│   ├── components/        # Shared components
-│   ├── constants/         # Constants & API config
-│   └── assets/           # Images & fonts
-└── start-dev.ps1         # Quick start script
+│   │   ├── (auth)/         # Authencation screens
+│   │   ├── (home)/         # Home Screens
+│   │   ├── (buyer)/        # Buyer screens
+│   │   ├── (seller)/       # Seller screens
+│   │   ├── (shipper)/      # Shipper screens
+│   │   ├── (chat)/         # Chat screens (Buyer ↔ Seller / AI)
+│   │   └── (profile)/      # Profile screens
+│   ├── components/         # Shared components
+│   ├── constants/          # Constants & API config
+│   └── assets/             # Images & fonts
+│
+├── ai/
+│   └── chatbot/
+│       ├── chroma_langchain_db/  # Chroma vector database
+│       ├── features.csv          # Product features data
+│       ├── vector.py             # Embedding generation script
+│       ├── main.py               # AI Chatbot entry point
+│       ├── requirements.txt      # Python dependencies
+│       └── .env                  # API keys
+|
+├── .github/
+│   └── workflows/
+│       └── node-ci.yml
+|
+└── README.md
 ```
 
-## 👥 Nhóm Phát Triển
+## 👥 Development Team
 - **Hồ Thị Huỳnh My - 22520897**
 - **Trần Thu Ngân - 22520937** 
 - **Trần Văn Thuận - 22521448**
