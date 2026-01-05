@@ -14,7 +14,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import { API_URL } from '../../../constants/api';
 import useCustomerProfile from '../../../utlis/useCustomerProfile';
 
@@ -657,7 +658,7 @@ export default function ProductDetail() {
   return (
     <SafeAreaView style={detailStyles.safe}>
       <TouchableOpacity style={detailStyles.header} onPress={() => navigation.goBack()}>
-        <Icon name="arrow-back" style={detailStyles.backButton} />
+        <Ionicons name="arrow-back" style={detailStyles.backButton} />
       </TouchableOpacity>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -727,7 +728,7 @@ export default function ProductDetail() {
                   />
                 ) : (
                   <View style={[detailStyles.sellerAvatar, { backgroundColor: '#E5C9C4', justifyContent: 'center', alignItems: 'center' }]}>
-                    <Icon name="person" size={24} color="#8D6E63" />
+                    <Ionicons name="person" size={24} color="#8D6E63" />
                   </View>
                 )}
                 <View style={{ flex: 1 }}>
@@ -795,7 +796,7 @@ export default function ProductDetail() {
               onPress={handleContactSeller}
               disabled={!seller}
             >
-              <Icon name="chatbubble-outline" style={detailStyles.actionIcon} />
+              <Ionicons name="chatbubble-outline" style={detailStyles.actionIcon} />
             </TouchableOpacity>
 
             {/* Add to Cart Icon */}
@@ -807,7 +808,7 @@ export default function ProductDetail() {
               onPress={handleAddToCart}
               disabled={!selectedVariant || currentStock === 0}
             >
-              <Icon name="cart-outline" style={detailStyles.actionIcon} />
+              <Ionicons name="cart-outline" style={detailStyles.actionIcon} />
             </TouchableOpacity>
 
             {/* Wishlist Icon */}
@@ -819,7 +820,7 @@ export default function ProductDetail() {
               onPress={handleAddToWishlist}
               disabled={!isSignedIn}
             >
-              <Icon 
+              <Ionicons 
                 name={isInWishlist ? "heart" : "heart-outline"} 
                 style={detailStyles.actionIcon} 
               />

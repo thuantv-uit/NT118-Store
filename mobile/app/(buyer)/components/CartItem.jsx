@@ -1,5 +1,6 @@
-import { Image, Text, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Image, Text, TouchableOpacity, View, Alert } from 'react-native';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import { buyerStyles } from '../_styles/BuyerStyles';
 
 export default function CartItem({ item, onUpdateQuantity, onRemove }) {
@@ -85,7 +86,7 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }) {
           accessibilityLabel={`Xóa ${name} khỏi giỏ hàng`}
           accessibilityRole="button"
         >
-          <Icon name="trash-outline" size={20} color="#FF5722" />
+          <Ionicons name="trash-outline" size={20} color="#FF5722" />
         </TouchableOpacity>
       </View>
     </View>

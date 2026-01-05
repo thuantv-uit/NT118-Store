@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import { API_URL } from '../../constants/api';
 import OrderDetailModal from './components/OrderDetailModal';
 import OrderItem from './components/OrderItem';
@@ -348,7 +348,7 @@ export default function ShipperScreen() {
           <View style={shipperStyles.header}>
             <Text style={shipperStyles.headerTitle}>Bảng điều khiển Shipper</Text>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Icon name="close" size={24} color="#FFF" />
+              <Ionicons name="close" size={24} color="#FFF" />
             </TouchableOpacity>
           </View>
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -367,7 +367,7 @@ export default function ShipperScreen() {
           <View style={shipperStyles.header}>
             <Text style={shipperStyles.headerTitle}>Bảng điều khiển Shipper</Text>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Icon name="close" size={24} color="#FFF" />
+              <Ionicons name="close" size={24} color="#FFF" />
             </TouchableOpacity>
           </View>
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -387,7 +387,7 @@ export default function ShipperScreen() {
         <View style={shipperStyles.header}>
           <Text style={shipperStyles.headerTitle}>Bảng điều khiển Shipper</Text>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Icon name="close" size={24} color="#FFF" />
+            <Ionicons name="close" size={24} color="#FFF" />
           </TouchableOpacity>
         </View>
 
@@ -413,14 +413,14 @@ export default function ShipperScreen() {
           }
           ListEmptyComponent={
             <View style={shipperStyles.emptyContainer}>
-              <Icon name="receipt-outline" size={64} color="#CCC" />
+              <Ionicons name="receipt-outline" size={64} color="#CCC" />
               <Text style={shipperStyles.emptyText}>Chưa có đơn hàng nào</Text>
             </View>
           }
         />
 
         <TouchableOpacity onPress={handleRefresh} style={shipperStyles.refreshButton}>
-          <Icon name="refresh" size={20} color="#FFF" />
+          <Ionicons name="refresh" size={20} color="#FFF" />
           <Text style={shipperStyles.refreshButtonText}>Làm mới</Text>
         </TouchableOpacity>
 

@@ -14,7 +14,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import io from 'socket.io-client';
 import { API_URL } from '../../constants/api';
 
@@ -159,7 +160,7 @@ const ChatScreen = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Icon name="arrow-back" size={24} color="#6D4C41" />
+          <Ionicons name="arrow-back" size={24} color="#6D4C41" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Chat với {sellerName}</Text>
       </View>
@@ -195,7 +196,7 @@ const ChatScreen = () => {
           {sending ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Icon name="send" size={20} color="#fff" />
+            <Ionicons name="send" size={20} color="#fff" />
           )}
         </TouchableOpacity>
       </KeyboardAvoidingView>

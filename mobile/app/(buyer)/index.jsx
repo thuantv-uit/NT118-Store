@@ -1,7 +1,8 @@
 import { useUser } from '@clerk/clerk-expo';
 import { useNavigation } from '@react-navigation/native';
 import { ActivityIndicator, FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import CartItem from './components/CartItem';
 import CartSummary from './components/CartSummary';
 import { useCart } from './_hook/useCart';
@@ -55,7 +56,7 @@ export default function CartScreen() {
         <View style={buyerStyles.container}>
           <View style={buyerStyles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Icon name="arrow-back" size={24} color="#6D4C41" />
+              <Ionicons name="arrow-back" size={24} color="#6D4C41" />
             </TouchableOpacity>
             <Text style={buyerStyles.headerTitle}>Giỏ hàng của bạn</Text>
             <View style={{ width: 24 }} />
@@ -78,13 +79,13 @@ export default function CartScreen() {
         <View style={buyerStyles.container}>
           <View style={buyerStyles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Icon name="arrow-back" size={24} color="#6D4C41" />
+              <Ionicons name="arrow-back" size={24} color="#6D4C41" />
             </TouchableOpacity>
             <Text style={buyerStyles.headerTitle}>Giỏ hàng của bạn</Text>
             <View style={{ width: 24 }} />
           </View>
           <View style={buyerStyles.emptyCart}>
-            <Icon name="cart-outline" size={80} color="#BDAAA8" />
+            <Ionicons name="cart-outline" size={80} color="#BDAAA8" />
             <Text style={buyerStyles.emptyText}>Giỏ hàng trống</Text>
             <Text style={{ fontSize: 14, color: '#8D6E63' }}>
               Thêm sản phẩm để bắt đầu mua sắm!
@@ -106,7 +107,7 @@ export default function CartScreen() {
       <View style={buyerStyles.container}>
         <View style={buyerStyles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Icon name="arrow-back" size={24} color="#6D4C41" />
+            <Ionicons name="arrow-back" size={24} color="#6D4C41" />
           </TouchableOpacity>
           <Text style={buyerStyles.headerTitle}>Giỏ hàng ({cartItems.length})</Text>
           <View style={{ width: 24 }} />

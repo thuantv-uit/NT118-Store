@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import { gradientEnd, gradientStart, styles, text } from '../_styles/HomeStyles';
 
 export default function PromoCard() {
@@ -20,7 +21,7 @@ export default function PromoCard() {
             </Text>
             <View style={styles.promoRow}>
               <View style={styles.rating}>
-                <Icon name="sparkles-outline" size={14} color={gradientEnd} />
+                <Ionicons name="sparkles-outline" size={14} color={gradientEnd} />
                 <Text style={[styles.ratingText, { color: gradientEnd }]}>Deal nổi bật</Text>
               </View>
               <TouchableOpacity

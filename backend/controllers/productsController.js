@@ -160,6 +160,9 @@ export async function getAllProducts(req, res) {
     res.status(200).json(products);
   } catch (error) {
     console.error("Error getting all products:", error);
+    console.log('Query result:', products);
+    console.log('Number of products:', products.length);
+    res.status(200).json(products);    
     res.status(500).json({ message: "Internal server error" });
   }
 }

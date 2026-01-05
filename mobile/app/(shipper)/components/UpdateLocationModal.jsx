@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import { API_URL } from '../../../constants/api';
 import { shipperStyles } from '../_styles/shipperStyles';
 
@@ -61,7 +62,7 @@ export default function UpdateLocationModal({ visible, orderStatusId, shipperId,
           <View style={shipperStyles.modalHeader}>
             <Text style={shipperStyles.modalTitle}>Cập nhật vị trí</Text>
             <TouchableOpacity onPress={onClose}>
-              <Icon name="close" size={24} color="#666" />
+              <Ionicons name="close" size={24} color="#666" />
             </TouchableOpacity>
           </View>
           <TextInput

@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: shoppass123
       POSTGRES_DB: shopdb
     ports:
-      - "5432:5432"   # cho phép connect từ host (DBeaver, psql)
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

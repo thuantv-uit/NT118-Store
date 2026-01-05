@@ -14,9 +14,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { API_URL1 } from '../../../constants/api';
-import { accent, muted, pastelBg, primary, text } from '../_styles/HomeStyles'; // Import theme từ HomeStyles
-
-// const BASE_API_URL = '${API_URL}/ask'; // URL server local mới
+import { accent, muted, pastelBg, primary, text } from '../_styles/HomeStyles';
 
 export default function ChatbotModal({ visible, onClose }) {
 const [messages, setMessages] = useState([

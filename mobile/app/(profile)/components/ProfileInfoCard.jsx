@@ -1,11 +1,12 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import { styles } from '../_styles/ProfileStyles';
 
 const InfoRow = ({ icon, label, value }) => (
   <View style={styles.infoRow}>
-    <Icon name={icon} size={18} color="#FF4D79" style={{ marginRight: 10 }} />
+    <Ionicons name={icon} size={18} color="#FF4D79" style={{ marginRight: 10 }} />
     <Text style={styles.infoLabel}>{label}</Text>
     <Text style={styles.infoValue} numberOfLines={1}>{value || 'Chưa cập nhật'}</Text>
   </View>

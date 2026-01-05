@@ -2,7 +2,9 @@ import { useUser } from '@clerk/clerk-expo';
 import { usePathname, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
+
 
 import { API_URL } from '../../../constants/api';
 import useCustomerProfile from '../../../utlis/useCustomerProfile';
@@ -187,7 +189,7 @@ const handleNavPress = (route) => {
                   { backgroundColor: item.activeColor },
                 ]}
               >
-                <Icon name={item.icon} size={26} color="#fff" />
+                <Ionicons name={item.icon} size={26} color="#fff" />
               </View>
             </TouchableOpacity>
           );
@@ -201,7 +203,7 @@ const handleNavPress = (route) => {
             onPress={() => handleNavPress(item.route, item.key)}
           >
             <View style={{ position: 'relative' }}>
-              <Icon name={item.icon} size={22} color={iconColor} />
+              <Ionicons name={item.icon} size={22} color={iconColor} />
 
               {showBadge && (
                 <View style={styles.navBadge}>

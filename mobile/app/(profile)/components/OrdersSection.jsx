@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+// import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from 'react-native-vector-icons';
 import useCustomerProfile from '../../../utlis/useCustomerProfile';
 import { styles } from '../_styles/ProfileStyles';
 
@@ -104,7 +105,7 @@ const OrdersSection = () => {
             onPress={() => handleTabPress(tab.label)}
             activeOpacity={0.8} // Feedback touch
           >
-            <Icon name={tab.icon} size={28} color={tab.color} />
+            <Ionicons name={tab.icon} size={28} color={tab.color} />
             <Text 
               style={styles.tabLabel}
               numberOfLines={2} // Cho phép wrap xuống hàng nếu label dài (3-4 chữ/từ)
