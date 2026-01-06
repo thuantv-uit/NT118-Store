@@ -5,7 +5,7 @@
   "build": {
     "production": {
       "android": {
-        "buildType": "apk"  // hoặc "app-bundle" nếu muốn AAB
+        "buildType": "apk"
       }
     }
   }
