@@ -43,6 +43,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "9e209613-379f-4b3d-a517-bb4bd3664533"
+      }
+    },
+    "owner": "thuantv-uit"
   }
 }
