@@ -3,16 +3,17 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    FlatList,
-    RefreshControl,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { API_URL } from '../../../constants/api';
+import { styles as profileStyles } from '../_styles/ProfileStyles';
 
 // Hàm format VND (duplicate từ WalletScreen)
 const formatVND = (amount) => {
@@ -29,7 +30,7 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('vi-VN') + ' ' + new Date(dateString).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 };
 
-// Icon và màu cho type
+// Icon và màu cho type - Adapted to theme colors where possible, keep semantic for amounts
 const getTransactionIconAndColor = (type, amount) => {
   switch (type) {
     case 'deposit':
@@ -43,7 +44,7 @@ const getTransactionIconAndColor = (type, amount) => {
     case 'adjustment':
       return { icon: 'tune', color: '#FFC107' }; // Vàng
     default:
-      return { icon: 'help-outline', color: '#6C757D' };
+      return { icon: 'help-outline', color: profileStyles.TEXT_MUTED || '#7A5368' };
   }
 };
 
@@ -95,20 +96,28 @@ const TransactionHistoryScreen = () => {
     const amountColor = isPositive ? '#28A745' : '#DC3545';
 
     return (
-      <View style={styles.transactionItem}>
+      <View style={[profileStyles.utilityItem, styles.transactionItem]}>
         <View style={styles.transactionIconContainer}>
           <MaterialIcons name={icon} size={24} color={color} />
         </View>
         <View style={styles.transactionDetails}>
-          <Text style={styles.transactionType}>{item.type.toUpperCase()}</Text>
-          <Text style={styles.transactionDescription}>{item.description || 'Giao dịch không mô tả'}</Text>
-          <Text style={styles.transactionDate}>{formatDate(item.transaction_date)}</Text>
+          <Text style={[profileStyles.utilityLabel, styles.transactionType, { color: profileStyles.PRIMARY || '#FF4D79' }]}>
+            {item.type.toUpperCase()}
+          </Text>
+          <Text style={[profileStyles.infoLabel, styles.transactionDescription]}>
+            {item.description || 'Giao dịch không mô tả'}
+          </Text>
+          <Text style={[profileStyles.infoLabel, styles.transactionDate]}>
+            {formatDate(item.transaction_date)}
+          </Text>
         </View>
         <View style={styles.transactionAmountContainer}>
-          <Text style={[styles.transactionAmount, { color: amountColor }]}>
+          <Text style={[profileStyles.infoValue, styles.transactionAmount, { color: amountColor }]}>
             {formatVND(item.amount)}
           </Text>
-          <Text style={styles.transactionStatus}>{item.status}</Text>
+          <Text style={[profileStyles.infoLabel, styles.transactionStatus, { color: '#28A745' }]}>
+            {item.status}
+          </Text>
         </View>
       </View>
     );
@@ -116,23 +125,23 @@ const TransactionHistoryScreen = () => {
 
   if (loading && transactions.length === 0) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#EE4D2D" />
-        <Text style={styles.loadingText}>Đang tải lịch sử...</Text>
+      <View style={[profileStyles.center || styles.center, styles.center]}>
+        <ActivityIndicator size="large" color={profileStyles.PRIMARY || '#FF4D79'} />
+        <Text style={[profileStyles.infoLabel, styles.loadingText]}>Đang tải lịch sử...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <View style={[profileStyles.container, styles.container]}>
+      <StatusBar barStyle="dark-content" backgroundColor={profileStyles.CARD || '#FFFFFF'} />
       
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <MaterialIcons name="arrow-back" size={24} color="#EE4D2D" />
+      {/* Header - Adapted from profileStyles.header */}
+      <View style={[profileStyles.header, styles.header]}>
+        <TouchableOpacity style={[profileStyles.backButtonContainer, styles.backButton]} onPress={handleBack}>
+          <MaterialIcons name="arrow-back" size={24} color={profileStyles.PRIMARY || '#FF4D79'} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Lịch sử giao dịch</Text>
+        <Text style={[profileStyles.updateTitle || styles.headerTitle, styles.headerTitle]}>Lịch sử giao dịch</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -140,16 +149,22 @@ const TransactionHistoryScreen = () => {
         data={transactions}
         renderItem={renderTransactionItem}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { padding: profileStyles.screenPadding || 16 }]}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#EE4D2D']} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh} 
+            colors={[profileStyles.PRIMARY || '#FF4D79']} 
+          />
         }
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <MaterialIcons name="history" size={64} color="#CCC" />
-            <Text style={styles.emptyTitle}>Chưa có giao dịch</Text>
-            <Text style={styles.emptyDesc}>Giao dịch đầu tiên sẽ xuất hiện ở đây!</Text>
+          <View style={[profileStyles.section, styles.emptyContainer]}>
+            <MaterialIcons name="history" size={64} color={profileStyles.TEXT_MUTED || '#7A5368'} />
+            <Text style={[profileStyles.sectionTitle, styles.emptyTitle]}>Chưa có giao dịch</Text>
+            <Text style={{ color: profileStyles.TEXT_MUTED || '#7A5368', ...styles.emptyDesc }}>
+              Giao dịch đầu tiên sẽ xuất hiện ở đây!
+            </Text>
           </View>
         }
       />
@@ -159,51 +174,43 @@ const TransactionHistoryScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
+    // Background already handled by profileStyles.container
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#E8E8E8',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    alignItems: 'flex-start',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: profileStyles.BORDER || '#FFD6E8',
+    // Shadow from profileStyles.header
   },
   backButton: {
-    padding: 4,
+    padding: 6,
   },
   headerTitle: {
     flex: 1,
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111',
+    fontSize: 20,
+    fontWeight: '800',
     textAlign: 'center',
+    marginRight: -24,
   },
   headerSpacer: {
     width: 24,
   },
   listContent: {
-    padding: 16,
+    // Padding handled in contentContainerStyle
   },
   transactionItem: {
-    backgroundColor: '#FFF',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: profileStyles.BORDER || '#FFD6E8',
     flexDirection: 'row',
     alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    marginHorizontal: 4,
+    marginBottom: 12,
+    // Shadow from profileStyles.utilityItem
   },
   transactionIconContainer: {
     marginRight: 12,
@@ -212,49 +219,41 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   transactionType: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#EE4D2D',
     marginBottom: 4,
   },
   transactionDescription: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 13,
     marginBottom: 4,
   },
   transactionDate: {
     fontSize: 12,
-    color: '#999',
   },
   transactionAmountContainer: {
     alignItems: 'flex-end',
   },
   transactionAmount: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     marginBottom: 4,
+    textAlign: 'right',
   },
   transactionStatus: {
     fontSize: 12,
-    color: '#28A745',
     fontWeight: '500',
   },
   emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 40,
+    padding: 40,
+    // BorderRadius and other from profileStyles.section
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyDesc: {
     fontSize: 14,
-    color: '#666',
     textAlign: 'center',
   },
   center: {
@@ -265,7 +264,6 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 8,
     fontSize: 16,
-    color: '#666',
   },
 });
 

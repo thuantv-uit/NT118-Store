@@ -8,6 +8,7 @@ import {
   FlatList,
   SafeAreaView,
   ScrollView,
+  StyleSheet,
   Switch,
   Text,
   TextInput,
@@ -17,6 +18,7 @@ import {
 // import Icon from 'react-native-vector-icons/Ionicons';
 import { Ionicons } from 'react-native-vector-icons';
 import { API_URL } from '../../../constants/api';
+import { styles as profileStyles } from '../_styles/ProfileStyles'; // Adjust path as needed
 
 const API_BASE_URL = API_URL;
 
@@ -126,130 +128,176 @@ export default function DeliveryScreen() {
 
   // Render address item
   const renderAddressItem = ({ item }) => (
-    <View style={{ padding: 15, borderBottomWidth: 1, borderBottomColor: '#eee' }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-        <Text style={{ fontWeight: 'bold' }}>{item.name || 'Địa chỉ mặc định'}</Text>
-        {item.is_default && <Text style={{ color: 'green', fontSize: 12 }}>Mặc định</Text>}
+    <View style={[profileStyles.infoCard, styles.addressItem]}>
+      <View style={[profileStyles.infoRow, { justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 5 }]}>
+        <Text style={[profileStyles.infoValue, { fontWeight: '700' }]}>{item.name || 'Địa chỉ mặc định'}</Text>
+        {item.is_default && (
+          <View style={[profileStyles.infoBadge, { backgroundColor: profileStyles.PRIMARY_LIGHT || '#FFE6F0', color: profileStyles.PRIMARY_DARK || '#C2185B' }]}>
+            <Text style={{ color: profileStyles.PRIMARY_DARK || '#C2185B', fontWeight: '700', fontSize: 12 }}>Mặc định</Text>
+          </View>
+        )}
       </View>
-      <Text>{item.address}</Text>
-      <Text style={{ fontSize: 12, color: '#666' }}>{item.city}, {item.state}, {item.country} - {item.zipcode}</Text>
+      <Text style={[profileStyles.infoValue, { fontSize: 14 }]}>{item.address}</Text>
+      <Text style={[profileStyles.infoLabel, { fontSize: 13 }]}>{item.city}, {item.state}, {item.country} - {item.zipcode}</Text>
       <TouchableOpacity
         onPress={() => handleDeleteAddress(item.id)}
-        style={{ marginTop: 10, padding: 5, backgroundColor: '#ffdddd', borderRadius: 5, alignSelf: 'flex-start' }}
+        style={[
+          profileStyles.secondaryButton, 
+          { 
+            backgroundColor: profileStyles.PRIMARY_LIGHT || '#FFE6F0',
+            borderColor: profileStyles.PRIMARY || '#FF4D79',
+            marginTop: 10,
+            alignSelf: 'flex-start',
+            paddingHorizontal: 12,
+            paddingVertical: 6
+          }
+        ]}
         disabled={deletingId === item.id}
       >
-        <Text style={{ color: 'red' }}>Xóa</Text>
+        <Text style={{ color: profileStyles.PRIMARY || '#FF4D79', fontWeight: '600' }}>Xóa</Text>
       </TouchableOpacity>
     </View>
   );
 
   if (loading && addresses.length === 0) {
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#6D4C41" />
-        <Text>Đang tải địa chỉ...</Text>
+      <SafeAreaView style={[profileStyles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={profileStyles.PRIMARY || '#FF4D79'} />
+        <Text style={{ color: profileStyles.TEXT || '#2A0E23', marginTop: 8 }}>Đang tải địa chỉ...</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+    <SafeAreaView style={profileStyles.container}>
       <View style={{ flex: 1 }}>
-        {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', padding: 15, backgroundColor: '#f8f8f8', borderBottomWidth: 1, borderBottomColor: '#ddd' }}>
-          <TouchableOpacity onPress={handleBack} style={{ marginRight: 10 }}>
-            <Ionicons name="arrow-back" size={24} color="#6D4C41" />
+        {/* Header - Adapted from profileStyles.header */}
+        <View style={[profileStyles.header, { paddingVertical: 16 }]}>
+          <TouchableOpacity onPress={handleBack} style={[profileStyles.backButtonContainer, { marginRight: 10 }]}>
+            <Ionicons name="arrow-back" size={24} color={profileStyles.PRIMARY || '#FF4D79'} />
           </TouchableOpacity>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1 }}>Thông tin giao hàng</Text>
+          <Text style={[profileStyles.updateTitle, { flex: 1 }]}>Thông tin giao hàng</Text>
           <View style={{ width: 24 }} />
         </View>
 
-        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
           {error && (
-            <View style={{ padding: 15, backgroundColor: '#ffdddd', margin: 10, borderRadius: 5 }}>
-              <Text style={{ color: 'red' }}>{error}</Text>
+            <View style={[profileStyles.section, { backgroundColor: profileStyles.PRIMARY_LIGHT || '#FFE6F0', marginTop: profileStyles.screenPadding || 16 }]}>
+              <Text style={{ color: profileStyles.PRIMARY_DARK || '#C2185B' }}>{error}</Text>
               <TouchableOpacity onPress={fetchAddresses} style={{ marginTop: 5 }}>
-                <Text style={{ color: 'blue' }}>Thử lại</Text>
+                <Text style={{ color: profileStyles.PRIMARY || '#FF4D79' }}>Thử lại</Text>
               </TouchableOpacity>
             </View>
           )}
 
-          {/* Danh sách địa chỉ */}
-          <View style={{ padding: 15 }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Danh sách địa chỉ</Text>
+          {/* Danh sách địa chỉ - Using section */}
+          <View style={[profileStyles.section, { marginTop: profileStyles.screenPadding || 16 }]}>
+            <Text style={profileStyles.sectionTitle}>Danh sách địa chỉ</Text>
             {addresses.length === 0 ? (
-              <Text style={{ color: '#999', textAlign: 'center', marginTop: 20 }}>Chưa có địa chỉ nào. Thêm địa chỉ mới bên dưới!</Text>
+              <View style={styles.emptyContainer}>
+                <Text style={{ color: profileStyles.TEXT_MUTED || '#7A5368', textAlign: 'center', marginTop: 20 }}>
+                  Chưa có địa chỉ nào. Thêm địa chỉ mới bên dưới!
+                </Text>
+              </View>
             ) : (
               <FlatList
                 data={addresses}
                 renderItem={renderAddressItem}
                 keyExtractor={(item) => item.id.toString()}
                 scrollEnabled={false}
+                style={{ marginTop: 12 }}
               />
             )}
           </View>
 
-          {/* Form thêm địa chỉ mới */}
-          <View style={{ padding: 15, borderTopWidth: 1, borderTopColor: '#eee' }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Thêm địa chỉ mới</Text>
-            <TextInput
-              style={{ borderWidth: 1, borderColor: '#ddd', padding: 10, borderRadius: 5, marginBottom: 10 }}
-              placeholder="Tên địa chỉ (tùy chọn)"
-              value={formData.name}
-              onChangeText={(value) => handleFormChange('name', value)}
-            />
-            <TextInput
-              style={{ borderWidth: 1, borderColor: '#ddd', padding: 10, borderRadius: 5, marginBottom: 10 }}
-              placeholder="Địa chỉ *"
-              value={formData.address}
-              onChangeText={(value) => handleFormChange('address', value)}
-            />
-            <TextInput
-              style={{ borderWidth: 1, borderColor: '#ddd', padding: 10, borderRadius: 5, marginBottom: 10 }}
-              placeholder="Thành phố *"
-              value={formData.city}
-              onChangeText={(value) => handleFormChange('city', value)}
-            />
-            <TextInput
-              style={{ borderWidth: 1, borderColor: '#ddd', padding: 10, borderRadius: 5, marginBottom: 10 }}
-              placeholder="Tỉnh/Thành *"
-              value={formData.state}
-              onChangeText={(value) => handleFormChange('state', value)}
-            />
-            <TextInput
-              style={{ borderWidth: 1, borderColor: '#ddd', padding: 10, borderRadius: 5, marginBottom: 10 }}
-              placeholder="Quốc gia *"
-              value={formData.country}
-              onChangeText={(value) => handleFormChange('country', value)}
-            />
-            <TextInput
-              style={{ borderWidth: 1, borderColor: '#ddd', padding: 10, borderRadius: 5, marginBottom: 10 }}
-              placeholder="Mã bưu điện *"
-              value={formData.zipcode}
-              onChangeText={(value) => handleFormChange('zipcode', value)}
-              keyboardType="numeric"
-            />
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
-              <Text>Đặt làm mặc định</Text>
+          {/* Form thêm địa chỉ mới - Using section */}
+          <View style={[profileStyles.section, { borderTopWidth: 1, borderTopColor: profileStyles.BORDER || '#FFD6E8' }]}>
+            <Text style={profileStyles.sectionTitle}>Thêm địa chỉ mới</Text>
+            <View style={profileStyles.formGroup}>
+              <Text style={profileStyles.label}>Tên địa chỉ (tùy chọn)</Text>
+              <TextInput
+                style={profileStyles.input}
+                placeholder="Tên địa chỉ (tùy chọn)"
+                value={formData.name}
+                onChangeText={(value) => handleFormChange('name', value)}
+                placeholderTextColor={profileStyles.TEXT_MUTED || '#7A5368'}
+              />
+            </View>
+            <View style={profileStyles.formGroup}>
+              <Text style={profileStyles.label}>Địa chỉ *</Text>
+              <TextInput
+                style={profileStyles.input}
+                placeholder="Địa chỉ *"
+                value={formData.address}
+                onChangeText={(value) => handleFormChange('address', value)}
+                placeholderTextColor={profileStyles.TEXT_MUTED || '#7A5368'}
+              />
+            </View>
+            <View style={profileStyles.formGroup}>
+              <Text style={profileStyles.label}>Thành phố *</Text>
+              <TextInput
+                style={profileStyles.input}
+                placeholder="Thành phố *"
+                value={formData.city}
+                onChangeText={(value) => handleFormChange('city', value)}
+                placeholderTextColor={profileStyles.TEXT_MUTED || '#7A5368'}
+              />
+            </View>
+            <View style={profileStyles.formGroup}>
+              <Text style={profileStyles.label}>Tỉnh/Thành *</Text>
+              <TextInput
+                style={profileStyles.input}
+                placeholder="Tỉnh/Thành *"
+                value={formData.state}
+                onChangeText={(value) => handleFormChange('state', value)}
+                placeholderTextColor={profileStyles.TEXT_MUTED || '#7A5368'}
+              />
+            </View>
+            <View style={profileStyles.formGroup}>
+              <Text style={profileStyles.label}>Quốc gia *</Text>
+              <TextInput
+                style={profileStyles.input}
+                placeholder="Quốc gia *"
+                value={formData.country}
+                onChangeText={(value) => handleFormChange('country', value)}
+                placeholderTextColor={profileStyles.TEXT_MUTED || '#7A5368'}
+              />
+            </View>
+            <View style={profileStyles.formGroup}>
+              <Text style={profileStyles.label}>Mã bưu điện *</Text>
+              <TextInput
+                style={profileStyles.input}
+                placeholder="Mã bưu điện *"
+                value={formData.zipcode}
+                onChangeText={(value) => handleFormChange('zipcode', value)}
+                keyboardType="numeric"
+                placeholderTextColor={profileStyles.TEXT_MUTED || '#7A5368'}
+              />
+            </View>
+            <View style={[profileStyles.rowInput, { marginBottom: 18 }]}>
+              <Text style={profileStyles.label}>Đặt làm mặc định</Text>
               <Switch
                 value={formData.is_default}
                 onValueChange={(value) => handleFormChange('is_default', value)}
+                trackColor={{ true: profileStyles.PRIMARY || '#FF4D79' }}
+                thumbColor="#FFF"
               />
             </View>
             <TouchableOpacity
-              style={{
-                backgroundColor: '#6D4C41',
-                padding: 15,
-                borderRadius: 5,
-                alignItems: 'center',
-              }}
+              style={[
+                profileStyles.primaryButton, 
+                { 
+                  backgroundColor: profileStyles.PRIMARY || '#FF4D79',
+                  paddingVertical: 16
+                }
+              ]}
               onPress={handleCreateAddress}
               disabled={creating}
             >
               {creating ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color="#FFF" />
               ) : (
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Thêm địa chỉ</Text>
+                <Text style={profileStyles.primaryButtonText}>Thêm địa chỉ</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -258,3 +306,22 @@ export default function DeliveryScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  addressItem: {
+    padding: 16,
+    borderRadius: 14,
+    marginBottom: 12,
+    shadowColor: profileStyles.PRIMARY_LIGHT || '#FFE6F0',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: profileStyles.BORDER || '#FFD6E8',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+});

@@ -25,15 +25,19 @@ if (USE_LOCAL_DB) {
   }
 
   pool = new Pool({ connectionString });
-
   sql = async (strings, ...values) => {
-    const text = strings.reduce(
-      (acc, str, i) => acc + str + (values[i] ?? ""),
-      ""
-    );
-    return pool.query(text);
+    // Xây dựng query với placeholder $1, $2, ...
+    let text = '';
+    let index = 1;
+    for (let i = 0; i < strings.length; i++) {
+      text += strings[i];
+      if (i < values.length) {
+        text += `$${index++}`;
+      }
+    }
+    const result = await pool.query({ text, values });
+    return result.rows;
   };
-
   console.log(
     `🗄️ Using LOCAL PostgreSQL (${IS_DOCKER ? "docker" : "localhost"})`
   );

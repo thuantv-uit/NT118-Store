@@ -17,6 +17,7 @@ import {
   View,
 } from 'react-native';
 import { API_URL } from '../../../constants/api';
+import { styles as profileStyles } from '../_styles/ProfileStyles';
 
 const BankAccountScreen = () => {
   const { user } = useUser();
@@ -104,18 +105,18 @@ const BankAccountScreen = () => {
   };
 
   const renderBankAccount = ({ item }) => (
-    <View style={styles.bankItem}>
+    <View style={[profileStyles.infoRow, styles.bankItem]}>
       <View style={styles.bankHeader}>
-        <MaterialIcons name="account-balance" size={20} color="#EE4D2D" />
+        <MaterialIcons name="account-balance" size={20} color={profileStyles.PRIMARY || '#FF4D79'} />
         <View style={styles.bankInfo}>
-          <Text style={styles.bankName}>{item.bank_name}</Text>
-          <Text style={styles.cardNumber}>
+          <Text style={[profileStyles.infoValue, styles.bankName]}>{item.bank_name}</Text>
+          <Text style={[profileStyles.infoLabel, styles.cardNumber]}>
             **** **** **** {item.card_number.slice(-4)}
           </Text>
         </View>
       </View>
       <View style={styles.bankFooter}>
-        <Text style={styles.createdAt}>
+        <Text style={[profileStyles.infoLabel, styles.createdAt]}>
           Tạo: {new Date(item.created_at).toLocaleDateString('vi-VN')}
         </Text>
         {item.is_default && (
@@ -129,22 +130,22 @@ const BankAccountScreen = () => {
 
   if (!user) {
     return (
-      <View style={styles.center}>
-        <Text>Đang tải user...</Text>
+      <View style={[profileStyles.center || styles.center, styles.center]}>
+        <Text style={{ color: profileStyles.TEXT || '#2A0E23' }}>Đang tải user...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <View style={[profileStyles.container, styles.container]}>
+      <StatusBar barStyle="dark-content" backgroundColor={profileStyles.CARD || '#FFFFFF'} />
       
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <MaterialIcons name="arrow-back" size={24} color="#EE4D2D" />
+      {/* Header - Adapted from profileStyles.header */}
+      <View style={[profileStyles.header, styles.header]}>
+        <TouchableOpacity style={[profileStyles.backButtonContainer, styles.backButton]} onPress={handleBack}>
+          <MaterialIcons name="arrow-back" size={24} color={profileStyles.PRIMARY || '#FF4D79'} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Liên kết ngân hàng</Text>
+        <Text style={[profileStyles.updateTitle || styles.headerTitle, styles.headerTitle]}>Liên kết ngân hàng</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -152,81 +153,98 @@ const BankAccountScreen = () => {
         style={styles.scrollView} 
         contentContainerStyle={styles.content}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#EE4D2D']} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh} 
+            colors={[profileStyles.PRIMARY || '#FF4D79']} 
+          />
         }
       >
-        {/* Card thêm tài khoản */}
-        <View style={styles.card}>
+        {/* Card thêm tài khoản - Using section style */}
+        <View style={[profileStyles.section, styles.card]}>
           <View style={styles.cardHeader}>
-            <MaterialIcons name="add" size={28} color="#EE4D2D" />
-            <Text style={styles.cardTitle}>Thêm tài khoản ngân hàng</Text>
+            <MaterialIcons name="add" size={28} color={profileStyles.PRIMARY || '#FF4D79'} />
+            <Text style={[profileStyles.sectionTitle, styles.cardTitle]}>Thêm tài khoản ngân hàng</Text>
           </View>
 
-          {/* Input Bank Name */}
+          {/* Input Bank Name - Adapted from profileStyles.input */}
           <View style={styles.inputContainer}>
             <View style={styles.inputHeader}>
-              <MaterialIcons name="account-balance" size={20} color="#EE4D2D" />
-              <Text style={styles.inputLabel}>Tên ngân hàng</Text>
+              <MaterialIcons name="account-balance" size={20} color={profileStyles.PRIMARY || '#FF4D79'} />
+              <Text style={[profileStyles.label, styles.inputLabel]}>Tên ngân hàng</Text>
             </View>
             <TextInput
-              style={styles.input}
+              style={[profileStyles.input, styles.input]}
               value={bankName}
               onChangeText={setBankName}
               placeholder="Ví dụ: Vietcombank"
-              placeholderTextColor="#999"
+              placeholderTextColor={profileStyles.TEXT_MUTED || '#7A5368'}
             />
           </View>
 
-          {/* Input Card Number */}
+          {/* Input Card Number - Adapted from profileStyles.input */}
           <View style={styles.inputContainer}>
             <View style={styles.inputHeader}>
-              <MaterialIcons name="credit-card" size={20} color="#EE4D2D" />
-              <Text style={styles.inputLabel}>Số thẻ</Text>
+              <MaterialIcons name="credit-card" size={20} color={profileStyles.PRIMARY || '#FF4D79'} />
+              <Text style={[profileStyles.label, styles.inputLabel]}>Số thẻ</Text>
             </View>
             <TextInput
-              style={styles.input}
+              style={[profileStyles.input, styles.input]}
               value={cardNumber}
               onChangeText={setCardNumber}
               placeholder="Ví dụ: 1234-5678-9012-3456"
-              placeholderTextColor="#999"
+              placeholderTextColor={profileStyles.TEXT_MUTED || '#7A5368'}
               keyboardType="numeric"
             />
           </View>
 
           {/* Switch Default */}
           <View style={styles.switchContainer}>
-            <Text style={styles.switchLabel}>Đặt làm mặc định</Text>
-            <Switch value={isDefault} onValueChange={setIsDefault} trackColor={{ true: '#EE4D2D' }} />
+            <Text style={[profileStyles.label, styles.switchLabel]}>Đặt làm mặc định</Text>
+            <Switch 
+              value={isDefault} 
+              onValueChange={setIsDefault} 
+              trackColor={{ true: profileStyles.PRIMARY || '#FF4D79' }} 
+              thumbColor="#FFF"
+            />
           </View>
 
           <TouchableOpacity
-            style={[styles.primaryButton, loading && styles.disabledButton]}
+            style={[
+              profileStyles.primaryButton, 
+              styles.primaryButton, 
+              loading && styles.disabledButton
+            ]}
             onPress={handleCreateBankAccount}
             disabled={loading}
           >
-            <Text style={styles.buttonText}>
+            <Text style={[profileStyles.primaryButtonText, styles.buttonText]}>
               {loading ? 'Đang tạo...' : 'Liên kết ngân hàng'}
             </Text>
           </TouchableOpacity>
 
-          {loading && <ActivityIndicator size="large" color="#EE4D2D" style={styles.loader} />}
+          {loading && <ActivityIndicator size="large" color={profileStyles.PRIMARY || '#FF4D79'} style={styles.loader} />}
         </View>
 
-        {/* Empty state */}
+        {/* Empty state - Adapted from section */}
         {bankAccounts.length === 0 && !loading && (
-          <View style={styles.emptyCard}>
-            <MaterialIcons name="credit-card" size={64} color="#CCC" />
-            <Text style={styles.emptyTitle}>Chưa liên kết ngân hàng</Text>
-            <Text style={styles.emptyDesc}>Thêm thẻ để thanh toán nhanh hơn nhé!</Text>
+          <View style={[profileStyles.section, styles.emptyCard]}>
+            <MaterialIcons name="credit-card" size={64} color={profileStyles.TEXT_MUTED || '#7A5368'} />
+            <Text style={[profileStyles.sectionTitle, styles.emptyTitle]}>Chưa liên kết ngân hàng</Text>
+            <Text style={{ color: profileStyles.TEXT_MUTED || '#7A5368', ...styles.emptyDesc }}>
+              Thêm thẻ để thanh toán nhanh hơn nhé!
+            </Text>
           </View>
         )}
 
-        {/* List bank accounts */}
+        {/* List bank accounts - Using section style */}
         {bankAccounts.length > 0 && (
-          <View style={styles.card}>
+          <View style={[profileStyles.section, styles.card]}>
             <View style={styles.cardHeader}>
-              <MaterialIcons name="list" size={28} color="#EE4D2D" />
-              <Text style={styles.cardTitle}>Tài khoản đã liên kết ({bankAccounts.length})</Text>
+              <MaterialIcons name="list" size={28} color={profileStyles.PRIMARY || '#FF4D79'} />
+              <Text style={[profileStyles.sectionTitle, styles.cardTitle]}>
+                Tài khoản đã liên kết ({bankAccounts.length})
+              </Text>
             </View>
             <FlatList
               data={bankAccounts}
@@ -235,7 +253,7 @@ const BankAccountScreen = () => {
               scrollEnabled={false}
               style={styles.list}
             />
-            {fetchLoading && <ActivityIndicator size="small" color="#EE4D2D" />}
+            {fetchLoading && <ActivityIndicator size="small" color={profileStyles.PRIMARY || '#FF4D79'} />}
           </View>
         )}
       </ScrollView>
@@ -245,31 +263,23 @@ const BankAccountScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
+    // Background already handled by profileStyles.container
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#E8E8E8',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: profileStyles.BORDER || '#FFD6E8',
+    // Shadow from profileStyles.header
   },
   backButton: {
-    padding: 4,
+    padding: 6,
   },
   headerTitle: {
     flex: 1,
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111',
+    fontSize: 20,
+    fontWeight: '800',
     textAlign: 'center',
     marginRight: -24,
   },
@@ -280,37 +290,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 16,
+    padding: profileStyles.screenPadding || 16,
   },
   card: {
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 24,
-    marginBottom: 16,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    padding: 16,
+    marginBottom: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    // Shadow and other from profileStyles.section
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   cardTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111',
-    marginLeft: 12,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 24,
+    marginLeft: 10,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 18,
   },
   inputHeader: {
     flexDirection: 'row',
@@ -318,18 +316,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   inputLabel: {
-    fontSize: 14,
-    color: '#333',
+    marginLeft: 10,
     fontWeight: '600',
-    marginLeft: 8,
   },
   input: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#E8E8E8',
-    paddingVertical: 8,
-    paddingLeft: 32, // Để chừa chỗ icon nếu cần, nhưng icon ở header
-    fontSize: 16,
-    color: '#111',
+    padding: 12,
+    // Border and other from profileStyles.input
   },
   switchContainer: {
     flexDirection: 'row',
@@ -338,63 +330,47 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E8E8E8',
+    borderBottomColor: profileStyles.BORDER || '#FFD6E8',
   },
   switchLabel: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '600',
+    fontSize: 14,
   },
   primaryButton: {
-    backgroundColor: '#EE4D2D',
-    paddingVertical: 20,
-    borderRadius: 8,
+    paddingVertical: 12,
+    borderRadius: 12,
     alignItems: 'center',
-    minHeight: 56, // Sử dụng minHeight thay vì height fixed
-    width: '100%', // Full width để text không bị cắt ngang
+    minHeight: 56,
+    width: '100%',
     justifyContent: 'center',
+    // Background and other from profileStyles.primaryButton
   },
   disabledButton: {
-    backgroundColor: '#DDD',
+    backgroundColor: profileStyles.BORDER || '#FFD6E8',
   },
   buttonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '700',
-    lineHeight: 20, // Tăng lineHeight để tránh cắt dọc
+    fontSize: 15,
+    lineHeight: 20,
     textAlign: 'center',
   },
   loader: {
     marginTop: 16,
   },
   emptyCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 12,
     padding: 40,
     alignItems: 'center',
-    marginBottom: 16,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    // BorderRadius and other from profileStyles.section
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyDesc: {
     fontSize: 14,
-    color: '#666',
     textAlign: 'center',
   },
   bankItem: {
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F8F8F8',
+    paddingVertical: 10,
+    // Border from profileStyles.infoRow
   },
   bankHeader: {
     flexDirection: 'row',
@@ -406,13 +382,11 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   bankName: {
-    fontSize: 16,
     fontWeight: '700',
-    color: '#111',
+    marginBottom: 2,
   },
   cardNumber: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 13,
     marginTop: 2,
   },
   bankFooter: {
@@ -421,11 +395,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   createdAt: {
-    fontSize: 12,
-    color: '#999',
+    fontSize: 13,
   },
   defaultBadge: {
-    backgroundColor: '#EE4D2D',
+    backgroundColor: profileStyles.PRIMARY || '#FF4D79',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -433,7 +406,7 @@ const styles = StyleSheet.create({
   defaultText: {
     color: '#FFF',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   list: {
     maxHeight: 300,

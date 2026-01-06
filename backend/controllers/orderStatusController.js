@@ -134,7 +134,7 @@ export async function getOrderStatusBySellerId(req, res) {
   }
 }
 
-// Get order_status by buyer_id (mới thêm: lấy tất cả statuses của một buyer)
+// Get order_status by buyer_id (lấy tất cả statuses của một buyer)
 export async function getOrderStatusByBuyerId(req, res) {
   try {
     const { buyer_id } = req.params;
@@ -144,20 +144,27 @@ export async function getOrderStatusByBuyerId(req, res) {
     }
 
     const orderStatuses = await sql`
-      SELECT id, seller_id, buyer_id, product_id, order_id, quantity, status, current_location, created_at, updated_at
+      SELECT
+        id,
+        seller_id,
+        buyer_id,
+        product_id,
+        order_id,
+        quantity,
+        status,
+        current_location,
+        created_at,
+        updated_at
       FROM "order_status"
       WHERE buyer_id = ${buyer_id}
       ORDER BY created_at DESC
     `;
 
-    if (orderStatuses.length === 0) {
-      return res.status(404).json({ message: "No order status found for this buyer" });
-    }
-
-    res.status(200).json(orderStatuses);
+    // ✅ Luôn trả về 200 + mảng (kể cả rỗng)
+    return res.status(200).json(orderStatuses);
   } catch (error) {
     console.error("Error getting order status by buyer_id:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 }
 
