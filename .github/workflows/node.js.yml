@@ -137,7 +137,7 @@ jobs:
 
 
 # ================== CD BACKEND ==================
-deploy-backend:
+  deploy-backend:
     needs: [changes, test-backend]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
@@ -157,7 +157,7 @@ deploy-backend:
           docker push thuan410/nt118-app-backend:${{ github.sha }}
 
 # ================== CD MOBILE ==================
-deploy-mobile:
+  deploy-mobile:
     needs: [changes, test-mobile]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.mobile == 'true' }}
     runs-on: ubuntu-latest
