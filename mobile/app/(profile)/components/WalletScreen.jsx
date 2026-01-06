@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { API_URL } from '../../../constants/api';
+import { styles as profileStyles } from '../_styles/ProfileStyles';
 
 // Hàm format VND (sử dụng Intl.NumberFormat)
 const formatVND = (amount) => {
@@ -37,16 +38,17 @@ const WalletScreen = () => {
 
   const fetchWalletData = async () => {
     if (!user?.id) return;
+
     setFetchLoading(true);
     try {
       const response = await fetch(`${BASE_URL}/wallets/${user.id}`);
       if (response.ok) {
         const data = await response.json();
-        setWalletData(data);
-        setWalletCreated(true);
+
+        setWalletData(data);              // data có thể là null
+        setWalletCreated(!!data);         // ✅ chỉ true nếu có wallet
       } else {
-        const errorData = await response.json();
-        Alert.alert('Lỗi', errorData.message || 'Không tìm thấy wallet');
+        Alert.alert('Lỗi', 'Không thể lấy dữ liệu ví');
       }
     } catch (error) {
       console.error('Error fetching wallet:', error);
@@ -135,22 +137,22 @@ const WalletScreen = () => {
 
   if (!user) {
     return (
-      <View style={styles.center}>
-        <Text>Đang tải user...</Text>
+      <View style={profileStyles.center || styles.center}>
+        <Text style={{ color: profileStyles.TEXT || '#2A0E23' }}>Đang tải user...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <View style={[profileStyles.container, styles.container]}>
+      <StatusBar barStyle="dark-content" backgroundColor={profileStyles.CARD || '#FFFFFF'} />
       
-      {/* Header giống Shopee */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <MaterialIcons name="arrow-back" size={24} color="#EE4D2D" />
+      {/* Header - Adapted from profileStyles.header */}
+      <View style={[profileStyles.header, styles.header]}>
+        <TouchableOpacity style={[profileStyles.backButtonContainer, styles.backButton]} onPress={handleBack}>
+          <MaterialIcons name="arrow-back" size={24} color={profileStyles.PRIMARY || '#FF4D79'} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Ví của tôi</Text>
+        <Text style={[profileStyles.updateTitle || styles.headerTitle, styles.headerTitle]}>Ví của tôi</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -158,86 +160,126 @@ const WalletScreen = () => {
         style={styles.scrollView} 
         contentContainerStyle={styles.content}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#EE4D2D']} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh} 
+            colors={[profileStyles.PRIMARY || '#FF4D79']} 
+          />
         }
       >
-        {/* Card tạo ví */}
-        <View style={styles.card}>
+        {/* Card tạo ví - Using section style */}
+        <View style={[profileStyles.section, styles.card]}>
           <View style={styles.cardHeader}>
-            <MaterialIcons name="account-balance-wallet" size={28} color="#EE4D2D" />
-            <Text style={styles.cardTitle}>Tạo Ví Mới</Text>
+            <MaterialIcons name="account-balance-wallet" size={28} color={profileStyles.PRIMARY || '#FF4D79'} />
+            <Text style={[profileStyles.sectionTitle, styles.cardTitle]}>Tạo Ví Mới</Text>
           </View>
 
           <TouchableOpacity
-            style={[styles.primaryButton, (loading || walletCreated) && styles.disabledButton]}
+            style={[
+              profileStyles.primaryButton, 
+              styles.primaryButton, 
+              (loading || walletCreated) && styles.disabledButton
+            ]}
             onPress={handleCreateWallet}
             disabled={loading || walletCreated}
           >
-            <Text style={styles.buttonText}>
+            <Text style={[profileStyles.primaryButtonText, styles.buttonText]}>
               {walletCreated ? 'Ví đã tạo!' : 'Tạo Ví'}
             </Text>
           </TouchableOpacity>
 
-          {loading && <ActivityIndicator size="large" color="#EE4D2D" style={styles.loader} />}
+          {loading && <ActivityIndicator size="large" color={profileStyles.PRIMARY || '#FF4D79'} style={styles.loader} />}
 
           <TouchableOpacity 
-            style={styles.secondaryButton} 
+            style={[
+              profileStyles.secondaryButton, 
+              styles.secondaryButton
+            ]} 
             onPress={handleLinkBankAccount}
           >
-            <Text style={styles.secondaryButtonText}>
+            <Text style={[profileStyles.secondaryButtonText, styles.secondaryButtonText]}>
               Liên kết ngân hàng
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Empty state nếu chưa có data */}
+        {/* Empty state nếu chưa có data - Adapted from section */}
         {!walletData && !loading && (
-          <View style={styles.emptyCard}>
-            <MaterialIcons name="wallet" size={64} color="#CCC" />
-            <Text style={styles.emptyTitle}>Chưa có ví</Text>
-            <Text style={styles.emptyDesc}>Tạo ví để bắt đầu quản lý tiền nhé!</Text>
+          <View style={[profileStyles.section, styles.emptyCard]}>
+            <MaterialIcons name="wallet" size={64} color={profileStyles.TEXT_MUTED || '#7A5368'} />
+            <Text style={[profileStyles.sectionTitle, styles.emptyTitle]}>Chưa có ví</Text>
+            <Text style={{ color: profileStyles.TEXT_MUTED || '#7A5368', ...styles.emptyDesc }}>
+              Tạo ví để bắt đầu quản lý tiền nhé!
+            </Text>
           </View>
         )}
 
-        {/* Hiển thị data */}
+        {/* Hiển thị data - Using section style */}
         {walletData && (
-          <View style={styles.card}>
+          <View style={[profileStyles.section, styles.card]}>
             <View style={styles.cardHeader}>
-              <MaterialIcons name="account-balance-wallet" size={28} color="#EE4D2D" />
-              <Text style={styles.cardTitle}>Thông tin Ví</Text>
+              <MaterialIcons name="account-balance-wallet" size={28} color={profileStyles.PRIMARY || '#FF4D79'} />
+              <Text style={[profileStyles.sectionTitle, styles.cardTitle]}>Thông tin Ví</Text>
             </View>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Số dư</Text>
-              <Text style={styles.infoValue}>{formatVND(walletData.balance)}</Text>
+              <Text style={[styles.infoLabel, { color: profileStyles.TEXT_MUTED || '#7A5368' }]}>
+                Số dư
+              </Text>
+              <Text style={[styles.infoValue, { color: profileStyles.TEXT || '#2A0E23' }]}>
+                {formatVND(walletData.balance)}
+              </Text>
             </View>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Ngày tạo</Text>
-              <Text style={styles.infoValue}>{new Date(walletData.created_at).toLocaleDateString('vi-VN')}</Text>
+              <Text style={[styles.infoLabel, { color: profileStyles.TEXT_MUTED || '#7A5368' }]}>
+                Ngày tạo
+              </Text>
+              <Text style={[styles.infoValue, { color: profileStyles.TEXT || '#2A0E23' }]}>
+                {new Date(walletData.created_at).toLocaleDateString('vi-VN')}
+              </Text>
             </View>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Cập nhật lần cuối</Text>
-              <Text style={styles.infoValue}>{new Date(walletData.updated_at).toLocaleDateString('vi-VN')}</Text>
+              <Text style={[styles.infoLabel, { color: profileStyles.TEXT_MUTED || '#7A5368' }]}>
+                Cập nhật lần cuối
+              </Text>
+              <Text style={[styles.infoValue, { color: profileStyles.TEXT || '#2A0E23' }]}>
+                {new Date(walletData.updated_at).toLocaleDateString('vi-VN')}
+              </Text>
             </View>
 
-            {/* Button nạp/rút tiền chung */}
+            {/* Button nạp/rút tiền - Using primaryButton */}
             <TouchableOpacity
-              style={styles.depositWithdrawButton}
+              style={[
+                profileStyles.primaryButton, 
+                styles.depositWithdrawButton
+              ]}
               onPress={handleDepositWithdraw}
             >
               <MaterialIcons name="account-balance" size={20} color="#FFF" />
-              <Text style={styles.depositWithdrawButtonText}>Nạp/Rút tiền</Text>
+              <Text style={[profileStyles.primaryButtonText, styles.depositWithdrawButtonText]}>
+                Nạp/Rút tiền
+              </Text>
             </TouchableOpacity>
 
-            {/* Button lịch sử giao dịch mới */}
+            {/* Button lịch sử giao dịch - Using secondaryButton variant */}
             <TouchableOpacity
-              style={styles.historyButton}
+              style={[
+                profileStyles.secondaryButton, 
+                { 
+                  backgroundColor: profileStyles.TEXT_MUTED || '#7A5368',
+                  borderColor: profileStyles.TEXT_MUTED || '#7A5368',
+                  marginTop: 12,
+                  ...styles.historyButton
+                }
+              ]}
               onPress={handleTransactionHistory}
             >
               <MaterialIcons name="history" size={20} color="#FFF" />
-              <Text style={styles.historyButtonText}>Lịch sử giao dịch</Text>
+              <Text style={[profileStyles.primaryButtonText, styles.historyButtonText]}>
+                Lịch sử giao dịch
+              </Text>
             </TouchableOpacity>
 
-            {fetchLoading && <ActivityIndicator size="small" color="#EE4D2D" />}
+            {fetchLoading && <ActivityIndicator size="small" color={profileStyles.PRIMARY || '#FF4D79'} />}
           </View>
         )}
       </ScrollView>
@@ -247,31 +289,23 @@ const WalletScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
+    // Background already handled by profileStyles.container
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#E8E8E8',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: profileStyles.BORDER || '#FFD6E8',
+    // Shadow from profileStyles.header
   },
   backButton: {
     padding: 4,
   },
   headerTitle: {
     flex: 1,
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111',
+    fontSize: 20,
+    fontWeight: '800',
     textAlign: 'center',
     marginRight: -24, // Để cân bằng icon
   },
@@ -282,18 +316,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 16,
+    padding: profileStyles.screenPadding || 16,
   },
   card: {
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 24,
-    marginBottom: 16,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    padding: 16,
+    marginBottom: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    // Shadow and other from profileStyles.section
   },
   cardHeader: {
     flexDirection: 'row',
@@ -301,108 +331,72 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   cardTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111',
     marginLeft: 12,
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
-  },
-  description: {
-    fontSize: 16,
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 22,
-  },
   primaryButton: {
-    backgroundColor: '#EE4D2D',
-    paddingVertical: 20,
-    borderRadius: 8,
+    paddingVertical: 12,
+    borderRadius: 12,
     alignItems: 'center',
     marginBottom: 12,
-    minHeight: 56, // Sử dụng minHeight thay vì height fixed
-    width: '100%', // Full width để text không bị cắt ngang
+    minHeight: 56,
+    width: '100%',
     justifyContent: 'center',
+    // Background and other from profileStyles.primaryButton
   },
   disabledButton: {
-    backgroundColor: '#DDD',
+    backgroundColor: profileStyles.BORDER || '#FFD6E8',
   },
   buttonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '700',
-    lineHeight: 20, // Tăng lineHeight để tránh cắt dọc
+    fontSize: 15,
+    lineHeight: 20,
     textAlign: 'center',
   },
   secondaryButton: {
-    borderWidth: 1,
-    borderColor: '#EE4D2D',
-    paddingVertical: 18,
-    borderRadius: 8,
+    paddingVertical: 11,
+    borderRadius: 12,
     alignItems: 'center',
-    minHeight: 52, // Sử dụng minHeight thay vì height fixed
-    width: '100%', // Full width để text không bị cắt ngang
+    minHeight: 52,
+    width: '100%',
     justifyContent: 'center',
+    // Border and other from profileStyles.secondaryButton
   },
   secondaryButtonText: {
-    color: '#EE4D2D',
-    fontSize: 16,
-    fontWeight: '600',
-    lineHeight: 20, // Tăng lineHeight để tránh cắt dọc
+    fontSize: 15,
+    lineHeight: 20,
     textAlign: 'center',
   },
   loader: {
     marginTop: 16,
   },
   emptyCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 12,
     padding: 40,
     alignItems: 'center',
-    marginBottom: 16,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    // BorderRadius and other from profileStyles.section
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyDesc: {
     fontSize: 14,
-    color: '#666',
     textAlign: 'center',
   },
   infoItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#F8F8F8',
+    borderBottomColor: profileStyles.BORDER || '#FFD6E8',
   },
   infoLabel: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 13,
   },
   infoValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#111',
+    fontSize: 15,
+    textAlign: 'right',
   },
   // Style cho button nạp/rút tiền
   depositWithdrawButton: {
-    backgroundColor: '#EE4D2D',
-    paddingVertical: 16,
-    borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -410,25 +404,19 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   depositWithdrawButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15,
   },
   // Style cho button lịch sử giao dịch
   historyButton: {
-    backgroundColor: '#6C757D', // Màu xám cho secondary action
-    paddingVertical: 16,
-    borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     marginTop: 12,
+    paddingVertical: 12,
   },
   historyButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15,
   },
   center: {
     flex: 1,
