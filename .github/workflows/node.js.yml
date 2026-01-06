@@ -180,7 +180,10 @@ jobs:
       - name: Install EAS CLI
         run: npm install -g eas-cli
 
-      - name: EAS Build Android (APK + AAB)
+      - name: Set EAS Project ID
+        run: eas config --project-id ${{ secrets.EAS_PROJECT_ID }} --non-interactive
+
+      - name: EAS Build Android
         run: eas build --platform android --profile production --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
