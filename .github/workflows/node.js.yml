@@ -151,10 +151,10 @@ deploy-backend:
       - name: Build and Push Docker Image
         run: |
           cd backend
-          docker build -t yourusername/your-app-backend:latest .
-          docker build -t yourusername/your-app-backend:${{ github.sha }} .
-          docker push yourusername/your-app-backend:latest
-          docker push yourusername/your-app-backend:${{ github.sha }}
+          docker build -t thuan410/nt118-app-backend:latest .
+          docker build -t thuan410/nt118-app-backend:${{ github.sha }} .
+          docker push thuan410/nt118-app-backend:latest
+          docker push thuan410/nt118-app-backend:${{ github.sha }}
 
 # ================== CD MOBILE ==================
 deploy-mobile:
