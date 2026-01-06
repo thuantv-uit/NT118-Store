@@ -178,20 +178,30 @@ export async function getOrderStatusByShipperId(req, res) {
     }
 
     const orderStatuses = await sql`
-      SELECT id, seller_id, buyer_id, product_id, order_id, variant_id, quantity, status, shipper_id, current_location, created_at, updated_at
+      SELECT 
+        id,
+        seller_id,
+        buyer_id,
+        product_id,
+        order_id,
+        variant_id,
+        quantity,
+        status,
+        shipper_id,
+        current_location,
+        created_at,
+        updated_at
       FROM "order_status"
       WHERE shipper_id = ${shipper_id}
       ORDER BY created_at DESC
     `;
 
-    if (orderStatuses.length === 0) {
-      return res.status(404).json({ message: "No order status found for this shipper" });
-    }
+    // ✅ Luôn trả về 200 + array (kể cả rỗng)
+    return res.status(200).json(orderStatuses);
 
-    res.status(200).json(orderStatuses);
   } catch (error) {
     console.error("Error getting order status by shipper_id:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 }
 
