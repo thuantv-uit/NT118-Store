@@ -161,40 +161,26 @@ jobs:
     needs: [changes, test-mobile]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.mobile == 'true' }}
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./mobile
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node & Java
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
           cache-dependency-path: mobile/package-lock.json
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-      - name: Install Dependencies
-        working-directory: ./mobile
+
+      - name: Install dependencies
         run: npm ci
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('mobile/android/gradle/wrapper/gradle-wrapper.properties') }}
-      - name: Build Release APK & AAB
-        working-directory: ./mobile/android
-        run: |
-          ./gradlew assembleRelease
-          ./gradlew bundleRelease
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mobile-app-apk
-          path: mobile/android/app/build/outputs/apk/release/app-release.apk
-      - name: Upload AAB Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mobile-app-aab
-          path: mobile/android/app/build/outputs/bundle/release/app-release.aab
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: EAS Build Android (APK + AAB)
+        run: eas build --platform android --profile production --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
