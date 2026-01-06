@@ -23,7 +23,8 @@ jobs:
             backend: 'backend/**'
             mobile: 'mobile/**'
 
-  build-backend:
+# ================== CI BACKEND ==================
+  test-backend:
     needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
@@ -54,7 +55,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
       - name: Verify Docker & Docker Compose
         run: |
@@ -95,7 +96,9 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           wait $SERVER_PID 2>/dev/null || true
 
-  build-mobile:
+
+# ================== CI MOBILE ==================
+  test-mobile:
     needs: changes
     if: ${{ needs.changes.outputs.mobile == 'true' }}
     runs-on: ubuntu-latest
@@ -126,8 +129,72 @@ jobs:
           cache-dependency-path: mobile/package-lock.json
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run ESLint
         run: npm run lint
         # ESLint will fail the job automatically if errors are found (non-zero exit code)
+
+
+# ================== CD BACKEND ==================
+deploy-backend:
+    needs: [changes, test-backend]
+    if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and Push Docker Image
+        run: |
+          cd backend
+          docker build -t thuan410/nt118-app-backend:latest .
+          docker build -t thuan410/nt118-app-backend:${{ github.sha }} .
+          docker push thuan410/nt118-app-backend:latest
+          docker push thuan410/nt118-app-backend:${{ github.sha }}
+
+# ================== CD MOBILE ==================
+deploy-mobile:
+    needs: [changes, test-mobile]
+    if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.mobile == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node & Java
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Install Dependencies
+        working-directory: ./mobile
+        run: npm ci
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('mobile/android/gradle/wrapper/gradle-wrapper.properties') }}
+      - name: Build Release APK & AAB
+        working-directory: ./mobile/android
+        run: |
+          ./gradlew assembleRelease
+          ./gradlew bundleRelease
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-app-apk
+          path: mobile/android/app/build/outputs/apk/release/app-release.apk
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-app-aab
+          path: mobile/android/app/build/outputs/bundle/release/app-release.aab
