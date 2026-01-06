@@ -206,7 +206,7 @@ jobs:
 
 # ================== CD BACKEND ==================
   deploy-backend:
-    needs: [changes, test-backend]
+    needs: [changes, test-backend, scan-backend]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
