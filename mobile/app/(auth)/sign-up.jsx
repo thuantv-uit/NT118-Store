@@ -6,8 +6,8 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { COLORS } from "../../constants/colors";
 import { API_URL } from "../../constants/api";
+import { COLORS } from "../../constants/colors";
 
 const DEFAULT_AVATAR ="https://res.cloudinary.com/dprqatuel/image/upload/v1767608216/customer_avatars/acf4wplrbnvg3x2rumsj.jpg";
 
@@ -164,7 +164,7 @@ export default function SignUpScreen() {
     >
       <View style={styles.container}>
         <Image
-          source={require("../../assets/images/welcome/Logo_welcome.svg")}
+          source={{ uri: "https://res.cloudinary.com/dprqatuel/image/upload/v1767707067/Logo_welcome_ox6sil.svg" }}
           style={styles.illustration}
           contentFit="contain"
         />

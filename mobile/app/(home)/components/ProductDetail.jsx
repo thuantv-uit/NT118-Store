@@ -672,13 +672,13 @@ export default function ProductDetail() {
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => (
               <Image 
-                source={item ? { uri: item } : require('../../../assets/images/welcome/Logo_welcome.svg')} 
+                source={item ? { uri: item } : { uri: "https://res.cloudinary.com/dprqatuel/image/upload/v1767707067/Logo_welcome_ox6sil.svg" }} 
                 style={detailStyles.imageItem} 
               />
             )}
             ListEmptyComponent={
               <Image 
-                source={require('../../../assets/images/welcome/Logo_welcome.svg')} 
+                source={{ uri: "https://res.cloudinary.com/dprqatuel/image/upload/v1767707067/Logo_welcome_ox6sil.svg" }} 
                 style={detailStyles.imageItem} 
               />
             }

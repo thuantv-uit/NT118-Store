@@ -36,7 +36,7 @@ export default function ProductsGrid({ categoryId = null, searchQuery = '' }) {
         category_name: p.category_name || '',
         // SỬA: Giá thấp nhất từ variants, hình ảnh đầu tiên từ images
         minPrice: p.variants && p.variants.length > 0 ? Math.min(...p.variants.map(v => v.price)) : 0,
-        firstImage: p.images && p.images.length > 0 ? p.images[0] : require('../../../assets/images/welcome/Logo_welcome.svg')
+        firstImage: p.images && p.images.length > 0 ? p.images[0] : { uri: "https://res.cloudinary.com/dprqatuel/image/upload/v1767707067/Logo_welcome_ox6sil.svg" },
       }));
       setAllProducts(processedProducts);
       setProducts(processedProducts);
