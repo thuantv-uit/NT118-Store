@@ -135,6 +135,74 @@ jobs:
         run: npm run lint
         # ESLint will fail the job automatically if errors are found (non-zero exit code)
 
+# ================== SCAN BACKEND IMAGE ==================
+  scan-backend:
+    needs: [changes, test-backend]
+    if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image (temp for scanning)
+        run: |
+          docker build -t thuan410/nt118-app-backend:scan-temp .
+          docker tag thuan410/nt118-app-backend:scan-temp thuan410/nt118-app-backend:${{ github.sha }}
+
+      - name: Create artifacts directory
+        run: mkdir -p ../trivy-reports
+
+      - name: Run Trivy vulnerability scanner (human readable)
+        continue-on-error: true  # Don't fail at this step, to afer step decide
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'thuan410/nt118-app-backend:scan-temp'
+          format: 'table'
+          output: '../trivy-reports/trivy-report-human.txt'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+
+      - name: Run Trivy vulnerability scanner (JSON for potential automation later)
+        continue-on-error: true
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'thuan410/nt118-app-backend:scan-temp'
+          format: 'json'
+          output: '../trivy-reports/trivy-report.json'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+
+      - name: Run Trivy - Fail only on CRITICAL (or CRITICAL+HIGH)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'thuan410/nt118-app-backend:scan-temp'
+          format: 'table'
+          exit-code: '1'                  # Only this step can fail job
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL'
+          # severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan reports as artifact
+        if: always()  # Always upload, even fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-scan-reports-${{ github.sha }}
+          path: trivy-reports/
+          retention-days: 30  # Artifact 30 days 
 
 # ================== CD BACKEND ==================
   deploy-backend:
