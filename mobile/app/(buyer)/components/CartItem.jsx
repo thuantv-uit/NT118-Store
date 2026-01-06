@@ -1,4 +1,4 @@
-import { Image, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
 // import Icon from 'react-native-vector-icons/Ionicons';
 import { Ionicons } from 'react-native-vector-icons';
 import { buyerStyles } from '../_styles/BuyerStyles';
@@ -11,7 +11,7 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }) {
   const { price = 0, size = 'N/A', color = 'N/A', stock = 0 } = variant || {};  // SỬA: Dùng variant
 
   const formattedPrice = parseFloat(price).toLocaleString('vi-VN'); // Parse string from API
-  const imageUri = product?.images?.[0] || product?.image || require('../../../assets/images/welcome/Logo_welcome.svg');
+  const imageUri = product?.images?.[0] || product?.image;
 
   // console.log(`CartItem for cart ${cartId}: variant=`, variant, 'uri=', imageUri); // Debug
 

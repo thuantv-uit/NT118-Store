@@ -1,6 +1,6 @@
 export const mockUser = {
   name: 'NT118',
-  avatar: require('../../../assets/images/welcome/Logo_welcome.svg'),
+  avatar: { uri: "https://res.cloudinary.com/dprqatuel/image/upload/v1767707067/Logo_welcome_ox6sil.svg" },
   followers: 111,
   following: 111,
 };

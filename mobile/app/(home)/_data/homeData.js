@@ -1,9 +1,22 @@
 // Mock data cho HomeScreen
 export const banners = [
-  { id: 'b1', image: require('../../../assets/images/home_seller/flash_sale/flash_sale.png') },
-  { id: 'b2', image: require('../../../assets/images/home_seller/flash_sale/fl3.png') },
-  { id: 'b3', image: require('../../../assets/images/home_seller/flash_sale/fl2.png') },
+  {
+    id: 'b1',
+    image:
+      'https://res.cloudinary.com/dprqatuel/image/upload/v1767707047/flash_sale_qedrcl.png',
+  },
+  {
+    id: 'b2',
+    image:
+      'https://res.cloudinary.com/dprqatuel/image/upload/v1767707045/fl3_fd984y.jpg',
+  },
+  {
+    id: 'b3',
+    image:
+      'https://res.cloudinary.com/dprqatuel/image/upload/v1767707048/fl2_qtxkrg.webp',
+  },
 ];
+
 
 export const categories = [
   { id: 'c1', name: 'Thời trang nữ', icon: 'woman-outline' },
@@ -17,8 +30,28 @@ export const categories = [
 ];
 
 export const flashSale = [
-  { id: 'f1', name: 'Combo flash sale', price: 199000, image: require('../../../assets/images/home_seller/flash_sale/fl2.png') },
-  { id: 'f2', name: 'Ưu đãi hấp dẫn', price: 299000, image: require('../../../assets/images/home_seller/flash_sale/fl3.png') },
-  { id: 'f3', name: 'Săn sale giờ vàng', price: 249000, image: require('../../../assets/images/home_seller/flash_sale/flash_sale.png') },
-  { id: 'f4', name: 'Deal độc quyền', price: 399000, image: require('../../../assets/images/home_seller/flash_sale/fl2.png') },
+  {
+    id: 'f1',
+    name: 'Combo flash sale',
+    price: 199000,
+    image: 'https://res.cloudinary.com/dprqatuel/image/upload/v1767707048/fl2_qtxkrg.webp',
+  },
+  {
+    id: 'f2',
+    name: 'Ưu đãi hấp dẫn',
+    price: 299000,
+    image: 'https://res.cloudinary.com/dprqatuel/image/upload/v1767707045/fl3_fd984y.jpg',
+  },
+  {
+    id: 'f3',
+    name: 'Săn sale giờ vàng',
+    price: 249000,
+    image: 'https://res.cloudinary.com/dprqatuel/image/upload/v1767707047/flash_sale_qedrcl.png',
+  },
+  {
+    id: 'f4',
+    name: 'Deal độc quyền',
+    price: 399000,
+    image: 'https://res.cloudinary.com/dprqatuel/image/upload/v1767707048/fl2_qtxkrg.webp',
+  },
 ];
