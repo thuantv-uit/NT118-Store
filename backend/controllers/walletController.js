@@ -48,14 +48,11 @@ export async function getWalletByCustomerId(req, res) {
       WHERE customer_id = ${customer_id}
     `;
 
-    if (wallet.length === 0) {
-      return res.status(404).json({ message: "Wallet not found" });
-    }
-
-    res.status(200).json(wallet[0]);
+    // ✅ Không có wallet → trả null
+    return res.status(200).json(wallet[0] ?? null);
   } catch (error) {
     console.error("Error getting wallet:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 }
 
