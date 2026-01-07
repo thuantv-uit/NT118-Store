@@ -11,4 +11,4 @@ export default function Index() {
     : <Redirect href="/(auth)/sign-in"/>
 }
 
-// Adjust to test CD for mobile part 2
+// Adjust to test CD for mobile part 3

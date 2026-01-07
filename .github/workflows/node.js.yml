@@ -7,6 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
+# ================== Check for changes ==================
   changes:
     runs-on: ubuntu-latest
     outputs:
@@ -23,8 +24,9 @@ jobs:
             backend: 'backend/**'
             mobile: 'mobile/**'
 
-# ================== CI BACKEND ==================
-  test-backend:
+
+# ================== UNIT TEST BACKEND (Jest + Coverage) ==================
+  test-backend-unit:
     needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
@@ -57,31 +59,56 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Verify Docker & Docker Compose
-        run: |
-          docker --version
-          docker compose version
-
       - name: Start PostgreSQL Test DB
         run: make db_test_up
 
-      - name: Run Jest Tests
-        run: npm test
+      - name: Run Jest with Coverage
+        run: |
+          npm test -- --coverage --coverageReporters="lcov" --coverageReporters="text"
+
+      - name: Upload Coverage Reports as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-${{ matrix.node-version }}
+          path: backend/coverage/
+          retention-days: 7
 
       - name: Stop PostgreSQL Test DB
         if: always()
         run: make db_test_down
 
-      # Uncomment if you have a build step (e.g., TypeScript compilation)
-      # - name: Build Application
-      #   run: npm run build
+
+# ================== SMOKE TEST BACKEND ==================
+  test-backend-smoke:
+    needs: [changes, test-backend-unit]
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Verify Docker & Docker Compose
+        run: |
+          docker --version
+          docker compose version
 
       - name: Verify Server Starts Successfully (CI Mode)
         run: |
           echo "Starting server using 'npm run start:ci'..."
           npm run start:ci &
           SERVER_PID=$!
-
           # Wait up to 20 seconds to detect early crashes
           for ((i = 0; i < 20; i++)); do
             if ! kill -0 $SERVER_PID 2>/dev/null; then
@@ -91,7 +118,6 @@ jobs:
             fi
             sleep 1
           done
-
           echo "Server started successfully and remained stable for 20 seconds"
           kill $SERVER_PID 2>/dev/null || true
           wait $SERVER_PID 2>/dev/null || true
@@ -138,7 +164,7 @@ jobs:
 
 # ================== SCAN BACKEND IMAGE ==================
   scan-backend:
-    needs: [changes, test-backend]
+    needs: [changes, test-backend-unit, test-backend-smoke]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     defaults:
@@ -211,9 +237,10 @@ jobs:
           retention-days: 30
           if-no-files-found: warn
 
+
 # ================== CD BACKEND ==================
   deploy-backend:
-    needs: [changes, test-backend, scan-backend]
+    needs: [changes, test-backend-unit, test-backend-smoke, scan-backend]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
@@ -230,6 +257,7 @@ jobs:
           docker build -t thuan410/nt118-app-backend:${{ github.sha }} .
           docker push thuan410/nt118-app-backend:latest
           docker push thuan410/nt118-app-backend:${{ github.sha }}
+
 
 # ================== CD MOBILE ==================
   deploy-mobile:
