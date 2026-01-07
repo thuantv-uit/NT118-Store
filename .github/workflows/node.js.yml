@@ -241,21 +241,20 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Run Tests (for coverage import)  # Nếu mobile có unit test, uncomment và adjust
-        # run: npm test -- --coverage  # Giả sử có Jest; nếu không, bỏ step này
+      - name: Run Tests (for coverage import)  # Uncomment nếu có unit test
+        # run: npm test -- --coverage  # Giả sử có Jest; thêm --coverageReporters=lcov nếu cần
       
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          args: >
+          args: > 
             -Dsonar.projectKey=nt1
             -Dsonar.organization=nt118_mobile
             -Dsonar.sources=.
             -Dsonar.tests=.
             -Dsonar.exclusions=node_modules/**,build/**,coverage/**
-
 
 # ================== SCAN BACKEND IMAGE ==================
   scan-backend:
