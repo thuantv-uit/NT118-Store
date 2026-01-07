@@ -7,6 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
+# ================== Check for changes ==================
   changes:
     runs-on: ubuntu-latest
     outputs:
@@ -122,6 +123,45 @@ jobs:
           wait $SERVER_PID 2>/dev/null || true
 
 
+# ================== CI MOBILE ==================
+  test-mobile:
+    needs: changes
+    if: ${{ needs.changes.outputs.mobile == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./mobile
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Debug - List Mobile Directory Contents
+        run: ls -la
+
+      - name: Verify package-lock.json Exists
+        run: |
+          if [ ! -f package-lock.json ]; then
+            echo "Error: package-lock.json not found in mobile directory"
+            exit 1
+          fi
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+        # ESLint will fail the job automatically if errors are found (non-zero exit code)
+
+
 # ================== SONARQUBE ANALYSIS BACKEND ==================
   analyze-backend:
     needs: [changes, test-backend-unit, test-backend-smoke]
@@ -176,48 +216,10 @@ jobs:
           # Hoặc dùng API để check, nhưng action trên sẽ fail nếu gate fail với fail_action: true (default)
 
 
-# ================== CI MOBILE ==================
-  test-mobile:
-    needs: changes
-    if: ${{ needs.changes.outputs.mobile == 'true' }}
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./mobile
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Debug - List Mobile Directory Contents
-        run: ls -la
-
-      - name: Verify package-lock.json Exists
-        run: |
-          if [ ! -f package-lock.json ]; then
-            echo "Error: package-lock.json not found in mobile directory"
-            exit 1
-          fi
-
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: mobile/package-lock.json
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Run ESLint
-        run: npm run lint
-        # ESLint will fail the job automatically if errors are found (non-zero exit code)
-
 
 # ================== SONARQUBE ANALYSIS MOBILE ==================
   analyze-mobile:
-    needs: [changes, test-mobile, analyze-backend]
+    needs: [changes, test-mobile]
     if: ${{ needs.changes.outputs.mobile == 'true' }}
     runs-on: ubuntu-latest
     defaults:
@@ -256,7 +258,7 @@ jobs:
 
 # ================== SCAN BACKEND IMAGE ==================
   scan-backend:
-    needs: [changes, test-backend-unit, test-backend-smoke]
+    needs: [changes, test-backend-unit, test-backend-smoke, analyze-backend]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     defaults:
@@ -332,7 +334,7 @@ jobs:
 
 # ================== CD BACKEND ==================
   deploy-backend:
-    needs: [changes, test-backend-unit, test-backend-smoke, scan-backend]
+    needs: [changes, test-backend-unit, test-backend-smoke, analyze-backend, scan-backend]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
