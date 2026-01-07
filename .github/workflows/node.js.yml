@@ -200,10 +200,10 @@ jobs:
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@master
-        working-directory: ./backend
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
+        projectBaseDir: ./backend
           args: >
             -Dsonar.projectKey=nt118_backend
             -Dsonar.organization=nt1
@@ -212,7 +212,7 @@ jobs:
             -Dsonar.test.inclusions=tests/**
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.exclusions=node_modules/**,dist/**,coverage/**
-            
+
       - name: Quality Gate Check
         run: |
           # Optional: Wait for Quality Gate (nếu muốn fail ngay nếu gate fail)
@@ -249,11 +249,11 @@ jobs:
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@master
-        working-directory: ./mobile
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          args: > 
+        projectBaseDir: ./mobile
+          args: >
             -Dsonar.projectKey=nt118_mobile
             -Dsonar.organization=nt1
             -Dsonar.sources=.
