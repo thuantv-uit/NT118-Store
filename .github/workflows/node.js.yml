@@ -154,7 +154,7 @@ jobs:
 
 # ================== SCAN BACKEND IMAGE ==================
   scan-backend:
-    needs: [changes, test-backend]
+    needs: [changes, test-backend-unit, test-backend-smoke]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     defaults:
@@ -229,7 +229,7 @@ jobs:
 
 # ================== CD BACKEND ==================
   deploy-backend:
-    needs: [changes, test-backend, scan-backend]
+    needs: [changes, test-backend-unit, test-backend-smoke, scan-backend]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
