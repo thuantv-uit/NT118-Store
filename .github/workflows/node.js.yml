@@ -203,7 +203,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-        projectBaseDir: ./backend
+          projectBaseDir: ./backend
           args: >
             -Dsonar.projectKey=nt118_backend
             -Dsonar.organization=nt1
@@ -252,7 +252,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-        projectBaseDir: ./mobile
+          projectBaseDir: ./mobile
           args: >
             -Dsonar.projectKey=nt118_mobile
             -Dsonar.organization=nt1
