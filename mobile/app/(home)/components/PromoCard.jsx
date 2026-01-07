@@ -35,7 +35,7 @@ export default function PromoCard() {
           <View style={styles.promoImageWrapper}>
             <View style={styles.promoGlow} />
             <Image
-              source={require('../../../assets/images/home_seller/black_friday/black_friday.jpg')}
+              source={{ uri: "https://res.cloudinary.com/dprqatuel/image/upload/v1767707047/flash_sale_qedrcl.png" }}
               style={styles.promoImage}
             />
           </View>
