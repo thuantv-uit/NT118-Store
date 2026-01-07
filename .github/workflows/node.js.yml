@@ -162,8 +162,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=nt1
-            -Dsonar.organization=nt118_backend
+            -Dsonar.projectKey=nt118_backend
+            -Dsonar.organization=nt1
             -Dsonar.sources=.
             -Dsonar.tests=.
             -Dsonar.test.inclusions=tests/**
@@ -217,7 +217,7 @@ jobs:
 
 # ================== SONARQUBE ANALYSIS MOBILE ==================
   analyze-mobile:
-    needs: [changes, test-mobile]
+    needs: [changes, test-mobile, analyze-backend]
     if: ${{ needs.changes.outputs.mobile == 'true' }}
     runs-on: ubuntu-latest
     defaults:
@@ -247,11 +247,12 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: > 
-            -Dsonar.projectKey=nt1
-            -Dsonar.organization=nt118_mobile
+            -Dsonar.projectKey=nt118_mobile
+            -Dsonar.organization=nt1
             -Dsonar.sources=.
             -Dsonar.tests=.
             -Dsonar.exclusions=node_modules/**,build/**,coverage/**
+
 
 # ================== SCAN BACKEND IMAGE ==================
   scan-backend:
@@ -352,7 +353,7 @@ jobs:
 
 # ================== CD MOBILE ==================
   deploy-mobile:
-    needs: [changes, test-mobile]
+    needs: [changes, test-mobile, analyze-mobile]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.mobile == 'true' }}
     runs-on: ubuntu-latest
     defaults:
