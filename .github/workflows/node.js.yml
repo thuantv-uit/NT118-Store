@@ -241,9 +241,6 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Run Tests (for coverage import)  # Uncomment nếu có unit test
-        # run: npm test -- --coverage  # Giả sử có Jest; thêm --coverageReporters=lcov nếu cần
-      
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@master
         env:
