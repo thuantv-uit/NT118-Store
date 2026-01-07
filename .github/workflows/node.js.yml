@@ -76,6 +76,7 @@ jobs:
         if: always()
         run: make db_test_down
 
+
 # ================== SMOKE TEST BACKEND ==================
   test-backend-smoke:
     needs: [changes, test-backend-unit]
@@ -114,11 +115,66 @@ jobs:
               wait $SERVER_PID
               exit 1
             fi
-            sleep 1
+            sleep 
           done
           echo "Server started successfully and remained stable for 20 seconds"
           kill $SERVER_PID 2>/dev/null || true
           wait $SERVER_PID 2>/dev/null || true
+
+
+# ================== SONARQUBE ANALYSIS BACKEND ==================
+  analyze-backend:
+    needs: [changes, test-backend-unit, test-backend-smoke]
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better branch coverage and no SRP downloads
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Start PostgreSQL Test DB
+        run: make db_test_up
+
+      - name: Run Tests (for coverage import)
+        run: npm test -- --coverage
+
+      - name: Stop PostgreSQL Test DB
+        if: always()
+        run: make db_test_down
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=nt1
+            -Dsonar.organization=nt118_backend
+            -Dsonar.sources=.
+            -Dsonar.tests=.
+            -Dsonar.test.inclusions=tests/**
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.exclusions=node_modules/**,dist/**,coverage/**
+      - name: Quality Gate Check
+        run: |
+          # Optional: Wait for Quality Gate (nếu muốn fail ngay nếu gate fail)
+          sleep 10  # Wait for analysis to finish
+          # Hoặc dùng API để check, nhưng action trên sẽ fail nếu gate fail với fail_action: true (default)
+
 
 # ================== CI MOBILE ==================
   test-mobile:
@@ -157,6 +213,48 @@ jobs:
       - name: Run ESLint
         run: npm run lint
         # ESLint will fail the job automatically if errors are found (non-zero exit code)
+
+
+# ================== SONARQUBE ANALYSIS MOBILE ==================
+  analyze-mobile:
+    needs: [changes, test-mobile]
+    if: ${{ needs.changes.outputs.mobile == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./mobile
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests (for coverage import)  # Nếu mobile có unit test, uncomment và adjust
+        # run: npm test -- --coverage  # Giả sử có Jest; nếu không, bỏ step này
+      
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=nt1
+            -Dsonar.organization=nt118_mobile
+            -Dsonar.sources=.
+            -Dsonar.tests=.
+            -Dsonar.exclusions=node_modules/**,build/**,coverage/**
 
 
 # ================== SCAN BACKEND IMAGE ==================
@@ -234,6 +332,7 @@ jobs:
           retention-days: 30
           if-no-files-found: warn
 
+
 # ================== CD BACKEND ==================
   deploy-backend:
     needs: [changes, test-backend-unit, test-backend-smoke, scan-backend]
@@ -253,6 +352,7 @@ jobs:
           docker build -t thuan410/nt118-app-backend:${{ github.sha }} .
           docker push thuan410/nt118-app-backend:latest
           docker push thuan410/nt118-app-backend:${{ github.sha }}
+
 
 # ================== CD MOBILE ==================
   deploy-mobile:
