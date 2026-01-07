@@ -16,10 +16,15 @@ import {
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from "react-native-responsive-screen";
 
 const FLASH_IMAGES = [
-  require("../../assets/images/home_seller/flash_sale/flash_sale.png"),
-  require("../../assets/images/home_seller/flash_sale/fl2.png"),
-  require("../../assets/images/home_seller/flash_sale/fl3.png"),
-];
+{
+    uri: "https://res.cloudinary.com/dprqatuel/image/upload/v1767707045/fl3_fd984y.jpg",
+  },
+  {
+    uri: "https://res.cloudinary.com/dprqatuel/image/upload/v1767707047/flash_sale_qedrcl.png",
+  },
+  {
+    uri: "https://res.cloudinary.com/dprqatuel/image/upload/v1767707048/fl2_qtxkrg.webp",
+  }, ];
 
 const BANNER_WIDTH = Dimensions.get("window").width * 0.92;
 
