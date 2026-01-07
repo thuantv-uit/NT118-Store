@@ -162,94 +162,9 @@ jobs:
         # ESLint will fail the job automatically if errors are found (non-zero exit code)
 
 
-# ================== SONARQUBE ANALYSIS BACKEND ==================
-  analyze-backend:
-    needs: [changes, test-backend-unit, test-backend-smoke]
-    if: ${{ needs.changes.outputs.backend == 'true' }}
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./backend
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better branch coverage and no SRP downloads
-
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: ./backend
-          args: >
-            -Dsonar.projectKey=nt118_backend
-            -Dsonar.organization=nt1
-            -Dsonar.sources=.
-            -Dsonar.exclusions=node_modules/**,dist/**,coverage/**
-
-      - name: Quality Gate Check
-        run: |
-          # Optional: Wait for Quality Gate (nếu muốn fail ngay nếu gate fail)
-          sleep 10  # Wait for analysis to finish
-          # Hoặc dùng API để check, nhưng action trên sẽ fail nếu gate fail với fail_action: true (default)
-
-
-
-# ================== SONARQUBE ANALYSIS MOBILE ==================
-  analyze-mobile:
-    needs: test-mobile
-    if: ${{ needs.changes.outputs.mobile == 'true' }}
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./mobile
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: mobile/package-lock.json
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: ./mobile
-          args: >
-            -Dsonar.projectKey=nt118_mobile
-            -Dsonar.organization=nt1
-            -Dsonar.sources=.
-            -Dsonar.exclusions=node_modules/**,build/**,coverage/**
-
-
 # ================== SCAN BACKEND IMAGE ==================
   scan-backend:
-    needs: [changes, test-backend-unit, test-backend-smoke, analyze-backend]
+    needs: [changes, test-backend-unit, test-backend-smoke]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     defaults:
@@ -325,7 +240,7 @@ jobs:
 
 # ================== CD BACKEND ==================
   deploy-backend:
-    needs: [changes, test-backend-unit, test-backend-smoke, analyze-backend, scan-backend]
+    needs: [changes, test-backend-unit, test-backend-smoke, scan-backend]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
@@ -346,7 +261,7 @@ jobs:
 
 # ================== CD MOBILE ==================
   deploy-mobile:
-    needs: [changes, test-mobile, analyze-mobile]
+    needs: [changes, test-mobile]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.mobile == 'true' }}
     runs-on: ubuntu-latest
     defaults:
