@@ -116,7 +116,7 @@ jobs:
               wait $SERVER_PID
               exit 1
             fi
-            sleep 
+            sleep 1
           done
           echo "Server started successfully and remained stable for 20 seconds"
           kill $SERVER_PID 2>/dev/null || true
@@ -177,12 +177,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better branch coverage and no SRP downloads
+
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
+
       - name: Install Dependencies
         run: npm ci
 
@@ -198,6 +200,7 @@ jobs:
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@master
+        working-directory: ./backend
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
@@ -209,6 +212,7 @@ jobs:
             -Dsonar.test.inclusions=tests/**
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.exclusions=node_modules/**,dist/**,coverage/**
+            
       - name: Quality Gate Check
         run: |
           # Optional: Wait for Quality Gate (nếu muốn fail ngay nếu gate fail)
@@ -219,7 +223,7 @@ jobs:
 
 # ================== SONARQUBE ANALYSIS MOBILE ==================
   analyze-mobile:
-    needs: [changes, test-mobile]
+    needs: test-mobile
     if: ${{ needs.changes.outputs.mobile == 'true' }}
     runs-on: ubuntu-latest
     defaults:
@@ -245,6 +249,7 @@ jobs:
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@master
+        working-directory: ./mobile
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
