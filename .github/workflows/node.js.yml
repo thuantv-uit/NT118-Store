@@ -126,6 +126,8 @@ jobs:
 # ================== SONARQUBE ANALYSIS BACKEND ==================
   sonarqube:
     name: SonarQube
+    needs: [changes, test-backend-unit, test-backend-smoke]
+    if: ${{ needs.changes.outputs.backend == 'true' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
