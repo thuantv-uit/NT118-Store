@@ -123,25 +123,6 @@ jobs:
           wait $SERVER_PID 2>/dev/null || true
 
 
-# ================== SONARQUBE ANALYSIS BACKEND ==================
-  sonarqube:
-    name: SonarQube
-    needs: [changes, test-backend-unit, test-backend-smoke]
-    if: ${{ needs.changes.outputs.backend == 'true' && github.ref == 'refs/heads/main' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v6
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectBaseDir=backend
-
-
 # ================== CI MOBILE ==================
   test-mobile:
     needs: changes
@@ -179,6 +160,7 @@ jobs:
       - name: Run ESLint
         run: npm run lint
         # ESLint will fail the job automatically if errors are found (non-zero exit code)
+
 
 # ================== SONARQUBE ANALYSIS BACKEND ==================
   sonarqube:
