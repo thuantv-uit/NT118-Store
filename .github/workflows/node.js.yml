@@ -162,28 +162,9 @@ jobs:
         # ESLint will fail the job automatically if errors are found (non-zero exit code)
 
 
-# ================== SONARQUBE ANALYSIS BACKEND ==================
-  sonarqube:
-    name: SonarQube
-    needs: [changes, test-backend-unit, test-backend-smoke]
-    if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v6
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectBaseDir=backend
-
-
 # ================== SCAN BACKEND IMAGE ==================
   scan-backend:
-    needs: [changes, test-backend-unit, test-backend-smoke, sonarqube]
+    needs: [changes, test-backend-unit, test-backend-smoke]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     defaults:
@@ -259,7 +240,7 @@ jobs:
 
 # ================== CD BACKEND ==================
   deploy-backend:
-    needs: [changes, test-backend-unit, test-backend-smoke, sonarqube, scan-backend]
+    needs: [changes, test-backend-unit, test-backend-smoke, scan-backend]
     if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
@@ -276,6 +257,25 @@ jobs:
           docker build -t thuan410/nt118-app-backend:${{ github.sha }} .
           docker push thuan410/nt118-app-backend:latest
           docker push thuan410/nt118-app-backend:${{ github.sha }}
+
+
+# ================== SONARQUBE ANALYSIS BACKEND ==================
+  sonarqube:
+    name: SonarQube
+    needs: [changes, test-backend-unit, test-backend-smoke, scan-backend, deploy-backend]
+    if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectBaseDir=backend
 
 
 # ================== CD MOBILE ==================
