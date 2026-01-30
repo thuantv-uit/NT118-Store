@@ -1,0 +1,309 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+# ================== Check for changes ==================
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      mobile: ${{ steps.filter.outputs.mobile }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Debug - List Root Directory Contents
+        run: ls -la
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend: 'backend/**'
+            mobile: 'mobile/**'
+
+
+# ================== UNIT TEST BACKEND (Jest + Coverage) ==================
+  test-backend-unit:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Debug - List Backend Directory Contents
+        run: ls -la
+
+      - name: Verify package-lock.json Exists
+        run: |
+          if [ ! -f package-lock.json ]; then
+            echo "Error: package-lock.json not found in backend directory"
+            exit 1
+          fi
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Start PostgreSQL Test DB
+        run: make db_test_up
+
+      - name: Run Jest with Coverage
+        run: |
+          npm test -- --coverage --coverageReporters="lcov" --coverageReporters="text"
+
+      - name: Upload Coverage Reports as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-${{ matrix.node-version }}
+          path: backend/coverage/
+          retention-days: 7
+
+      - name: Stop PostgreSQL Test DB
+        if: always()
+        run: make db_test_down
+
+
+# ================== SMOKE TEST BACKEND ==================
+  test-backend-smoke:
+    needs: [changes, test-backend-unit]
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Verify Docker & Docker Compose
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Verify Server Starts Successfully (CI Mode)
+        run: |
+          echo "Starting server using 'npm run start:ci'..."
+          npm run start:ci &
+          SERVER_PID=$!
+          # Wait up to 20 seconds to detect early crashes
+          for ((i = 0; i < 20; i++)); do
+            if ! kill -0 $SERVER_PID 2>/dev/null; then
+              echo "Server crashed shortly after startup"
+              wait $SERVER_PID
+              exit 1
+            fi
+            sleep 1
+          done
+          echo "Server started successfully and remained stable for 20 seconds"
+          kill $SERVER_PID 2>/dev/null || true
+          wait $SERVER_PID 2>/dev/null || true
+
+
+# ================== CI MOBILE ==================
+  test-mobile:
+    needs: changes
+    if: ${{ needs.changes.outputs.mobile == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./mobile
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Debug - List Mobile Directory Contents
+        run: ls -la
+
+      - name: Verify package-lock.json Exists
+        run: |
+          if [ ! -f package-lock.json ]; then
+            echo "Error: package-lock.json not found in mobile directory"
+            exit 1
+          fi
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+        # ESLint will fail the job automatically if errors are found (non-zero exit code)
+
+
+# ================== SCAN BACKEND IMAGE ==================
+  scan-backend:
+    needs: [changes, test-backend-unit, test-backend-smoke]
+    if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image (temp for scanning)
+        run: |
+          docker build -t thuan410/nt118-app-backend:scan-temp .
+          docker tag thuan410/nt118-app-backend:scan-temp thuan410/nt118-app-backend:${{ github.sha }}
+
+      # Tạo thư mục trivy-reports ở root repo (ngoài backend)
+      - name: Create Trivy reports directory
+        run: mkdir -p ${{ github.workspace }}/trivy-reports
+
+      # In ra table dễ đọc + lưu file
+      - name: Run Trivy - Human readable report
+        continue-on-error: true
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'thuan410/nt118-app-backend:scan-temp'
+          format: 'table'
+          output: '${{ github.workspace }}/trivy-reports/trivy-report-human.txt'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH,MEDIUM,LOW,UNKNOWN'
+
+      # Lưu JSON để sau này phân tích tự động nếu cần
+      - name: Run Trivy - JSON report
+        continue-on-error: true
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'thuan410/nt118-app-backend:scan-temp'
+          format: 'json'
+          output: '${{ github.workspace }}/trivy-reports/trivy-report.json'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH,MEDIUM,LOW,UNKNOWN'
+
+      # Step quyết định fail/pass: chỉ fail khi có CRITICAL
+      - name: Run Trivy - Fail only on CRITICAL vulnerabilities
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'thuan410/nt118-app-backend:scan-temp'
+          format: 'table'
+          exit-code: '1'                  # Fail job nếu có lỗ hổng matching severity
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL'            # Chỉ fail khi có CRITICAL
+          # severity: 'CRITICAL,HIGH'     # Dùng dòng này nếu muốn nghiêm ngặt hơn
+
+      # Upload artifact - luôn chạy kể cả khi fail
+      - name: Upload Trivy scan reports as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-scan-reports-${{ github.run_id }}
+          path: ${{ github.workspace }}/trivy-reports/
+          retention-days: 30
+          if-no-files-found: warn
+
+
+# ================== CD BACKEND ==================
+  deploy-backend:
+    needs: [changes, test-backend-unit, test-backend-smoke, scan-backend]
+    if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and Push Docker Image
+        run: |
+          cd backend
+          docker build -t thuan410/nt118-app-backend:latest .
+          docker build -t thuan410/nt118-app-backend:${{ github.sha }} .
+          docker push thuan410/nt118-app-backend:latest
+          docker push thuan410/nt118-app-backend:${{ github.sha }}
+
+
+# ================== SONARQUBE ANALYSIS BACKEND ==================
+  sonarqube:
+    name: SonarQube
+    needs: [changes, test-backend-unit, test-backend-smoke, scan-backend, deploy-backend]
+    if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectBaseDir=backend
+
+
+# ================== CD MOBILE ==================
+  deploy-mobile:
+    needs: [changes, test-mobile]
+    if: ${{ github.ref == 'refs/heads/main' && needs.changes.outputs.mobile == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: EAS Build Android
+        run: eas build --platform android --profile production --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}

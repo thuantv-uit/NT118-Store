@@ -10,5 +10,3 @@ export default function Index() {
   ?  <Redirect href="/(home)"/>
     : <Redirect href="/(auth)/sign-in"/>
 }
-
-// test comment
