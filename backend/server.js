@@ -20,14 +20,13 @@ import walletTransactionRoutes from './routes/walletTransactionRoutes.js'
 import orderStatusRoutes from './routes/orderStatusRoutes.js'
 import chatRoute from './routes/chatRoutes.js'
 import assistantRoutes from './routes/assistantRoutes.js'
-// import rateLimiter from "./middleware/rateLimiter.js";
 
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
 
-// Create Socket.io instance
+// Create Socket.io instance with CORS settings
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -46,14 +45,12 @@ io.on("connection", (socket) => {
     console.log(`User ${socket.id} joined conversation ${conversation_id}`);
   });
 
-  // Handle disconnect
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
 });
 
 // Middleware
-// app.use(rateLimiter)
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
@@ -103,5 +100,3 @@ server.listen(PORT, () => {
     console.log("Server is up and running on PORT:", PORT);
     console.log(`API available at: http://localhost:${PORT}`);
 });
-
-// Adjust file to test workflow for backend part end
