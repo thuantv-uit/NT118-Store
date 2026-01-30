@@ -20,7 +20,6 @@ import walletTransactionRoutes from './routes/walletTransactionRoutes.js'
 import orderStatusRoutes from './routes/orderStatusRoutes.js'
 import chatRoute from './routes/chatRoutes.js'
 import assistantRoutes from './routes/assistantRoutes.js'
-// import rateLimiter from "./middleware/rateLimiter.js";
 
 dotenv.config();
 
