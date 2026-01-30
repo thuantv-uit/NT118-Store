@@ -13,6 +13,7 @@ permissions:
   security-events: write
 
 jobs:
+# ---------------- Mobile App CI ----------------
   fe-ci:
     uses: thuantv-uit/ci-cd-templates/.github/workflows/ci-reusable.yml@main
     with:
@@ -26,7 +27,7 @@ jobs:
       enable_setup_job: true
       enable_build_job: true
       enable_sonar_job: true
-      enable_trivy_job: true
+      enable_trivy_job: false
 
       # -------- Detect change --------
       change_filters: |
@@ -48,6 +49,49 @@ jobs:
 
       # -------- Trivy --------
       trivy_image_name: mobile-app
+      trivy_image_tag: ${{ github.sha }}
+      trivy_severity: "CRITICAL"
+      trivy_exit_code: 1
+
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+# ---------------- Backend CI ----------------
+  be-ci:
+    uses: thuantv-uit/ci-cd-templates/.github/workflows/ci-reusable.yml@main
+    with:
+      # -------- Environment --------
+      language: node
+      version: "20"
+      workdir: backend
+
+      # -------- Job Toggles --------
+      enable_detect_job: true
+      enable_setup_job: true
+      enable_build_job: true
+      enable_sonar_job: true
+      enable_trivy_job: true
+
+      # -------- Detect change --------
+      change_filters: |
+        backend:
+          - "backend/**"
+
+      # -------- Build / Test --------
+      install_cmd: npm ci
+      build_cmd: npm run build
+
+      # -------- Sonar --------
+      project_key: thuantv-uit_test-ci-cd-templates
+      organization: thuantv-uit
+      extra_args: >-
+        -Dsonar.projectBaseDir=backend
+        -Dsonar.sources=.
+        -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/coverage/**
+        -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+
+      # -------- Trivy --------
+      trivy_image_name: backend-app
       trivy_image_tag: ${{ github.sha }}
       trivy_severity: "CRITICAL"
       trivy_exit_code: 1
