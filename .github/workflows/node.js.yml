@@ -8,74 +8,98 @@ on:
 
 jobs:
 # ================== Check for changes ==================
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      backend: ${{ steps.filter.outputs.backend }}
-      mobile: ${{ steps.filter.outputs.mobile }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Debug - List Root Directory Contents
-        run: ls -la
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            backend: 'backend/**'
-            mobile: 'mobile/**'
+  # changes:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     backend: ${{ steps.filter.outputs.backend }}
+  #     mobile: ${{ steps.filter.outputs.mobile }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Debug - List Root Directory Contents
+  #       run: ls -la
+  #     - uses: dorny/paths-filter@v3
+  #       id: filter
+  #       with:
+  #         filters: |
+  #           backend: 'backend/**'
+  #           mobile: 'mobile/**'
+
+  be-ci:
+    uses: thuantv-uit/ci-cd-reuseable/.github/workflows/changes.yml@main
+    with:
+      language: node
+      version: "20"
+      workdir: "backend"
+
+      enable_detect_job: true
+      enable_setup_job: false
+      enable_build_job: false
+      enable_sonar_job: false
+      enable_trivy_job: false
+      enable_jest_job: true
+
+      change_filters: |
+        backend:
+          - "backend/**"
+
+      install_cmd: npm ci
+      test_cmd_jest: npm test -- --coverage --coverageReporters="lcov" --coverageReporters="text"
+      start_db_cmd: make db_test_up
+      close_db_cmd: make db_test_down
+
 
 
 # ================== UNIT TEST BACKEND (Jest + Coverage) ==================
-  test-backend-unit:
-    needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' }}
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./backend
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
-    steps:
-      - uses: actions/checkout@v4
+  # test-backend-unit:
+  #   needs: changes
+  #   if: ${{ needs.changes.outputs.backend == 'true' }}
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: ./backend
+  #   strategy:
+  #     matrix:
+  #       node-version: [18.x, 20.x, 22.x]
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Debug - List Backend Directory Contents
-        run: ls -la
+  #     - name: Debug - List Backend Directory Contents
+  #       run: ls -la
 
-      - name: Verify package-lock.json Exists
-        run: |
-          if [ ! -f package-lock.json ]; then
-            echo "Error: package-lock.json not found in backend directory"
-            exit 1
-          fi
+  #     - name: Verify package-lock.json Exists
+  #       run: |
+  #         if [ ! -f package-lock.json ]; then
+  #           echo "Error: package-lock.json not found in backend directory"
+  #           exit 1
+  #         fi
 
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
+  #     - name: Setup Node.js ${{ matrix.node-version }}
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
+  #         cache: 'npm'
+  #         cache-dependency-path: backend/package-lock.json
 
-      - name: Install Dependencies
-        run: npm ci
+  #     - name: Install Dependencies
+  #       run: npm ci
 
-      - name: Start PostgreSQL Test DB
-        run: make db_test_up
+  #     - name: Start PostgreSQL Test DB
+  #       run: make db_test_up
 
-      - name: Run Jest with Coverage
-        run: |
-          npm test -- --coverage --coverageReporters="lcov" --coverageReporters="text"
+  #     - name: Run Jest with Coverage
+  #       run: |
+  #         npm test -- --coverage --coverageReporters="lcov" --coverageReporters="text"
 
-      - name: Upload Coverage Reports as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-coverage-${{ matrix.node-version }}
-          path: backend/coverage/
-          retention-days: 7
+  #     - name: Upload Coverage Reports as Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: backend-coverage-${{ matrix.node-version }}
+  #         path: backend/coverage/
+  #         retention-days: 7
 
-      - name: Stop PostgreSQL Test DB
-        if: always()
-        run: make db_test_down
+  #     - name: Stop PostgreSQL Test DB
+  #       if: always()
+  #       run: make db_test_down
 
 
 # ================== SMOKE TEST BACKEND ==================

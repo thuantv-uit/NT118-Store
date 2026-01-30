@@ -103,5 +103,3 @@ server.listen(PORT, () => {
     console.log("Server is up and running on PORT:", PORT);
     console.log(`API available at: http://localhost:${PORT}`);
 });
-
-// Adjust file to test workflow for backend part end
