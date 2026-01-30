@@ -45,7 +45,6 @@ io.on("connection", (socket) => {
     console.log(`User ${socket.id} joined conversation ${conversation_id}`);
   });
 
-  // Handle disconnect
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
